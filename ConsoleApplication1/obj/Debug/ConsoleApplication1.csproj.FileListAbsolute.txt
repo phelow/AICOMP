@@ -6,3 +6,11 @@ E:\Game Development\BomberManC#\ConsoleApplication1\ConsoleApplication1\bin\Debu
 E:\Game Development\BomberManC#\ConsoleApplication1\ConsoleApplication1\obj\Debug\ConsoleApplication1.csprojResolveAssemblyReference.cache
 E:\Game Development\BomberManC#\ConsoleApplication1\ConsoleApplication1\obj\Debug\ConsoleApplication1.exe
 E:\Game Development\BomberManC#\ConsoleApplication1\ConsoleApplication1\obj\Debug\ConsoleApplication1.pdb
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\ConsoleApplication1.exe.config
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.exe
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.pdb
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\ConsoleApplication1.exe
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\ConsoleApplication1.pdb
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\Newtonsoft.Json.dll
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\Newtonsoft.Json.xml
+E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.csprojResolveAssemblyReference.cache

@@ -17,6 +17,23 @@ namespace ConsoleApplication1
         public string playerID { get; set; }
         [JsonProperty("state")]
         public string state { get; set; }
+        [JsonProperty("hardBlockBoard")]
+        public int [] hardBlockBoard { get; set; }
+        [JsonProperty("boardSize")]
+        public int boardSize { get; set; }
+        [JsonProperty("bombMap")]
+        public Dictionary<string,Dictionary<string,int>> bombMap { get; set; }
+        [JsonProperty("moveIterator")]
+        public int moveIterator { get; set; }
+        [JsonProperty("player")]
+        public object player { get; set; }
+        [JsonProperty("softBlockBoard")]
+        public int [] softBlockBoard { get; set; }
+        [JsonProperty("moveOrder")]
+        public int[] moveOrder { get; set; }
+        [JsonProperty("opponent")]
+        public object opponent { get; set; }
+
     }
 
     class Program
@@ -63,14 +80,14 @@ namespace ConsoleApplication1
                             Console.Write(parsed.playerID);
                             Console.Write(parsed.gameID);
                             request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + parsed.gameID);
-                            postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + parsed.playerID + "\", \"move\": \"" + m_actions[m_random.Next(0, m_actions.Length)] + "\" }";
+                            postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + parsed.playerID + "\", \"move\": \"" + "b"/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                             data = Encoding.ASCII.GetBytes(postData);
                             request.Method = "POST";
                             request.ContentType = "application/json";
                             request.ContentLength = data.Length;
 
                             notComplete = parsed.state != "complete";
-
+                            
                             using (var stream = request.GetRequestStream())
                             {
                                 stream.Write(data, 0, data.Length);
