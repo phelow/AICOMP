@@ -118,8 +118,9 @@ namespace ConsoleApplication1
 
             while (true)
             {
-                try {
-                    Console.Write("There was a bug");
+                try
+                {
+                    Console.Write("nSetting up game with server\n");
                     var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
 
                     var postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }";
@@ -135,7 +136,7 @@ namespace ConsoleApplication1
                     }
 
                     var response = (HttpWebResponse)request.GetResponse();
-                    bool notComplete = true;
+                    bool gameNotCompleted = true;
                     do
                     {
                         using (StreamReader reader = new StreamReader(response.GetResponseStream()))
@@ -154,15 +155,15 @@ namespace ConsoleApplication1
                                 }
                             }
 
-                            notComplete = parsed.state != "complete";
+                            gameNotCompleted = parsed.state != "complete";
 
-                            object playerX;
-                            object playerY;
-                            parsed.player.TryGetValue("x", out playerX);
-                            parsed.player.TryGetValue("y", out playerY);
+                            object object_playerX;
+                            object object_playerY;
+                            parsed.player.TryGetValue("x", out object_playerX);
+                            parsed.player.TryGetValue("y", out object_playerY);
 
-                            int int_px = Convert.ToInt32(playerX);
-                            int int_py = Convert.ToInt32(playerY);
+                            int int_px = Convert.ToInt32(object_playerX);
+                            int int_py = Convert.ToInt32(object_playerY);
 
                             m_playerTile = m_worldRepresentation[int_px, int_py];
 
@@ -177,7 +178,6 @@ namespace ConsoleApplication1
 
                             HashSet<AStarTile> closedSet = new HashSet<AStarTile>(); //the already evaluated set of nodes
 
-                            HashSet<AStarTile> openSet = new HashSet<AStarTile>(); //the set of currently discovered nodes to be evaluated
 
                             AStarTile endingTile = null;
 
@@ -186,21 +186,14 @@ namespace ConsoleApplication1
                                 endingTile = m_opponentTile;
                             }
 
-                            AStarTile startingTile = m_playerTile;
-
-                            openSet.Add(startingTile);
 
                             List<AStarTile> safeMoves = new List<AStarTile>();
-
-                            //TODO: find the closest safe tile to the player
-
                             HashSet<AStarTile> visited = new HashSet<AStarTile>();
-
-
                             Queue<AStarTile> nextTiles = new Queue<AStarTile>();
 
-                            nextTiles.Enqueue(startingTile);
+                            nextTiles.Enqueue(m_playerTile);
 
+                            //BFS search to find all safe tiles
                             while (nextTiles.Count > 0)
                             {
                                 AStarTile current = nextTiles.Dequeue();
@@ -263,29 +256,6 @@ namespace ConsoleApplication1
 
                             foreach (AStarTile tile in safeMoves)
                             {
-                                //bool orientationWorks = true;
-
-
-                                //if (int_orientation == 0 && tile.X < m_playerTile.X)
-                                //{
-                                //    orientationWorks = false;
-                                //}
-
-                                //if (int_orientation == 1 && tile.Y < m_playerTile.Y)
-                                //{
-                                //    orientationWorks = false;
-                                //}
-
-                                //if (int_orientation == 2 && tile.X > m_playerTile.X)
-                                //{
-                                //    orientationWorks = false;
-                                //}
-                                //if (int_orientation == 3 && tile.Y < m_playerTile.Y)
-                                //{
-                                //    orientationWorks = false;
-                                //}
-
-
                                 if (tile.X != m_playerTile.X && tile.Y != m_playerTile.Y && parsed.bombMap.Count == 0 && HeuristicCalculation(tile, m_playerTile) <= 3/* && orientationWorks*/)
                                 {
                                     canBomb = true;
@@ -335,17 +305,18 @@ namespace ConsoleApplication1
 
 
 
-                            startingTile.CostFromStart = 0;
+                            HashSet<AStarTile> openSet = new HashSet<AStarTile>(); //the set of currently discovered nodes to be evaluated
+                            m_playerTile.CostFromStart = 0;
                             endingTile = targetTile;
                             if (endingTile == null)
                             {
-                                startingTile.EstimatedCostToGoal = 0;
+                                m_playerTile.EstimatedCostToGoal = 0;
                             }
                             else {
-                                startingTile.EstimatedCostToGoal = HeuristicCalculation(startingTile, endingTile);
+                                m_playerTile.EstimatedCostToGoal = HeuristicCalculation(m_playerTile, endingTile);
                             }
                             float t = 0.0f;
-                            openSet.Add(startingTile);
+                            openSet.Add(m_playerTile);
 
                             while (openSet.Count > 0)
                             {
@@ -531,9 +502,7 @@ namespace ConsoleApplication1
                         Console.Write("Sleeping");
                         System.Threading.Thread.Sleep(1000);
                         Console.Write("Start Iteration");
-                    } while (notComplete);
-
-
+                    } while (gameNotCompleted);
                 }
                 catch
                 {
