@@ -33,6 +33,8 @@ namespace ConsoleApplication1
         public int[] moveOrder { get; set; }
         [JsonProperty("opponent")]
         public Dictionary<string, object> opponent { get; set; }
+        [JsonProperty("trailmap")]
+        public Dictionary<string, object> trailmap { get; set; }
 
     }
 
@@ -77,7 +79,6 @@ namespace ConsoleApplication1
 
             foreach (KeyValuePair<string, Dictionary<string, int>> bomb in server.bombMap)
             {
-                Console.Write(bomb.Key);
                 int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
                 int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
 
@@ -114,10 +115,12 @@ namespace ConsoleApplication1
 
         static void PlayGame()
         {
+            
             while (true)
             {
                 try
                 {
+                    Console.Write("There was a bug");
                     var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
 
                     var postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }";
@@ -141,14 +144,6 @@ namespace ConsoleApplication1
                             var responseString = reader.ReadToEnd();
                             Console.Write(responseString);
                             ServerResponse parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
-                            Console.Write(parsed.playerID);
-                            Console.Write(parsed.gameID);
-                            request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + parsed.gameID);
-                            postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + parsed.playerID + "\", \"move\": \"" + "b"/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
-                            data = Encoding.ASCII.GetBytes(postData);
-                            request.Method = "POST";
-                            request.ContentType = "application/json";
-                            request.ContentLength = data.Length;
 
                             AStarTile[,] m_worldRepresentation = new AStarTile[parsed.boardSize, parsed.boardSize];
 
@@ -156,7 +151,7 @@ namespace ConsoleApplication1
                             {
                                 for (int y = 0; y < parsed.boardSize; y++)
                                 {
-                                    m_worldRepresentation[x, y] = new AStarTile(x, y, parsed);
+                                    m_worldRepresentation[y,x] = new AStarTile(y,x, parsed);
                                 }
                             }
 
@@ -167,14 +162,19 @@ namespace ConsoleApplication1
                             parsed.player.TryGetValue("x", out playerX);
                             parsed.player.TryGetValue("y", out playerY);
 
-                            m_playerTile = m_worldRepresentation[(int)playerX, (int)playerY];
+                            int int_px = Convert.ToInt32(playerX);
+                            int int_py = Convert.ToInt32(playerY);
+
+                            m_playerTile = m_worldRepresentation[int_px, int_py];
 
                             object opponentX;
                             object opponentY;
-                            parsed.player.TryGetValue("x", out opponentX);
-                            parsed.player.TryGetValue("y", out opponentY);
+                            parsed.opponent.TryGetValue("x", out opponentX);
+                            parsed.opponent.TryGetValue("y", out opponentY);
+                            int int_ox = Convert.ToInt32(opponentX);
+                            int int_oy = Convert.ToInt32(opponentY);
 
-                            m_opponentTile = m_worldRepresentation[(int)playerX, (int)playerY];
+                            m_opponentTile = m_worldRepresentation[int_ox, int_oy];
 
                             HashSet<AStarTile> closedSet = new HashSet<AStarTile>(); //the already evaluated set of nodes
 
@@ -202,14 +202,22 @@ namespace ConsoleApplication1
 
                             nextTiles.Enqueue(startingTile);
 
-                            while (endingTile == null)
+                            while (nextTiles.Count > 0)
                             {
                                 AStarTile current = nextTiles.Dequeue();
+
+                                if (visited.Contains(current))
+                                {
+                                    continue;
+                                }
+
+                                visited.Add(current);
 
                                 if (current.m_blockType != AStarTile.blockType.Passable)
                                 {
                                     continue;
                                 }
+
                                 if (current.isSafe)
                                 {
                                     safeMoves.Add(current);
@@ -238,16 +246,144 @@ namespace ConsoleApplication1
                                     nextTiles.Enqueue(m_worldRepresentation[current.X - 1, current.Y]);
                                 }
 
-                                if (current.Y - 1 < 0)
+                                if (current.Y - 1 > 0)
                                 {
                                     nextTiles.Enqueue(m_worldRepresentation[current.X, current.Y - 1]);
                                 }
 
                             }
-                            
+
+
+                            string chosenAction = "";
+
+                            //if we can drop a bomb and survive do that
+                            bool canBomb = false;
+                            object orientation;
+                            parsed.player.TryGetValue("orientation", out orientation);
+                            int int_orientation = Convert.ToInt32(orientation);
+
+                            foreach (AStarTile tile in safeMoves)
+                            {
+                                bool orientationWorks = true;
+                                bool hasBenefit = false;
+
+                                for(int x = tile.X; x > tile.X-3; x--)
+                                {
+                                    if(m_worldRepresentation[x,tile.Y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == x && m_opponentTile.Y == tile.Y))
+                                    {
+                                        hasBenefit = true;
+                                    }
+                                    if (m_worldRepresentation[x, tile.Y].m_blockType == AStarTile.blockType.HardBlock)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                for (int x = tile.X; x < tile.X + 3; x++)
+                                {
+                                    if (m_worldRepresentation[x, tile.Y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == x && m_opponentTile.Y == tile.Y))
+                                    {
+                                        hasBenefit = true;
+                                    }
+                                    if (m_worldRepresentation[x, tile.Y].m_blockType == AStarTile.blockType.HardBlock)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                for (int y = tile.Y; y > tile.Y - 3; y--)
+                                {
+                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == tile.X && m_opponentTile.Y == y))
+                                    {
+                                        hasBenefit = true;
+                                    }
+                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.HardBlock)
+                                    {
+                                        break;
+                                    }
+                                }
+
+
+                                for (int y = tile.Y; y < tile.Y + 3; y++)
+                                {
+                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == tile.X && m_opponentTile.Y == y))
+                                    {
+                                        hasBenefit = true;
+                                    }
+                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.HardBlock)
+                                    {
+                                        break;
+                                    }
+                                }
+
+                                if (int_orientation == 0 && tile.X < m_playerTile.X)
+                                {
+                                    orientationWorks = false;
+                                }
+
+                                if (int_orientation == 1 && tile.Y < m_playerTile.Y)
+                                {
+                                    orientationWorks = false;
+                                }
+
+                                if (int_orientation == 2 && tile.X > m_playerTile.X)
+                                {
+                                    orientationWorks = false;
+                                }
+                                if (int_orientation == 3 && tile.Y < m_playerTile.Y)
+                                {
+                                    orientationWorks = false;
+                                }
+
+
+                                if (tile.X != m_playerTile.X && tile.Y != m_playerTile.Y && parsed.bombMap.Count == 0 && HeuristicCalculation(tile, m_playerTile) < 3 && orientationWorks && hasBenefit)
+                                {
+                                    canBomb = true;
+                                }
+                            }
+
+                            AStarTile targetTile = null;
+                            if (safeMoves.Count == 0)
+                            {
+                                targetTile = m_playerTile;
+                            }
+
+                            if (safeMoves.Count == 1)
+                            {
+                                targetTile = safeMoves[0];
+                            }
+                            else {
+                                //else pick a safe move.
+                                targetTile = safeMoves[m_random.Next(0, safeMoves.Count)];
+                            }
+
+
+                            for(int x = 0; x < parsed.boardSize; x++)
+                            {
+                                for(int y = 0; y< parsed.boardSize; y++)
+                                {
+
+                                    Console.Write((int)m_worldRepresentation[x,y].m_blockType);
+                                }
+                                Console.Write("\n");
+                            }
+
+                            Console.Write("\n" + targetTile.X + " " + targetTile.Y + " " + targetTile + " \n");
+
+
+
                             startingTile.CostFromStart = 0;
-                            startingTile.EstimatedCostToGoal = HeuristicCalculation(startingTile, endingTile);
+                            endingTile = targetTile;
+                            if (endingTile == null)
+                            {
+                                startingTile.EstimatedCostToGoal = 0;
+                            }
+                            else {
+                                startingTile.EstimatedCostToGoal = HeuristicCalculation(startingTile, endingTile);
+                            }
                             float t = 0.0f;
+                            openSet.Add(startingTile);
+
                             while (openSet.Count > 0)
                             {
                                 AStarTile current = null;
@@ -259,7 +395,7 @@ namespace ConsoleApplication1
                                     }
                                 }
 
-                                
+
                                 openSet.Remove(current);
                                 closedSet.Add(current);
 
@@ -267,25 +403,11 @@ namespace ConsoleApplication1
                                 {
                                     continue;
                                 }
-                                if (current == endingTile)
-                                {
-                                    break;
-                                }
 
                                 HashSet<AStarTile> neighbors = new HashSet<AStarTile>();
 
                                 if (current.X - 1 > 0)
                                 {
-                                    if (current.Y - 1 > 0)
-                                    {
-                                        neighbors.Add(m_worldRepresentation[current.X - 1, current.Y - 1]);
-                                    }
-
-                                    if (current.Y + 1 < parsed.boardSize)
-                                    {
-                                        neighbors.Add(m_worldRepresentation[current.X - 1, current.Y + 1]);
-
-                                    }
                                     neighbors.Add(m_worldRepresentation[current.X - 1, current.Y]);
                                 }
                                 if (current.Y - 1 > 0)
@@ -301,16 +423,6 @@ namespace ConsoleApplication1
 
                                 if (current.X + 1 < parsed.boardSize)
                                 {
-                                    if (current.Y - 1 > 0)
-                                    {
-                                        neighbors.Add(m_worldRepresentation[current.X + 1, current.Y - 1]);
-                                    }
-
-                                    if (current.Y + 1 < parsed.boardSize)
-                                    {
-                                        neighbors.Add(m_worldRepresentation[current.X + 1, current.Y + 1]);
-                                    }
-
                                     neighbors.Add(m_worldRepresentation[current.X + 1, current.Y]);
                                 }
 
@@ -334,17 +446,66 @@ namespace ConsoleApplication1
                                     }
                                     neighbor.CameFrom = current;
                                     neighbor.CostFromStart = tentativeScore;
-                                    neighbor.EstimatedCostToGoal = HeuristicCalculation(neighbor, endingTile) + current.CostFromStart;
+                                    if (endingTile == null)
+                                    {
+                                        neighbor.EstimatedCostToGoal = current.CostFromStart;
+
+                                    }
+                                    else {
+                                        neighbor.EstimatedCostToGoal = HeuristicCalculation(neighbor, endingTile) + current.CostFromStart;
+                                    }
                                 }
                             }
 
+                            while (targetTile.CameFrom != m_playerTile && targetTile.CameFrom != null)
+                            {
+                                targetTile = targetTile.CameFrom;
+                            }
 
-                            //pick a safe move.
+                            Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + "\n");
+                            Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
+
+                            if (targetTile.X > m_playerTile.X)
+                            {
+                                chosenAction = "mr";
+                            }
+                            else if (targetTile.X < m_playerTile.X)
+                            {
+                                chosenAction = "ml";
+                            }
+                            else if (targetTile.Y < m_playerTile.Y)
+                            {
+                                chosenAction = "mu";
+                            }
+                            else if (targetTile.Y > m_playerTile.Y)
+                            {
+                                chosenAction = "md";
+                            }
+
+                            if (canBomb)
+                            {
+                                chosenAction = "b";
+                            }
+                            if (parsed.trailmap.Count > 0)
+                            {
+                                chosenAction = "";
+                            }
 
                             //find out which position maps to it
 
                             //move to that position
 
+                            Console.Write(parsed.playerID);
+                            Console.Write(parsed.gameID);
+                            request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + parsed.gameID);
+                            postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
+                            data = Encoding.ASCII.GetBytes(postData);
+                            request.Method = "POST";
+                            request.ContentType = "application/json";
+                            request.ContentLength = data.Length;
+
+
+                            Console.Write("\nAction is:" + chosenAction + "\n");
 
                             using (var stream = request.GetRequestStream())
                             {
@@ -356,12 +517,12 @@ namespace ConsoleApplication1
                         System.Threading.Thread.Sleep(1000);
                         Console.Write("Start Iteration");
                     } while (notComplete);
-
                 }
                 catch
                 {
 
                 }
+
 
 
                 /*var playerID = response.GetResponseHeader("playerID");
