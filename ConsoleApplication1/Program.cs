@@ -38,6 +38,79 @@ namespace ConsoleApplication1
 
     }
 
+    public class BombSearchState
+    {
+        private int m_movementLeft;
+        private int m_orientation;
+
+        private int m_x;
+        private int m_y;
+
+        private int m_piercesLeft;
+
+        public bool DestroyBlock()
+        {
+            m_piercesLeft--;
+            return m_piercesLeft > 0 ? true : false;
+        }
+
+        public int ChargesLeft
+        {
+            get
+            {
+                return m_movementLeft;
+            }
+        }
+        public int PiercesLeft
+        {
+            get
+            {
+                return m_piercesLeft;
+            }
+        }
+
+        public int X
+        {
+            get
+            {
+                return m_x;
+            }
+        }
+
+        public int Y
+        {
+            get
+            {
+                return m_y;
+            }
+        }
+
+        public int Orientation
+        {
+            get
+            {
+                return m_orientation;
+            }
+        }
+
+        public int MovementLeft
+        {
+            get
+            {
+                return m_movementLeft;
+            }
+        }
+
+        public BombSearchState(int charges, int piercingPower, int orientation, int x, int y)
+        {
+            m_movementLeft = charges;
+            m_orientation = orientation;
+            m_x = x;
+            m_y = y;
+            m_piercesLeft = piercingPower;
+        }
+    }
+
     public class AStarTile
     {
         public enum blockType
@@ -76,22 +149,6 @@ namespace ConsoleApplication1
             Y = y;
 
             isSafe = true;
-
-            foreach (KeyValuePair<string, Dictionary<string, int>> bomb in server.bombMap)
-            {
-                int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
-                int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
-
-                if (bombX == x)
-                {
-                    isSafe = false;
-                }
-
-                if (bombY == y)
-                {
-                    isSafe = false;
-                }
-            }
         }
     }
 
@@ -141,6 +198,7 @@ namespace ConsoleApplication1
                     {
                         using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                         {
+                            string chosenAction = "";
                             var responseString = reader.ReadToEnd();
                             Console.Write(responseString);
                             ServerResponse parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
@@ -154,6 +212,91 @@ namespace ConsoleApplication1
                                     m_worldRepresentation[x, y] = new AStarTile(x, y, parsed);
                                 }
                             }
+
+
+                            //TODO: move this search
+                            foreach (KeyValuePair<string, Dictionary<string, int>> bomb in parsed.bombMap)
+                            {
+                                int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
+                                int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
+                                //TODO: calculate if in range of bomb including portal traversal and blocking
+
+                                Queue<BombSearchState> explosionFrontier = new Queue<BombSearchState>();
+
+                                object object_bombRange;
+
+                                parsed.player.TryGetValue("bombRange", out object_bombRange);
+
+                                int int_bombRange = Convert.ToInt32(object_bombRange);
+
+                                object object_bombPiercing;
+
+                                parsed.player.TryGetValue("bombPierce", out object_bombPiercing);
+
+                                int int_bombPiercing = Convert.ToInt32(object_bombPiercing);
+
+                                explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 0, bombX, bombY));
+                                explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 1, bombX, bombY));
+                                explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 2, bombX, bombY));
+                                explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 3, bombX, bombY));
+
+                                while (explosionFrontier.Count > 0)
+                                {
+                                    BombSearchState current = explosionFrontier.Dequeue();
+
+                                    m_worldRepresentation[current.X, current.Y].isSafe = false;
+
+                                    //TODO: check for portals
+
+
+                                    if (m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.HardBlock)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.SoftBlock && !current.DestroyBlock())
+                                    {
+                                        continue;
+                                    }
+
+                                    switch (current.Orientation)
+                                    {
+                                        case 0:
+                                            if(current.X-1 < 0)
+                                            {
+                                                continue;
+                                            }
+
+                                            explosionFrontier.Enqueue(new BombSearchState(current.ChargesLeft, current.PiercesLeft, current.Orientation, current.X - 1, current.Y));
+                                            break;
+                                        case 1:
+                                            if (current.Y - 1 < 0)
+                                            {
+                                                continue;
+                                            }
+                                            explosionFrontier.Enqueue(new BombSearchState(current.ChargesLeft, current.PiercesLeft, current.Orientation, current.X, current.Y-1));
+                                            break;
+                                        case 2:
+                                            if (current.X + 1 >= parsed.boardSize)
+                                            {
+                                                continue;
+                                            }
+
+                                            explosionFrontier.Enqueue(new BombSearchState(current.ChargesLeft, current.PiercesLeft, current.Orientation, current.X + 1, current.Y));
+                                            break;
+                                        case 3:
+                                            if (current.Y + 1 >= parsed.boardSize)
+                                            {
+                                                continue;
+                                            }
+
+                                            explosionFrontier.Enqueue(new BombSearchState(current.ChargesLeft, current.PiercesLeft, current.Orientation, current.X, current.Y+1));
+                                            break;
+                                    }
+                                }
+                            }
+
+
 
                             gameNotCompleted = parsed.state != "complete";
 
@@ -242,11 +385,8 @@ namespace ConsoleApplication1
                                 {
                                     nextTiles.Enqueue(m_worldRepresentation[current.X, current.Y - 1]);
                                 }
-
                             }
 
-
-                            string chosenAction = "";
 
                             //if we can drop a bomb and survive do that
                             bool canBomb = false;
@@ -262,6 +402,7 @@ namespace ConsoleApplication1
                                 }
                             }
 
+                            //Pick your target tile
                             AStarTile targetTile = null;
                             if (safeMoves.Count == 0)
                             {
@@ -362,7 +503,6 @@ namespace ConsoleApplication1
 
                                 foreach (AStarTile neighbor in neighbors)
                                 {
-
                                     if (closedSet.Contains(neighbor))
                                     {
                                         continue;
@@ -378,6 +518,7 @@ namespace ConsoleApplication1
                                     {
                                         continue;
                                     }
+
                                     neighbor.CameFrom = current;
                                     neighbor.CostFromStart = tentativeScore;
                                     if (endingTile == null)
@@ -506,18 +647,8 @@ namespace ConsoleApplication1
                 }
                 catch
                 {
-
+                    Console.Write("\n An error was encountered \n");
                 }
-
-                /*var playerID = response.GetResponseHeader("playerID");
-                var gameID = response.GetResponseHeader("gameID");
-                while (response.GetResponseHeader("state") != "complete")
-                {
-                    request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + gameID);
-                    postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + playerID + "\", move\": \"b\" }";
-                    response = (HttpWebResponse)request.GetResponse();
-                }*/
-                // var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
             }
         }
     }
