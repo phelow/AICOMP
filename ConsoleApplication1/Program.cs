@@ -62,11 +62,11 @@ namespace ConsoleApplication1
         public AStarTile(int x, int y, ServerResponse server)
         {
             m_blockType = blockType.Passable;
-            if (1 == server.hardBlockBoard[x + y * server.boardSize])
+            if (1 == server.hardBlockBoard[y + x * server.boardSize])
             {
                 m_blockType = blockType.HardBlock;
             }
-            if (1 == server.softBlockBoard[x + y * server.boardSize])
+            if (1 == server.softBlockBoard[y + x * server.boardSize])
             {
                 m_blockType = blockType.SoftBlock;
             }
@@ -115,11 +115,10 @@ namespace ConsoleApplication1
 
         static void PlayGame()
         {
-            
+
             while (true)
             {
-                try
-                {
+                try {
                     Console.Write("There was a bug");
                     var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
 
@@ -151,7 +150,7 @@ namespace ConsoleApplication1
                             {
                                 for (int y = 0; y < parsed.boardSize; y++)
                                 {
-                                    m_worldRepresentation[y,x] = new AStarTile(y,x, parsed);
+                                    m_worldRepresentation[x, y] = new AStarTile(x, y, parsed);
                                 }
                             }
 
@@ -264,79 +263,30 @@ namespace ConsoleApplication1
 
                             foreach (AStarTile tile in safeMoves)
                             {
-                                bool orientationWorks = true;
-                                bool hasBenefit = false;
-
-                                for(int x = tile.X; x > tile.X-3; x--)
-                                {
-                                    if(m_worldRepresentation[x,tile.Y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == x && m_opponentTile.Y == tile.Y))
-                                    {
-                                        hasBenefit = true;
-                                    }
-                                    if (m_worldRepresentation[x, tile.Y].m_blockType == AStarTile.blockType.HardBlock)
-                                    {
-                                        break;
-                                    }
-                                }
-
-                                for (int x = tile.X; x < tile.X + 3; x++)
-                                {
-                                    if (m_worldRepresentation[x, tile.Y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == x && m_opponentTile.Y == tile.Y))
-                                    {
-                                        hasBenefit = true;
-                                    }
-                                    if (m_worldRepresentation[x, tile.Y].m_blockType == AStarTile.blockType.HardBlock)
-                                    {
-                                        break;
-                                    }
-                                }
-
-                                for (int y = tile.Y; y > tile.Y - 3; y--)
-                                {
-                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == tile.X && m_opponentTile.Y == y))
-                                    {
-                                        hasBenefit = true;
-                                    }
-                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.HardBlock)
-                                    {
-                                        break;
-                                    }
-                                }
+                                //bool orientationWorks = true;
 
 
-                                for (int y = tile.Y; y < tile.Y + 3; y++)
-                                {
-                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == tile.X && m_opponentTile.Y == y))
-                                    {
-                                        hasBenefit = true;
-                                    }
-                                    if (m_worldRepresentation[tile.X, y].m_blockType == AStarTile.blockType.HardBlock)
-                                    {
-                                        break;
-                                    }
-                                }
+                                //if (int_orientation == 0 && tile.X < m_playerTile.X)
+                                //{
+                                //    orientationWorks = false;
+                                //}
 
-                                if (int_orientation == 0 && tile.X < m_playerTile.X)
-                                {
-                                    orientationWorks = false;
-                                }
+                                //if (int_orientation == 1 && tile.Y < m_playerTile.Y)
+                                //{
+                                //    orientationWorks = false;
+                                //}
 
-                                if (int_orientation == 1 && tile.Y < m_playerTile.Y)
-                                {
-                                    orientationWorks = false;
-                                }
-
-                                if (int_orientation == 2 && tile.X > m_playerTile.X)
-                                {
-                                    orientationWorks = false;
-                                }
-                                if (int_orientation == 3 && tile.Y < m_playerTile.Y)
-                                {
-                                    orientationWorks = false;
-                                }
+                                //if (int_orientation == 2 && tile.X > m_playerTile.X)
+                                //{
+                                //    orientationWorks = false;
+                                //}
+                                //if (int_orientation == 3 && tile.Y < m_playerTile.Y)
+                                //{
+                                //    orientationWorks = false;
+                                //}
 
 
-                                if (tile.X != m_playerTile.X && tile.Y != m_playerTile.Y && parsed.bombMap.Count == 0 && HeuristicCalculation(tile, m_playerTile) < 3 && orientationWorks && hasBenefit)
+                                if (tile.X != m_playerTile.X && tile.Y != m_playerTile.Y && parsed.bombMap.Count == 0 && HeuristicCalculation(tile, m_playerTile) <= 3/* && orientationWorks*/)
                                 {
                                     canBomb = true;
                                 }
@@ -354,16 +304,29 @@ namespace ConsoleApplication1
                             }
                             else {
                                 //else pick a safe move.
+
+
                                 targetTile = safeMoves[m_random.Next(0, safeMoves.Count)];
+
+                                if (parsed.bombMap.Count > 0)
+                                {
+                                    for (int i = 0; i < safeMoves.Count; i++)
+                                    { //TODO: always pick the lowest cost
+                                        if (HeuristicCalculation(m_playerTile, targetTile) > HeuristicCalculation(m_playerTile, safeMoves[i]))
+                                        {
+                                            targetTile = safeMoves[i];
+                                        }
+                                    }
+                                }
                             }
 
 
-                            for(int x = 0; x < parsed.boardSize; x++)
+                            for (int x = 0; x < parsed.boardSize; x++)
                             {
-                                for(int y = 0; y< parsed.boardSize; y++)
+                                for (int y = 0; y < parsed.boardSize; y++)
                                 {
 
-                                    Console.Write((int)m_worldRepresentation[x,y].m_blockType);
+                                    Console.Write((int)m_worldRepresentation[x, y].m_blockType);
                                 }
                                 Console.Write("\n");
                             }
@@ -482,7 +445,59 @@ namespace ConsoleApplication1
                                 chosenAction = "md";
                             }
 
-                            if (canBomb)
+                            bool hasBenefit = false;
+
+
+                            for (int x = m_playerTile.X; x > Math.Max(m_playerTile.X - 3, 0); x--)
+                            {
+                                if (m_worldRepresentation[x, m_playerTile.Y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == x && m_opponentTile.Y == m_playerTile.Y))
+                                {
+                                    hasBenefit = true;
+                                }
+                                if (m_worldRepresentation[x, m_playerTile.Y].m_blockType == AStarTile.blockType.HardBlock)
+                                {
+                                    break;
+                                }
+                            }
+
+                            for (int x = m_playerTile.X; x < Math.Min(m_playerTile.X + 3, parsed.boardSize); x++)
+                            {
+                                if (m_worldRepresentation[x, m_playerTile.Y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == x && m_opponentTile.Y == m_playerTile.Y))
+                                {
+                                    hasBenefit = true;
+                                }
+                                if (m_worldRepresentation[x, m_playerTile.Y].m_blockType == AStarTile.blockType.HardBlock)
+                                {
+                                    break;
+                                }
+                            }
+
+                            for (int y = m_playerTile.Y; y > Math.Max(m_playerTile.Y - 3, 0); y--)
+                            {
+                                if (m_worldRepresentation[m_playerTile.X, y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == m_playerTile.X && m_opponentTile.Y == y))
+                                {
+                                    hasBenefit = true;
+                                }
+                                if (m_worldRepresentation[m_playerTile.X, y].m_blockType == AStarTile.blockType.HardBlock)
+                                {
+                                    break;
+                                }
+                            }
+
+
+                            for (int y = m_playerTile.Y; y < Math.Min(m_playerTile.Y + 3, parsed.boardSize); y++)
+                            {
+                                if (m_worldRepresentation[m_playerTile.X, y].m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == m_playerTile.X && m_opponentTile.Y == y))
+                                {
+                                    hasBenefit = true;
+                                }
+                                if (m_worldRepresentation[m_playerTile.X, y].m_blockType == AStarTile.blockType.HardBlock)
+                                {
+                                    break;
+                                }
+                            }
+
+                            if (canBomb && hasBenefit)
                             {
                                 chosenAction = "b";
                             }
@@ -517,13 +532,13 @@ namespace ConsoleApplication1
                         System.Threading.Thread.Sleep(1000);
                         Console.Write("Start Iteration");
                     } while (notComplete);
+
+
                 }
                 catch
                 {
 
                 }
-
-
 
                 /*var playerID = response.GetResponseHeader("playerID");
                 var gameID = response.GetResponseHeader("gameID");
