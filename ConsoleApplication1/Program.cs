@@ -128,7 +128,7 @@ namespace ConsoleApplication1
 
         public int cost = 0;
         private int turnsUntilDangerous = -1; //if this is 0 then it is currently dangerous
-        
+
         public bool IsSuperSafe()
         {
             return turnsUntilDangerous == -1;
@@ -141,7 +141,7 @@ namespace ConsoleApplication1
 
         public bool SafeOnStep(int step)
         {
-            if(turnsUntilDangerous == -1)
+            if (turnsUntilDangerous == -1)
             {
                 return true;
             }
@@ -151,7 +151,7 @@ namespace ConsoleApplication1
 
         public void SetDangerous(int newDanger)
         {
-            if(newDanger < turnsUntilDangerous || turnsUntilDangerous == -1)
+            if (newDanger < turnsUntilDangerous || turnsUntilDangerous == -1)
             {
                 turnsUntilDangerous = newDanger;
             }
@@ -205,13 +205,13 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if(m_linkedPortal == null)
+                if (m_linkedPortal == null)
                 {
                     return null;
                 }
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft -1, inlet.PiercesLeft, m_linkedPortal.m_orientation, m_linkedPortal.m_x, m_linkedPortal.m_y); //TODO: check if charges is right
+                return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, m_linkedPortal.m_orientation, m_linkedPortal.m_x, m_linkedPortal.m_y); //TODO: check if charges is right
 
             }
 
@@ -432,12 +432,12 @@ namespace ConsoleApplication1
 
                         List<Portal> playerTwoPortals = new List<Portal>();
 
-                        foreach (KeyValuePair<string,Dictionary<string, Dictionary<string, object>>> p in m_parsed.portalMap)
+                        foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, object>>> p in m_parsed.portalMap)
                         {
                             int[] coords = p.Key.Split(',').Select(int.Parse).ToArray();
                             Dictionary<string, object> dict;
 
-                            foreach (KeyValuePair<string,Dictionary<string, object>> kvp in p.Value)
+                            foreach (KeyValuePair<string, Dictionary<string, object>> kvp in p.Value)
                             {
                                 object object_owner;
                                 kvp.Value.TryGetValue("owner", out object_owner);
@@ -447,7 +447,7 @@ namespace ConsoleApplication1
                                 kvp.Value.TryGetValue("portalColor", out object_color);
                                 string string_color = object_color.ToString();
 
-                                if(int_owner == 0)
+                                if (int_owner == 0)
                                 {
                                     playerOnePortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
                                 }
@@ -461,7 +461,7 @@ namespace ConsoleApplication1
 
                         }
 
-                        if(playerOnePortals.Count == 2)
+                        if (playerOnePortals.Count == 2)
                         {
                             Portal.LinkPortals(playerOnePortals[0], playerOnePortals[1]);
                         }
@@ -495,7 +495,7 @@ namespace ConsoleApplication1
                             //TODO: calculate if in range of bomb including portal traversal and blocking
                             List<AStarTile> bombedSquares = GetBombedSquares(bombX, bombY);
 
-                            foreach(AStarTile tile in bombedSquares)
+                            foreach (AStarTile tile in bombedSquares)
                             {
                                 int tick;
                                 bomb.Value.TryGetValue("tick", out tick);
@@ -503,11 +503,11 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        if(m_parsed.trailmap.Count > 0)
+                        if (m_parsed.trailmap.Count > 0)
                         {
-                            foreach(KeyValuePair<string,object> kvp in m_parsed.trailmap)
+                            foreach (KeyValuePair<string, object> kvp in m_parsed.trailmap)
                             {
-                                int [] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
+                                int[] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
 
                                 m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(0);
                             }
@@ -570,12 +570,12 @@ namespace ConsoleApplication1
                                 continue;
                             }
 
-                            if (current.SafeOnStep(HeuristicCalculation(m_playerTile,current)*2))
+                            if (current.SafeOnStep(HeuristicCalculation(m_playerTile, current) * 2))
                             {
                                 safeMoves.Add(current);
                             }
 
-                            
+
                             foreach (Portal p in portals)
                             {
                                 AStarTile outlet = p.GetTileOutlet(current);
@@ -627,27 +627,29 @@ namespace ConsoleApplication1
 
                         List<AStarTile> superSafeMoves = safeMoves.Where(item => item.IsSuperSafe()).ToList(); //moves that are always safe
 
-                        //Pick your target tile
-                        AStarTile targetTile = null;
-                        if (superSafeMoves.Count == 0)
+                        List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
+
+                        foreach (AStarTile tile in superSafeMoves)
                         {
-                            if (safeMoves.Count > 0)
+                            bool isSuperDuperSafe = true;
+                            AStarTile it = tile;
+                            do
                             {
-                                targetTile = safeMoves[0];
+                                if (!safeMoves.Contains(it))
+                                {
+                                    isSuperDuperSafe = false;
+                                }
+                                it = it.CameFrom;
+                            } while (it != null && it.CameFrom != m_playerTile && it != m_playerTile);
+
+                            if (isSuperDuperSafe)
+                            {
+                                superDuperSafeMoves.Add(tile);
                             }
                         }
-                        else if (superSafeMoves.Count == 1)
-                        {
-                            targetTile = superSafeMoves[0];
-                        }
-                        else {
-                            //else pick a safe move.
 
-
-                            targetTile = superSafeMoves[m_random.Next(0, superSafeMoves.Count)];
-                            
-                        }
-
+                        //Pick your target tile
+                        AStarTile targetTile = superDuperSafeMoves[m_random.Next(0, superDuperSafeMoves.Count)];
 
                         for (int x = 0; x < m_parsed.boardSize; x++)
                         {
@@ -772,6 +774,12 @@ namespace ConsoleApplication1
 
                         Console.Write("\nSuperSafeMoves:");
                         foreach (AStarTile safeMove in superSafeMoves)
+                        {
+                            Console.Write("\n" + safeMove.X + " " + safeMove.Y);
+                        }
+
+                        Console.Write("\nSuperDuperSafeMoves:");
+                        foreach (AStarTile safeMove in superDuperSafeMoves)
                         {
                             Console.Write("\n" + safeMove.X + " " + safeMove.Y);
                         }
