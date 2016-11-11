@@ -725,7 +725,7 @@ namespace ConsoleApplication1
 
                             foreach (AStarTile haven in safeHavens)
                             {
-                                if (HeuristicCalculation(m_playerTile, haven) <= 2 && m_parsed.bombMap.Count == 0 && haven.X != m_playerTile.X && haven.Y != m_playerTile.Y)//TODO: calculate how many bombs you have and drop that many.
+                                if (HeuristicCalculation(m_playerTile, haven) <= 3 && m_parsed.bombMap.Count == 0 && haven.X != m_playerTile.X && haven.Y != m_playerTile.Y)//TODO: calculate how many bombs you have and drop that many.
                                 {
                                     canBomb = true;
                                 }
