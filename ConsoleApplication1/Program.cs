@@ -351,7 +351,9 @@ namespace ConsoleApplication1
                 BombSearchState current = explosionFrontier.Dequeue();
 
                 Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
-                if (current.ChargesLeft == -2) //TODO: THISISHACKPLZFIX
+
+                bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
+                if (current.ChargesLeft == 1) //TODO: THISISHACKPLZFIX
                 {
                     continue;
                 }
@@ -362,11 +364,10 @@ namespace ConsoleApplication1
                     BombSearchState portalState = p.GetBombOutlet(current);
                     if (portalState != null)
                     {
+                        Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y +" " + portalState.X + " " + portalState.Y +" left:" + portalState.ChargesLeft);
                         explosionFrontier.Enqueue(portalState);
                     }
                 }
-
-                bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
 
 
                 if (shouldContinue)
