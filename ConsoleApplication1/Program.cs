@@ -539,8 +539,8 @@ namespace ConsoleApplication1
                                     bomb.Value.TryGetValue("tick", out tick);
                                     Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
 
-                                    tile.SetDangerous(tick);
-                                    tile.SetDangerous(tick + 1);
+                                    tile.SetDangerous(tick + 3);
+                                    tile.SetDangerous(tick + 2);
                                 }
                             }
 
@@ -725,7 +725,7 @@ namespace ConsoleApplication1
 
                             foreach (AStarTile haven in safeHavens)
                             {
-                                if (HeuristicCalculation(m_playerTile, haven) <= 2 && m_parsed.bombMap.Count == 0 && haven.X != m_playerTile.X && haven.Y != m_playerTile.Y)//TODO: calculate how many bombs you have and drop that many.
+                                if (HeuristicCalculation(m_playerTile, haven) <= 3 && m_parsed.bombMap.Count == 0)//TODO: calculate how many bombs you have and drop that many.
                                 {
                                     canBomb = true;
                                 }
