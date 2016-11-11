@@ -333,7 +333,7 @@ namespace ConsoleApplication1
             while (explosionFrontier.Count > 0)
             {
                 BombSearchState current = explosionFrontier.Dequeue();
-                if (current.ChargesLeft == -1)
+                if (current.ChargesLeft == 0)
                 {
                     continue;
                 }
@@ -514,6 +514,7 @@ namespace ConsoleApplication1
                             {
                                 int tick;
                                 bomb.Value.TryGetValue("tick", out tick);
+                                tile.SetDangerous(tick-1);
                                 tile.SetDangerous(tick);
                                 tile.SetDangerous(tick+1);
                                 tile.SetDangerous(tick + 2);
@@ -679,7 +680,7 @@ namespace ConsoleApplication1
 
                             if (isSuperDuperSafe)
                             {
-                                Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is completely safe if timed correctly.");
+                                Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is safe if timed correctly.");
                                 superDuperSafeMoves.Add(tile);
                             }
                         }
@@ -691,7 +692,7 @@ namespace ConsoleApplication1
 
                         foreach(AStarTile haven in safeHavens)
                         {
-                            if(HeuristicCalculation(m_playerTile,haven) == 2 && m_parsed.bombMap.Count == 0)//TODO: calculate how many bombs you have and drop that many.
+                            if(HeuristicCalculation(m_playerTile,haven) <= 2 && m_parsed.bombMap.Count == 0 && haven.X != m_playerTile.X && haven.Y != m_playerTile.Y)//TODO: calculate how many bombs you have and drop that many.
                             {
                                 canBomb = true;
                             }
