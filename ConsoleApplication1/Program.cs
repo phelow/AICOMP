@@ -126,7 +126,7 @@ namespace ConsoleApplication1
 
         public blockType m_blockType;
 
-        public int cost = 0;
+        public int cost = -1;
         private List<int> turnsUntilDangerous; //if this is 0 then it is currently dangerous
 
         public bool IsSuperSafe()
@@ -661,18 +661,18 @@ namespace ConsoleApplication1
                             AStarTile it = tile;
                             do
                             {
-                                if (!it.SafeOnStep((it.cost+1) * 2)) //TODO: consider passing manual check here
+                                if (!it.SafeOnStep((it.cost) * 2)) //TODO: consider passing manual check here
                                 {
                                     isSuperDuperSafe = false;
                                 }
                                 else
                                 {
-                                    Console.Write("\n " + it.X +" " + it.Y + " is compleely safe on turn " + it.cost*2 + " the only time when the player would cross it");
+                                    Console.Write("\n " + it.X +" " + it.Y + " is compleely safe on turn " + ((it.cost +1)*2) + " the only time when the player would cross it");
                                 }
                                 it = it.CameFrom;
                             } while (it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
 
-                            if (!it.SafeOnStep((it.cost+1) * 2))
+                            if (!it.SafeOnStep((it.cost) * 2))
                             {
                                 isSuperDuperSafe = false;
                             }
