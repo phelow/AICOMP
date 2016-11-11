@@ -134,7 +134,7 @@ namespace ConsoleApplication1
             return turnsUntilDangerous.Count == 0;
         }
 
-        public List<int> GetDanerousTurns()
+        public List<int> GetDangerousTurns()
         {
             return turnsUntilDangerous;
         }
@@ -539,7 +539,7 @@ namespace ConsoleApplication1
                                     bomb.Value.TryGetValue("tick", out tick);
                                     Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
 
-                                    tile.SetDangerous(tick + 3);
+                                    tile.SetDangerous(tick + 1);
                                     tile.SetDangerous(tick + 2);
                                 }
                             }
@@ -687,7 +687,7 @@ namespace ConsoleApplication1
                                 AStarTile it = tile;
                                 do
                                 {
-                                    if (!it.SafeOnStep((it.cost) * 2) || !it.SafeOnStep((it.cost) * 2 + 1)) //TODO: consider passing manual check here
+                                    if (!it.SafeOnStep((it.cost) * 2)) //TODO: consider passing manual check here
                                     {
                                         Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost) * 2) + " the only time when the player would cross it");
                                         isSuperDuperSafe = false;
@@ -698,7 +698,7 @@ namespace ConsoleApplication1
                                     }
                                     Console.Write("\n\t" + it.X + " " + it.Y + " is not safe on:");
 
-                                    foreach (int dangerousTurns in it.GetDanerousTurns())
+                                    foreach (int dangerousTurns in it.GetDangerousTurns())
                                     {
                                         Console.Write("\n\t\t" + dangerousTurns);
                                     }
@@ -706,7 +706,7 @@ namespace ConsoleApplication1
                                     it = it.CameFrom;
                                 } while (isSuperDuperSafe == true && it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
 
-                                if (!it.SafeOnStep((it.cost) * 2) || !it.SafeOnStep((it.cost) * 2 - 1))
+                                if (!it.SafeOnStep((it.cost) * 2))
                                 {
                                     isSuperDuperSafe = false;
                                 }
