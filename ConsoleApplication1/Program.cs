@@ -226,7 +226,7 @@ namespace ConsoleApplication1
                 }
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, m_linkedPortal.m_orientation, m_linkedPortal.m_x, m_linkedPortal.m_y); //TODO: check if charges is right
+                return new BombSearchState(inlet.ChargesLeft -1, inlet.PiercesLeft, m_linkedPortal.m_orientation, m_linkedPortal.m_x, m_linkedPortal.m_y); //TODO: check if charges is right
 
             }
 
@@ -262,6 +262,11 @@ namespace ConsoleApplication1
                     return null;
                 }
 
+                if(m_linkedPortal == null)
+                {
+                    return null;
+                }
+
                 return m_linkedPortal.OutletAStarTile();
 
             }
@@ -287,7 +292,7 @@ namespace ConsoleApplication1
             }
         }
 
-        static string[] m_actions = { "mu", "ml", "md", "mr", "tu", "tl", "td", "tr", "b", "op", "bp" };
+        static string[] m_actions = { /*"mu", "ml", "md", "mr", "tu", "tl", "td", "tr", "b", */"op", "bp" };
         static string[] m_buyActions = { "buy_count", "buy_pierce", "buy_range", "buy_block" };
         static Random m_random;
         static AStarTile m_playerTile;
@@ -317,7 +322,7 @@ namespace ConsoleApplication1
 
             m_parsed.player.TryGetValue("bombRange", out object_bombRange);
 
-            int int_bombRange = Convert.ToInt32(object_bombRange);
+            int int_bombRange = Convert.ToInt32(object_bombRange) + 1;
 
             object object_bombPiercing;
 
@@ -656,6 +661,7 @@ namespace ConsoleApplication1
 
                         List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
 
+
                         foreach (AStarTile tile in superSafeMoves)
                         {
                             bool isSuperDuperSafe = true;
@@ -879,6 +885,8 @@ namespace ConsoleApplication1
                             chosenAction = "b";
                         }
 
+
+                        if (m_parsed.bombMap.Count == 0 && m_random.Next(10) < 3) { chosenAction = m_actions[m_random.Next(m_actions.Length)]; }
                         //find out which position maps to it
 
                         //move to that position
