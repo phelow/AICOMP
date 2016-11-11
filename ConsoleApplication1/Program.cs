@@ -127,11 +127,11 @@ namespace ConsoleApplication1
         public blockType m_blockType;
 
         public int cost = 0;
-        private int turnsUntilDangerous = -1; //if this is 0 then it is currently dangerous
+        private List<int> turnsUntilDangerous; //if this is 0 then it is currently dangerous
 
         public bool IsSuperSafe()
         {
-            return turnsUntilDangerous == -1;
+            return turnsUntilDangerous.Count == 0;
         }
 
         public bool IsSafe()
@@ -141,20 +141,34 @@ namespace ConsoleApplication1
 
         public bool SafeOnStep(int step)
         {
-            if (turnsUntilDangerous == -1)
+            if (turnsUntilDangerous.Count == 0)
             {
+                Console.Write("\n" + X + " " + Y + " is completely safe");
                 return true;
             }
 
-            return step != turnsUntilDangerous;
+            foreach (int dangerousTurn in turnsUntilDangerous)
+            {
+                if (dangerousTurn == step) //TODO: This is extremely sloppy coding please fix this
+                {
+                    Console.Write("\n" + X + " " + Y + " is not safe " + dangerousTurn + " is too similar to " + step);
+                    return false;
+                }
+            }
+
+            Console.Write("\n" + X + " " + Y + " is safe on turn" + step + " it is unsafe on:");
+
+            foreach (int dangerousTurn in turnsUntilDangerous)
+            {
+                Console.Write("\n" + dangerousTurn);
+            }
+
+            return true; //TODO: this seems hack, re-evaluate and talk to darwin.
         }
 
         public void SetDangerous(int newDanger)
         {
-            if (newDanger < turnsUntilDangerous || turnsUntilDangerous == -1)
-            {
-                turnsUntilDangerous = newDanger;
-            }
+            turnsUntilDangerous.Add(newDanger);
         }
 
         public int X;
@@ -166,6 +180,7 @@ namespace ConsoleApplication1
 
         public AStarTile(int x, int y, ServerResponse server)
         {
+            turnsUntilDangerous = new List<int>();
             m_blockType = blockType.Passable;
             if (1 == server.hardBlockBoard[y + x * server.boardSize])
             {
@@ -500,6 +515,10 @@ namespace ConsoleApplication1
                                 int tick;
                                 bomb.Value.TryGetValue("tick", out tick);
                                 tile.SetDangerous(tick);
+                                tile.SetDangerous(tick+1);
+                                tile.SetDangerous(tick + 2);
+
+                                tile.SetDangerous(tick + 3);
                             }
                         }
 
@@ -510,6 +529,8 @@ namespace ConsoleApplication1
                                 int[] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
 
                                 m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(0);
+                                m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(1);
+                                m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(2); //TODO SEEMS HACKISH
                             }
                         }
 
@@ -551,6 +572,7 @@ namespace ConsoleApplication1
                         HashSet<AStarTile> visited = new HashSet<AStarTile>();
                         Queue<AStarTile> nextTiles = new Queue<AStarTile>();
 
+                        m_playerTile.cost = 0;
                         nextTiles.Enqueue(m_playerTile);
 
                         //BFS search to find all safe tiles
@@ -570,42 +592,54 @@ namespace ConsoleApplication1
                                 continue;
                             }
 
-                            if (current.SafeOnStep(HeuristicCalculation(m_playerTile, current) * 2))
+                            if (current.SafeOnStep(current.cost * 2))
                             {
                                 safeMoves.Add(current);
                             }
 
+                            List<AStarTile> neighbors = new List<AStarTile>();
 
                             foreach (Portal p in portals)
                             {
                                 AStarTile outlet = p.GetTileOutlet(current);
                                 if (outlet != null)
                                 {
-                                    nextTiles.Enqueue(outlet);
+                                    neighbors.Add(outlet);
                                 }
                             }
 
 
                             if (current.X + 1 < m_parsed.boardSize)
                             {
-                                nextTiles.Enqueue(m_worldRepresentation[current.X + 1, current.Y]);
+                                neighbors.Add(m_worldRepresentation[current.X + 1, current.Y]);
                             }
 
                             if (current.Y + 1 < m_parsed.boardSize)
                             {
-                                nextTiles.Enqueue(m_worldRepresentation[current.X, current.Y + 1]);
+                                neighbors.Add(m_worldRepresentation[current.X, current.Y + 1]);
                             }
-
-
-
+                            
                             if (current.X - 1 > 0)
                             {
-                                nextTiles.Enqueue(m_worldRepresentation[current.X - 1, current.Y]);
+                                neighbors.Add(m_worldRepresentation[current.X - 1, current.Y]);
                             }
 
                             if (current.Y - 1 > 0)
                             {
-                                nextTiles.Enqueue(m_worldRepresentation[current.X, current.Y - 1]);
+                                neighbors.Add(m_worldRepresentation[current.X, current.Y - 1]);
+                            }
+
+                            foreach (AStarTile neighbor in neighbors)
+                            {
+                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                {
+                                    neighbor.CameFrom = current;
+                                }
+                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                                {
+                                    neighbor.cost = current.cost + 1;
+                                }
+                                nextTiles.Enqueue(neighbor);
                             }
                         }
 
@@ -615,14 +649,6 @@ namespace ConsoleApplication1
                         object orientation;
                         m_parsed.player.TryGetValue("orientation", out orientation);
                         int int_orientation = Convert.ToInt32(orientation);
-
-                        foreach (AStarTile tile in safeMoves)
-                        {
-                            if (tile.X != m_playerTile.X && tile.Y != m_playerTile.Y && m_parsed.bombMap.Count == 0 && HeuristicCalculation(tile, m_playerTile) <= 3/* && orientationWorks*/)
-                            {
-                                canBomb = true;
-                            }
-                        }
 
 
                         List<AStarTile> superSafeMoves = safeMoves.Where(item => item.IsSuperSafe()).ToList(); //moves that are always safe
@@ -635,21 +661,52 @@ namespace ConsoleApplication1
                             AStarTile it = tile;
                             do
                             {
-                                if (!safeMoves.Contains(it))
+                                if (!it.SafeOnStep((it.cost+1) * 2)) //TODO: consider passing manual check here
                                 {
                                     isSuperDuperSafe = false;
                                 }
+                                else
+                                {
+                                    Console.Write("\n " + it.X +" " + it.Y + " is compleely safe on turn " + it.cost*2 + " the only time when the player would cross it");
+                                }
                                 it = it.CameFrom;
-                            } while (it != null && it.CameFrom != m_playerTile && it != m_playerTile);
+                            } while (it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
+
+                            if (!it.SafeOnStep((it.cost+1) * 2))
+                            {
+                                isSuperDuperSafe = false;
+                            }
 
                             if (isSuperDuperSafe)
                             {
+                                Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is completely safe if timed correctly.");
                                 superDuperSafeMoves.Add(tile);
                             }
                         }
 
+                        List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y);
+
+                        List<AStarTile> safeHavens = superDuperSafeMoves.Except(bTiles).ToList();
+                        
+
+                        foreach(AStarTile haven in safeHavens)
+                        {
+                            if(HeuristicCalculation(m_playerTile,haven) == 2 && m_parsed.bombMap.Count == 0)//TODO: calculate how many bombs you have and drop that many.
+                            {
+                                canBomb = true;
+                            }
+                        }
+                        
+
+                        AStarTile targetTile;
                         //Pick your target tile
-                        AStarTile targetTile = superDuperSafeMoves[m_random.Next(0, superDuperSafeMoves.Count)];
+                        if (superDuperSafeMoves.Count == 0)
+                        {
+                            targetTile = m_playerTile;
+                        }
+                        else {
+                            targetTile = superDuperSafeMoves[m_random.Next(0, superDuperSafeMoves.Count)];
+                        }
 
                         for (int x = 0; x < m_parsed.boardSize; x++)
                         {
@@ -665,6 +722,7 @@ namespace ConsoleApplication1
 
                         HashSet<AStarTile> openSet = new HashSet<AStarTile>(); //the set of currently discovered nodes to be evaluated
                         m_playerTile.CostFromStart = 0;
+
                         endingTile = targetTile;
                         if (endingTile == null)
                         {
@@ -747,20 +805,16 @@ namespace ConsoleApplication1
                                 {
                                     continue;
                                 }
-
-                                neighbor.CameFrom = current;
-                                neighbor.CostFromStart = tentativeScore;
-                                if (endingTile == null)
+                                if (neighbor.CameFrom == null) //TODO: HACKFIXPLZFIX
                                 {
-                                    neighbor.EstimatedCostToGoal = current.CostFromStart;
+                                    neighbor.CameFrom = current;
+                                    neighbor.CostFromStart = tentativeScore;
+                                }
+                                neighbor.EstimatedCostToGoal = HeuristicCalculation(neighbor, endingTile) + current.CostFromStart;
 
-                                }
-                                else {
-                                    neighbor.EstimatedCostToGoal = HeuristicCalculation(neighbor, endingTile) + current.CostFromStart;
-                                }
                             }
                         }
-
+                        AStarTile origTargetTile = targetTile;
                         while (targetTile.CameFrom != m_playerTile && targetTile.CameFrom != null)
                         {
                             targetTile = targetTile.CameFrom;
@@ -787,7 +841,12 @@ namespace ConsoleApplication1
                         Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + "\n");
                         Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
 
-                        if (targetTile.X > m_playerTile.X)
+                        if (origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
+                        {
+                            chosenAction = "";
+                        }
+
+                        else if (targetTile.X > m_playerTile.X)
                         {
                             chosenAction = "mr";
                         }
