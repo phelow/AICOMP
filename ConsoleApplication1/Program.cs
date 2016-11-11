@@ -315,7 +315,7 @@ namespace ConsoleApplication1
 
         static void Main(string[] args)
         {
-            m_random = new Random();
+            m_random = new Random(0);
             PlayGame();
         }
         static int HeuristicCalculation(AStarTile from, AStarTile to)
@@ -351,7 +351,7 @@ namespace ConsoleApplication1
                 BombSearchState current = explosionFrontier.Dequeue();
 
                 Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
-                if (current.ChargesLeft == -1) //TODO: THISISHACKPLZFIX
+                if (current.ChargesLeft == -2) //TODO: THISISHACKPLZFIX
                 {
                     continue;
                 }
