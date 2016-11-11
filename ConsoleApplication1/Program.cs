@@ -216,6 +216,11 @@ namespace ConsoleApplication1
             public int m_owner;
             public BombSearchState GetBombOutlet(BombSearchState inlet)
             {
+                if(m_x != inlet.X || m_y != inlet.Y)
+                {
+                    return null;
+                }
+
                 if (!(inlet.Orientation == 0 && this.m_orientation == 2) /*inlet is left and this is right*/
                     || (inlet.Orientation == 2 && this.m_orientation == 0 /*inlet is right and this is left*/
                     || (inlet.Orientation == 1 && this.m_orientation == 3) /*inlet is up and this is down*/
@@ -346,7 +351,7 @@ namespace ConsoleApplication1
                 BombSearchState current = explosionFrontier.Dequeue();
 
                 Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
-                if (current.ChargesLeft == -1)
+                if (current.ChargesLeft == -1) //TODO: THISISHACKPLZFIX
                 {
                     continue;
                 }
@@ -358,9 +363,10 @@ namespace ConsoleApplication1
                     if (portalState != null)
                     {
                         explosionFrontier.Enqueue(portalState);
-                        shouldContinue = true;
                     }
                 }
+
+                bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
 
 
                 if (shouldContinue)
@@ -368,8 +374,6 @@ namespace ConsoleApplication1
                     continue;
                 }
 
-
-                bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
 
                 if (m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.HardBlock)
                 {
