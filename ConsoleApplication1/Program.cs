@@ -523,8 +523,6 @@ namespace ConsoleApplication1
                                 tile.SetDangerous(tick);
                                 tile.SetDangerous(tick+1);
                                 tile.SetDangerous(tick + 2);
-
-                                tile.SetDangerous(tick + 3);
                             }
                         }
 
@@ -674,7 +672,7 @@ namespace ConsoleApplication1
                                 }
                                 else
                                 {
-                                    Console.Write("\n " + it.X +" " + it.Y + " is compleely safe on turn " + ((it.cost +1)*2) + " the only time when the player would cross it");
+                                    Console.Write("\n " + it.X +" " + it.Y + " is compleely safe on turn " + ((it.cost+1)*2) + " the only time when the player would cross it");
                                 }
                                 it = it.CameFrom;
                             } while (it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
