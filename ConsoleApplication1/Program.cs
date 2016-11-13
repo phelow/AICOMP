@@ -129,7 +129,11 @@ namespace ConsoleApplication1
         public blockType m_blockType;
 
         public int cost = -1;
+        public int m_numTargets;
+
         private List<int> turnsUntilDangerous; //if this is 0 then it is currently dangerous
+
+
 
         public bool IsSuperSafe()
         {
@@ -477,7 +481,6 @@ namespace ConsoleApplication1
         {
             while (true)
             {
-                ////Console.Write("nSetting up game with server\n");
                 var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
 
                 var postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }";
@@ -497,13 +500,14 @@ namespace ConsoleApplication1
                 do
                 {
 
-                    var watch = System.Diagnostics.Stopwatch.StartNew();
                     using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                     {
                         string chosenAction = "";
                         var responseString = reader.ReadToEnd();
+                        var watch = System.Diagnostics.Stopwatch.StartNew();
                         ////Console.Write(responseString);
                         m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
+                        Console.Write("Data has been parsed\n");
 
                         m_worldRepresentation = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
 
@@ -683,6 +687,22 @@ namespace ConsoleApplication1
                         m_playerTile.cost = 0;
                         nextTiles.Enqueue(m_playerTile);
 
+
+                        int playerPiercing;
+                        int playerRange;
+                        {
+                            object object_ownerPiercing;
+                            m_parsed.player.TryGetValue("bombPierce", out object_ownerPiercing);
+
+                            playerPiercing = Convert.ToInt32(object_ownerPiercing);
+
+
+                            object object_ownerRange;
+                            m_parsed.player.TryGetValue("bombRange", out object_ownerRange);
+
+                            playerRange = Convert.ToInt32(object_ownerRange);
+                        }
+
                         //BFS search to find all safe tiles
                         while (nextTiles.Count > 0)
                         {
@@ -696,6 +716,8 @@ namespace ConsoleApplication1
                             visited.Add(current);
 
                             List<AStarTile> neighbors = new List<AStarTile>();
+
+
 
                             //TODO:this is a little bit tricky, try to solve it I guess
                             foreach (Portal p in portals)
@@ -802,19 +824,27 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        int playerPiercing;
-                        int playerRange;
+                        foreach(AStarTile tile in superDuperSafeMoves)
+                        {
 
-                        object object_playerPiercing;
-                        m_parsed.player.TryGetValue("bombPierce", out object_playerPiercing);
+                            List<AStarTile> hypotheticalBombedTiles = GetBombedSquares(tile.X, tile.Y, playerPiercing, playerRange);
+                            int bombCount = 0;
+                            foreach (AStarTile t in hypotheticalBombedTiles)
+                            {
+                                if (t.m_blockType == AStarTile.blockType.SoftBlock)
+                                {
+                                    bombCount++;
+                                }
+                            }
 
-                        playerPiercing = Convert.ToInt32(object_playerPiercing);
+                            tile.m_numTargets = bombCount;
+                            
+                            if(superDuperSafeMoves.Except(hypotheticalBombedTiles).ToList().Count == 0){
+                                tile.m_numTargets = 0;
+                            }
+                        }
 
 
-                        object object_playerRange;
-                        m_parsed.player.TryGetValue("bombRange", out object_playerRange);
-
-                        playerRange = Convert.ToInt32(object_playerRange);
 
                         List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y, playerPiercing, playerRange);
 
@@ -824,7 +854,7 @@ namespace ConsoleApplication1
 
                         object object_availableBombs;
 
-                        m_parsed.player.TryGetValue("bombCount",out object_availableBombs);
+                        m_parsed.player.TryGetValue("bombCount", out object_availableBombs);
 
                         availableBombs = Convert.ToInt32(object_availableBombs);
 
@@ -838,14 +868,31 @@ namespace ConsoleApplication1
                         }
 
 
-                        AStarTile targetTile;
+                        AStarTile targetTile = null;
+
                         //Pick your target tile
                         if (superDuperSafeMoves.Count == 0)
                         {
                             targetTile = m_playerTile;
                         }
-                        else {
-                            targetTile = superDuperSafeMoves[m_random.Next(0, superDuperSafeMoves.Count)];
+                        else
+                        {
+                            foreach (AStarTile tile in superDuperSafeMoves)
+                            {
+                                if (targetTile == null)
+                                {
+                                    targetTile = tile;
+                                    continue;
+                                }
+
+                                if (tile.m_numTargets / (float)tile.cost > targetTile.m_numTargets / (float)targetTile.cost)
+                                {
+                                    targetTile = tile;
+                                }
+
+                                Console.Write(tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
+
+                            }
                         }
 
 
