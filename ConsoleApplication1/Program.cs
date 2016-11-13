@@ -309,10 +309,10 @@ namespace ConsoleApplication1
 
                 if(this.m_orientation == 2) //TODO: check these orientations
                 {
-                    ret.MoveToGetHere = "ml";
+                    ret.MoveToGetHere = "mr";
                 } else if(this.m_orientation == 0)
                 {
-                    ret.MoveToGetHere = "mr";
+                    ret.MoveToGetHere = "ml";
                 }
                 else if (this.m_orientation == 3)
                 {
@@ -820,11 +820,11 @@ namespace ConsoleApplication1
 
                         else if (targetTile.X > m_playerTile.X)
                         {
-                            chosenAction = "ml";
+                            chosenAction = "mr";
                         }
                         else if (targetTile.X < m_playerTile.X)
                         {
-                            chosenAction = "mr";
+                            chosenAction = "ml";
                         }
                         else if (targetTile.Y < m_playerTile.Y)
                         {
