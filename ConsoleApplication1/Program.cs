@@ -15,6 +15,8 @@ namespace ConsoleApplication1
         public string gameID { get; set; }
         [JsonProperty("playerID")]
         public string playerID { get; set; }
+        [JsonProperty("playerIndex")]
+        public int playerIndex { get; set; }
         [JsonProperty("state")]
         public string state { get; set; }
         [JsonProperty("hardBlockBoard")]
@@ -307,10 +309,11 @@ namespace ConsoleApplication1
 
                 AStarTile ret = m_linkedPortal.OutletAStarTile();
 
-                if(this.m_orientation == 2) //TODO: check these orientations
+                if (this.m_orientation == 2) //TODO: check these orientations
                 {
                     ret.MoveToGetHere = "mr";
-                } else if(this.m_orientation == 0)
+                }
+                else if (this.m_orientation == 0)
                 {
                     ret.MoveToGetHere = "ml";
                 }
@@ -370,23 +373,18 @@ namespace ConsoleApplication1
             return Math.Abs(to.X - from.X) + Math.Abs(to.Y - from.Y);
         }
 
-        static List<AStarTile> GetBombedSquares(int bombX, int bombY)
+        static List<AStarTile> GetBombedSquares(int bombX, int bombY, int ownerPiercing, int ownerRange)
         {
             List<AStarTile> bombedTiles = new List<AStarTile>();
 
             Queue<BombSearchState> explosionFrontier = new Queue<BombSearchState>();
 
-            object object_bombRange;
 
-            m_parsed.player.TryGetValue("bombRange", out object_bombRange);
-
-            int int_bombRange = Convert.ToInt32(object_bombRange) + 1;
+            int int_bombRange = ownerRange + 1;
 
             object object_bombPiercing;
 
-            m_parsed.player.TryGetValue("bombPierce", out object_bombPiercing);
-
-            int int_bombPiercing = Convert.ToInt32(object_bombPiercing);
+            int int_bombPiercing = ownerPiercing;
 
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 0, bombX, bombY));
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 1, bombX, bombY));
@@ -576,7 +574,43 @@ namespace ConsoleApplication1
                             int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
                             int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
                             //TODO: calculate if in range of bomb including portal traversal and blocking
-                            List<AStarTile> bombedSquares = GetBombedSquares(bombX, bombY);
+                            int owner;
+                            bomb.Value.TryGetValue("owner", out owner);
+
+                            int ownerPiercing;
+                            int ownerRange;
+
+                            if (owner == m_parsed.playerIndex)
+                            {
+                                object object_ownerPiercing;
+                                m_parsed.player.TryGetValue("bombPierce", out object_ownerPiercing);
+
+                                ownerPiercing = Convert.ToInt32(object_ownerPiercing);
+
+
+                                object object_ownerRange;
+                                m_parsed.player.TryGetValue("bombRange", out object_ownerRange);
+
+                                ownerRange = Convert.ToInt32(object_ownerRange);
+                            }
+                            else
+                            {
+                                object object_ownerPiercing;
+                                m_parsed.opponent.TryGetValue("bombPierce", out object_ownerPiercing);
+
+                                ownerPiercing = Convert.ToInt32(object_ownerPiercing);
+
+
+                                object object_ownerRange;
+                                m_parsed.opponent.TryGetValue("bombRange", out object_ownerRange);
+
+                                ownerRange = Convert.ToInt32(object_ownerRange);
+
+                            }
+
+
+
+                            List<AStarTile> bombedSquares = GetBombedSquares(bombX, bombY, ownerPiercing, ownerRange);
 
                             foreach (AStarTile tile in bombedSquares)
                             {
@@ -761,7 +795,21 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y);
+                        int playerPiercing;
+                        int playerRange;
+
+                        object object_playerPiercing;
+                        m_parsed.player.TryGetValue("bombPierce", out object_playerPiercing);
+
+                        playerPiercing = Convert.ToInt32(object_playerPiercing);
+
+
+                        object object_playerRange;
+                        m_parsed.player.TryGetValue("bombRange", out object_playerRange);
+
+                        playerRange = Convert.ToInt32(object_playerRange);
+
+                        List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y, playerPiercing, playerRange);
 
                         List<AStarTile> safeHavens = superDuperSafeMoves.Except(bTiles).ToList();
 
@@ -784,7 +832,7 @@ namespace ConsoleApplication1
                         else {
                             targetTile = superDuperSafeMoves[m_random.Next(0, superDuperSafeMoves.Count)];
                         }
-                        
+
 
                         AStarTile origTargetTile = targetTile;
                         while (targetTile.CameFrom != m_playerTile && targetTile.CameFrom != null)
@@ -836,7 +884,7 @@ namespace ConsoleApplication1
                         }
 
 
-                        if(targetTile.MoveToGetHere != "")
+                        if (targetTile.MoveToGetHere != "")
                         {
                             chosenAction = targetTile.MoveToGetHere;
                             Console.Write("Making portal move: " + chosenAction);
@@ -844,7 +892,7 @@ namespace ConsoleApplication1
 
                         bool hasBenefit = false;
 
-                        List<AStarTile> bombedTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y);
+                        List<AStarTile> bombedTiles = bTiles;
                         List<AStarTile> bombableSoftBlocks = bombedTiles.Where(item => item.m_blockType == AStarTile.blockType.SoftBlock).ToList();
 
                         if (bombedTiles.Contains(m_opponentTile) || bombableSoftBlocks.Count > 0)
