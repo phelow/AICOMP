@@ -243,13 +243,13 @@ namespace ConsoleApplication1
 
                 if (m_linkedPortal.m_orientation == 2)
                 {
-                    xMod = -1;
+                    xMod = 1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 0)
                 {
-                    xMod = 1;
+                    xMod = -1;
                 }
 
 
@@ -477,7 +477,6 @@ namespace ConsoleApplication1
         {
             while (true)
             {
-
                 ////Console.Write("nSetting up game with server\n");
                 var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
 
@@ -497,6 +496,8 @@ namespace ConsoleApplication1
                 bool gameNotCompleted = true;
                 do
                 {
+
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
                     using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                     {
                         string chosenAction = "";
@@ -933,6 +934,11 @@ namespace ConsoleApplication1
                         request.Method = "POST";
                         request.ContentType = "application/json";
                         request.ContentLength = data.Length;
+
+                        // the code that you want to measure comes here
+                        watch.Stop();
+
+                        Console.WriteLine(watch.ElapsedMilliseconds);
 
 
                         ////Console.Write("\nAction is:" + chosenAction + "\n");
