@@ -180,7 +180,7 @@ namespace ConsoleApplication1
         public int Y;
 
         public AStarTile CameFrom;
-        public string MoveToGetHere;
+        public string MoveToGetHere = "";
         public float EstimatedCostToGoal;
 
         public AStarTile(int x, int y, ServerResponse server)
@@ -241,13 +241,13 @@ namespace ConsoleApplication1
 
                 if (m_linkedPortal.m_orientation == 2)
                 {
-                    xMod = 1;
+                    xMod = -1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 0)
                 {
-                    xMod = -1;
+                    xMod = 1;
                 }
 
 
@@ -307,7 +307,7 @@ namespace ConsoleApplication1
 
                 AStarTile ret = m_linkedPortal.OutletAStarTile();
 
-                if(this.m_orientation == 2)
+                if(this.m_orientation == 2) //TODO: check these orientations
                 {
                     ret.MoveToGetHere = "ml";
                 } else if(this.m_orientation == 0)
@@ -662,7 +662,6 @@ namespace ConsoleApplication1
                                 AStarTile outlet = p.GetTileOutlet(current);
                                 if (outlet != null)
                                 {
-                                    
                                     neighbors.Add(outlet);
                                 }
                             }
@@ -821,11 +820,11 @@ namespace ConsoleApplication1
 
                         else if (targetTile.X > m_playerTile.X)
                         {
-                            chosenAction = "mr";
+                            chosenAction = "ml";
                         }
                         else if (targetTile.X < m_playerTile.X)
                         {
-                            chosenAction = "ml";
+                            chosenAction = "mr";
                         }
                         else if (targetTile.Y < m_playerTile.Y)
                         {
@@ -840,6 +839,7 @@ namespace ConsoleApplication1
                         if(targetTile.MoveToGetHere != "")
                         {
                             chosenAction = targetTile.MoveToGetHere;
+                            Console.Write("Making portal move: " + chosenAction);
                         }
 
                         bool hasBenefit = false;
