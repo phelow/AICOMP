@@ -181,7 +181,6 @@ namespace ConsoleApplication1
 
         public AStarTile CameFrom;
         public string MoveToGetHere;
-        public float CostFromStart;
         public float EstimatedCostToGoal;
 
         public AStarTile(int x, int y, ServerResponse server)
@@ -306,7 +305,27 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                return m_linkedPortal.OutletAStarTile();
+                AStarTile ret = m_linkedPortal.OutletAStarTile();
+
+                if(this.m_orientation == 2)
+                {
+                    ret.MoveToGetHere = "ml";
+                } else if(this.m_orientation == 0)
+                {
+                    ret.MoveToGetHere = "mr";
+                }
+                else if (this.m_orientation == 3)
+                {
+                    ret.MoveToGetHere = "mu";
+                }
+                else
+                {
+                    ret.MoveToGetHere = "md";
+                }
+
+
+
+                return ret;
 
             }
 
@@ -643,6 +662,7 @@ namespace ConsoleApplication1
                                 AStarTile outlet = p.GetTileOutlet(current);
                                 if (outlet != null)
                                 {
+                                    
                                     neighbors.Add(outlet);
                                 }
                             }
@@ -749,7 +769,7 @@ namespace ConsoleApplication1
 
                         foreach (AStarTile haven in safeHavens)
                         {
-                            if (HeuristicCalculation(m_playerTile, haven) <= 3 && m_parsed.bombMap.Count == 0)//TODO: calculate how many bombs you have and drop that many.
+                            if (haven.cost <= 3 && m_parsed.bombMap.Count == 0)//TODO: calculate how many bombs you have and drop that many.
                             {
                                 canBomb = true;
                             }
@@ -814,6 +834,12 @@ namespace ConsoleApplication1
                         else if (targetTile.Y > m_playerTile.Y)
                         {
                             chosenAction = "md";
+                        }
+
+
+                        if(targetTile.MoveToGetHere != "")
+                        {
+                            chosenAction = targetTile.MoveToGetHere;
                         }
 
                         bool hasBenefit = false;
