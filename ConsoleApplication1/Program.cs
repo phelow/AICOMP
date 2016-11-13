@@ -567,6 +567,7 @@ namespace ConsoleApplication1
                             }
                         }
 
+                        int playerBombs = 0;
 
                         //TODO: move this search
                         foreach (KeyValuePair<string, Dictionary<string, int>> bomb in m_parsed.bombMap)
@@ -576,6 +577,11 @@ namespace ConsoleApplication1
                             //TODO: calculate if in range of bomb including portal traversal and blocking
                             int owner;
                             bomb.Value.TryGetValue("owner", out owner);
+
+                            if (owner == m_parsed.playerIndex)
+                            {
+                                playerBombs++;
+                            }
 
                             int ownerPiercing;
                             int ownerRange;
@@ -813,10 +819,18 @@ namespace ConsoleApplication1
 
                         List<AStarTile> safeHavens = superDuperSafeMoves.Except(bTiles).ToList();
 
+                        int availableBombs;
+
+                        object object_availableBombs;
+
+                        m_parsed.player.TryGetValue("bombCount",out object_availableBombs);
+
+                        availableBombs = Convert.ToInt32(object_availableBombs);
+
 
                         foreach (AStarTile haven in safeHavens)
                         {
-                            if (haven.cost <= 3 && m_parsed.bombMap.Count == 0)//TODO: calculate how many bombs you have and drop that many.
+                            if (haven.cost <= 3 && playerBombs < availableBombs)//TODO: calculate how many bombs you have and drop that many.
                             {
                                 canBomb = true;
                             }
