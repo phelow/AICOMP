@@ -922,13 +922,7 @@ namespace ConsoleApplication1
                         ////Console.Write("\n");
                         ////Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + "\n");
                         ////Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-
-                        if (origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
-                        {
-                            chosenAction = "";
-                        }
-
-                        else if (targetTile.X > m_playerTile.X)
+                        if (targetTile.X > m_playerTile.X)
                         {
                             chosenAction = "mr";
                         }
