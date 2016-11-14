@@ -145,11 +145,6 @@ namespace ConsoleApplication1
             return turnsUntilDangerous;
         }
 
-        public bool IsSafe()
-        {
-            return SafeOnStep(0);
-        }
-
         public bool SafeOnStep(int step)
         {
             if (turnsUntilDangerous.Count == 0)
@@ -628,7 +623,8 @@ namespace ConsoleApplication1
                                 int tick;
                                 bomb.Value.TryGetValue("tick", out tick);
                                 ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
-                                
+
+                                tile.SetDangerous(tick);
                                 tile.SetDangerous(tick + 1);
                             }
                         }
@@ -780,38 +776,41 @@ namespace ConsoleApplication1
                         m_parsed.player.TryGetValue("orientation", out orientation);
                         int int_orientation = Convert.ToInt32(orientation);
 
-
-                        List<AStarTile> superSafeMoves = safeMoves.Where(item => item.IsSuperSafe()).ToList(); //moves that are always safe
-
+                        
                         List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
 
 
-                        foreach (AStarTile tile in superSafeMoves)
+                        foreach (AStarTile tile in safeMoves)
                         {
                             bool isSuperDuperSafe = true;
                             AStarTile it = tile;
+
+                            foreach(int dangerous in tile.GetDangerousTurns())
+                            {
+                                Console.WriteLine("Dangerous on " + dangerous);
+                            }
                             do
                             {
-                                if (!it.SafeOnStep((it.cost) * 2)) //TODO: consider passing manual check here
+                                if (!it.SafeOnStep((it.cost-1) * 2)) //TODO: consider passing manual check here
                                 {
-                                    ////Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost) * 2) + " the only time when the player would cross it");
+                                    Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost) * 2) + " the only time when the player would cross it");
                                     isSuperDuperSafe = false;
                                 }
-                                //else
-                                //{
-                                //    ////Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost) * 2) + " the only time when the player would cross it");
-                                //}
-                                ////Console.Write("\n\t" + it.X + " " + it.Y + " is not safe on:");
+                                else
+                                {
+                                    Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost-1) * 2) + " the only time when the player would cross it");
+                                }
 
-                                //foreach (int dangerousTurns in it.GetDangerousTurns())
-                                //{
-                                //    ////Console.Write("\n\t\t" + dangerousTurns);
-                                //}
+
+                                foreach (int dangerousTurns in it.GetDangerousTurns())
+                                {
+                                    Console.Write("\n\t\t" + dangerousTurns);
+                                }
 
                                 it = it.CameFrom;
                             } while (isSuperDuperSafe == true && it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
 
-                            if (!it.SafeOnStep((it.cost) * 2))
+                            if (!it.SafeOnStep((it.cost-1) * 2))
                             {
                                 isSuperDuperSafe = false;
                             }
@@ -897,7 +896,7 @@ namespace ConsoleApplication1
 
 
                         AStarTile origTargetTile = targetTile;
-                        while (targetTile != m_playerTile && targetTile.CameFrom != m_playerTile && targetTile.CameFrom != null)
+                        while (targetTile.CameFrom != m_playerTile && targetTile != m_playerTile)
                         {
                             targetTile = targetTile.CameFrom;
                         }
@@ -920,9 +919,9 @@ namespace ConsoleApplication1
                             Console.Write("\n" + safeMove.X + " " + safeMove.Y);
                         }
                         Console.Write("\n");
-                        Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + "\n");
+                        Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y +  "\n");
                         Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-                        if(targetTile.X == m_playerTile.X && targetTile.Y == m_playerTile.Y)
+                        if(origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
                         {
                             chosenAction = "";
                         }
