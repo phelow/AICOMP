@@ -966,29 +966,73 @@ namespace ConsoleApplication1
                         }
 
 
-                        
+
                         if (m_playerTile.IsSuperSafe())
                         {
 
                             object object_coins;
                             int int_coins;
 
+                            int bombRangeCost = 1;
+                            int bombCountCost = 1;
+                            int bombPierceCost = 1;
+
+
+                            object object_bombRange;
+                            object object_bombCount;
+                            object object_bombPierce;
+
+                            int int_bombRange;
+                            int int_bombCount;
+                            int int_bombPierce;
+
+                            m_parsed.player.TryGetValue("bombRange", out object_bombRange);
+                            m_parsed.player.TryGetValue("bombCount", out object_bombCount);
+                            m_parsed.player.TryGetValue("bombPierce", out object_bombPierce);
+
+                            int_bombRange = Convert.ToInt32(object_bombRange);
+                            int_bombCount = Convert.ToInt32(object_bombCount);
+                            int_bombPierce = Convert.ToInt32(object_bombPierce);
+
+                            int m_maxBombCount = 2;
+                            int m_maxBombPierce = 8;
+                            int m_maxBombRange = 8;
+
+
+                            int mostNeededCost = 0;
+
                             m_parsed.player.TryGetValue("coins", out object_coins);
                             int_coins = Convert.ToInt32(object_coins);
-                            if (canBomb && hasBenefit && int_coins == 0)
+
+                            if (int_bombCount < m_maxBombCount && int_coins >= bombCountCost)
+                            {
+                                chosenAction = "buy_count";
+                                mostNeededCost = bombCountCost;
+                            }
+                            else if (int_bombRange < int_bombPierce && int_bombRange < m_maxBombRange && int_coins >= bombRangeCost)
+                            {
+                                chosenAction = "buy_range";
+                                mostNeededCost = bombRangeCost;
+                            }
+                            else if (int_bombPierce < m_maxBombPierce && int_coins >= bombPierceCost)
+                            {
+                                chosenAction = "buy_pierce";
+                                mostNeededCost = bombPierceCost;
+                            }
+                            else if (canBomb && hasBenefit)
                             {
                                 chosenAction = "b";
-                            }else if (int_coins >= 1)
-                            {
-                                chosenAction = m_buyActions[m_random.Next(m_buyActions.Length)]; //TODO: will need to be changed for balance patch
-                            }
-                            else if(chosenAction == "")
-                            {
-                                chosenAction = m_actions[m_random.Next(m_actions.Length)];
                             }
 
+
+
+                            if (chosenAction == "")
+                            {
+                                //TODO: fix portal dropping, only do if safe chosenAction = m_actions[m_random.Next(m_actions.Length)];
+                            }
 
                         }
+
 
                         Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
 
