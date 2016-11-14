@@ -684,7 +684,7 @@ namespace ConsoleApplication1
                         HashSet<AStarTile> visited = new HashSet<AStarTile>();
                         Queue<AStarTile> nextTiles = new Queue<AStarTile>();
 
-                        m_playerTile.cost = 0;
+                        m_playerTile.cost = 1;
                         nextTiles.Enqueue(m_playerTile);
 
 
@@ -879,6 +879,8 @@ namespace ConsoleApplication1
                         {
                             foreach (AStarTile tile in superDuperSafeMoves)
                             {
+
+                                Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
                                 if (targetTile == null)
                                 {
                                     targetTile = tile;
@@ -889,8 +891,6 @@ namespace ConsoleApplication1
                                 {
                                     targetTile = tile;
                                 }
-
-                                Console.Write(tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
 
                             }
                         }
