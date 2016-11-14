@@ -624,8 +624,8 @@ namespace ConsoleApplication1
                                 bomb.Value.TryGetValue("tick", out tick);
                                 ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
 
-                                tile.SetDangerous(tick);
-                                tile.SetDangerous(tick + 1);
+                                tile.SetDangerous(tick+1);
+                                tile.SetDangerous(tick+2);
                             }
                         }
 
@@ -782,6 +782,11 @@ namespace ConsoleApplication1
 
                         foreach (AStarTile tile in safeMoves)
                         {
+                            if(tile.GetDangerousTurns().Count > 0)
+                            {
+                                continue;
+                            }
+
                             bool isSuperDuperSafe = true;
                             AStarTile it = tile;
 
@@ -793,7 +798,7 @@ namespace ConsoleApplication1
                             {
                                 if (!it.SafeOnStep((it.cost-1) * 2)) //TODO: consider passing manual check here
                                 {
-                                    Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost) * 2) + " the only time when the player would cross it");
+                                    Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost-1) * 2) + " the only time when the player would cross it");
                                     isSuperDuperSafe = false;
                                 }
                                 else
