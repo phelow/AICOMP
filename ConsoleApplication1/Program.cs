@@ -388,7 +388,7 @@ namespace ConsoleApplication1
 
             object object_bombPiercing;
 
-            int int_bombPiercing = ownerPiercing + 1;
+            int int_bombPiercing = ownerPiercing ;
 
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 0, bombX, bombY));
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 1, bombX, bombY));
@@ -406,11 +406,7 @@ namespace ConsoleApplication1
                 {
                     continue;
                 }
-
-                if(current.PiercesLeft == 0)
-                {
-                    continue;
-                }
+                
 
                 bool shouldContinue = false;
                 //TODO: check for portals
