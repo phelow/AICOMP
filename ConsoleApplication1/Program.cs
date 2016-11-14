@@ -628,9 +628,8 @@ namespace ConsoleApplication1
                                 int tick;
                                 bomb.Value.TryGetValue("tick", out tick);
                                 ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
-
+                                
                                 tile.SetDangerous(tick + 1);
-                                tile.SetDangerous(tick + 2);
                             }
                         }
 
@@ -861,7 +860,8 @@ namespace ConsoleApplication1
 
                         foreach (AStarTile haven in safeHavens)
                         {
-                            if (haven.cost <= 3 && playerBombs < availableBombs)//TODO: calculate how many bombs you have and drop that many.
+                            Console.WriteLine("haven.cost:" + haven.cost);
+                            if (haven.cost <= 4 && playerBombs < availableBombs)//TODO: calculate how many bombs you have and drop that many.
                             {
                                 canBomb = true;
                             }
@@ -967,6 +967,9 @@ namespace ConsoleApplication1
                         {
                             chosenAction = "b";
                         }
+
+                        Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
+
                         //find out which position maps to it
 
                         //move to that position
