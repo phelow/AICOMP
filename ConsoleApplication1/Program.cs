@@ -624,8 +624,8 @@ namespace ConsoleApplication1
                                 bomb.Value.TryGetValue("tick", out tick);
                                 ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
 
-                                tile.SetDangerous(tick+1);
-                                tile.SetDangerous(tick+2);
+                                tile.SetDangerous(tick + 1);
+                                tile.SetDangerous(tick + 2);
                             }
                         }
 
@@ -776,13 +776,13 @@ namespace ConsoleApplication1
                         m_parsed.player.TryGetValue("orientation", out orientation);
                         int int_orientation = Convert.ToInt32(orientation);
 
-                        
+
                         List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
 
 
                         foreach (AStarTile tile in safeMoves)
                         {
-                            if(tile.GetDangerousTurns().Count > 0)
+                            if (tile.GetDangerousTurns().Count > 0)
                             {
                                 continue;
                             }
@@ -790,20 +790,20 @@ namespace ConsoleApplication1
                             bool isSuperDuperSafe = true;
                             AStarTile it = tile;
 
-                            foreach(int dangerous in tile.GetDangerousTurns())
+                            foreach (int dangerous in tile.GetDangerousTurns())
                             {
                                 Console.WriteLine("Dangerous on " + dangerous);
                             }
                             do
                             {
-                                if (!it.SafeOnStep((it.cost-1) * 2)) //TODO: consider passing manual check here
+                                if (!it.SafeOnStep((it.cost - 1) * 2)) //TODO: consider passing manual check here
                                 {
-                                    Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost-1) * 2) + " the only time when the player would cross it");
+                                    Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
                                     isSuperDuperSafe = false;
                                 }
                                 else
                                 {
-                                    Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost-1) * 2) + " the only time when the player would cross it");
+                                    Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
                                 }
 
 
@@ -815,7 +815,7 @@ namespace ConsoleApplication1
                                 it = it.CameFrom;
                             } while (isSuperDuperSafe == true && it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
 
-                            if (!it.SafeOnStep((it.cost-1) * 2))
+                            if (!it.SafeOnStep((it.cost - 1) * 2))
                             {
                                 isSuperDuperSafe = false;
                             }
@@ -827,7 +827,7 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        foreach(AStarTile tile in superDuperSafeMoves)
+                        foreach (AStarTile tile in superDuperSafeMoves)
                         {
 
                             List<AStarTile> hypotheticalBombedTiles = GetBombedSquares(tile.X, tile.Y, playerPiercing, playerRange);
@@ -841,8 +841,9 @@ namespace ConsoleApplication1
                             }
 
                             tile.m_numTargets = bombCount;
-                            
-                            if(superDuperSafeMoves.Except(hypotheticalBombedTiles).ToList().Count == 0){
+
+                            if (superDuperSafeMoves.Except(hypotheticalBombedTiles).ToList().Count == 0)
+                            {
                                 tile.m_numTargets = 0;
                             }
                         }
@@ -924,9 +925,9 @@ namespace ConsoleApplication1
                             Console.Write("\n" + safeMove.X + " " + safeMove.Y);
                         }
                         Console.Write("\n");
-                        Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y +  "\n");
+                        Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
                         Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-                        if(origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
+                        if (origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
                         {
                             chosenAction = "";
                         }
@@ -965,11 +966,28 @@ namespace ConsoleApplication1
                         }
 
 
-                        if (m_parsed.bombMap.Count == 0 && m_random.Next(10) < 3) { chosenAction = m_actions[m_random.Next(m_actions.Length)]; }
-
-                        if (canBomb && hasBenefit)
+                        
+                        if (m_playerTile.IsSuperSafe())
                         {
-                            chosenAction = "b";
+
+                            object object_coins;
+                            int int_coins;
+
+                            m_parsed.player.TryGetValue("coins", out object_coins);
+                            int_coins = Convert.ToInt32(object_coins);
+                            if (canBomb && hasBenefit && int_coins == 0)
+                            {
+                                chosenAction = "b";
+                            }else if (int_coins >= 1)
+                            {
+                                chosenAction = m_buyActions[m_random.Next(m_buyActions.Length)]; //TODO: will need to be changed for balance patch
+                            }
+                            else if(chosenAction == "")
+                            {
+                                chosenAction = m_actions[m_random.Next(m_actions.Length)];
+                            }
+
+
                         }
 
                         Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
