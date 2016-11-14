@@ -897,7 +897,7 @@ namespace ConsoleApplication1
 
 
                         AStarTile origTargetTile = targetTile;
-                        while (targetTile.CameFrom != m_playerTile && targetTile.CameFrom != null)
+                        while (targetTile != m_playerTile && targetTile.CameFrom != m_playerTile && targetTile.CameFrom != null)
                         {
                             targetTile = targetTile.CameFrom;
                         }
@@ -914,15 +914,19 @@ namespace ConsoleApplication1
                         //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
                         //}
 
-                        //////Console.Write("\nSuperDuperSafeMoves:");
-                        //foreach (AStarTile safeMove in superDuperSafeMoves)
-                        //{
-                        //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
-                        //}
-                        ////Console.Write("\n");
-                        ////Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + "\n");
-                        ////Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-                        if (targetTile.X > m_playerTile.X)
+                        Console.Write("\nSuperDuperSafeMoves:");
+                        foreach (AStarTile safeMove in superDuperSafeMoves)
+                        {
+                            Console.Write("\n" + safeMove.X + " " + safeMove.Y);
+                        }
+                        Console.Write("\n");
+                        Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + "\n");
+                        Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
+                        if(targetTile.X == m_playerTile.X && targetTile.Y == m_playerTile.Y)
+                        {
+                            chosenAction = "";
+                        }
+                        else if (targetTile.X > m_playerTile.X)
                         {
                             chosenAction = "mr";
                         }
@@ -956,13 +960,13 @@ namespace ConsoleApplication1
                             hasBenefit = true;
                         }
 
+
+                        if (m_parsed.bombMap.Count == 0 && m_random.Next(10) < 3) { chosenAction = m_actions[m_random.Next(m_actions.Length)]; }
+
                         if (canBomb && hasBenefit)
                         {
                             chosenAction = "b";
                         }
-
-
-                        if (m_parsed.bombMap.Count == 0 && m_random.Next(10) < 3) { chosenAction = m_actions[m_random.Next(m_actions.Length)]; }
                         //find out which position maps to it
 
                         //move to that position
@@ -982,7 +986,7 @@ namespace ConsoleApplication1
                         Console.WriteLine(watch.ElapsedMilliseconds);
 
 
-                        ////Console.Write("\nAction is:" + chosenAction + "\n");
+                        Console.Write("\nAction is:" + chosenAction + "\n");
 
                         using (var stream = request.GetRequestStream())
                         {
