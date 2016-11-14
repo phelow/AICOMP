@@ -71,6 +71,11 @@ namespace ConsoleApplication1
             {
                 return m_piercesLeft;
             }
+
+            set
+            {
+                m_piercesLeft = value;
+            }
         }
 
         public int X
@@ -383,7 +388,7 @@ namespace ConsoleApplication1
 
             object object_bombPiercing;
 
-            int int_bombPiercing = ownerPiercing;
+            int int_bombPiercing = ownerPiercing + 1;
 
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 0, bombX, bombY));
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 1, bombX, bombY));
@@ -401,6 +406,12 @@ namespace ConsoleApplication1
                 {
                     continue;
                 }
+
+                if(current.PiercesLeft == 0)
+                {
+                    continue;
+                }
+
                 bool shouldContinue = false;
                 //TODO: check for portals
                 foreach (Portal p in portals)
@@ -420,12 +431,8 @@ namespace ConsoleApplication1
                 }
 
 
-                if (m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.HardBlock)
-                {
-                    continue;
-                }
-
-                if (m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.SoftBlock && !current.DestroyBlock())
+                
+                if ((m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.HardBlock) && !current.DestroyBlock())
                 {
                     continue;
                 }
