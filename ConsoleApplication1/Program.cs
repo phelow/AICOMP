@@ -121,86 +121,6 @@ namespace ConsoleApplication1
         }
     }
 
-    public class AStarBoardState
-    {
-        public AStarTile m_projectedPlayerTile;
-        public int m_projectedPlayerOrientation;
-
-        List<Program.Portal> m_portals;
-        List<AStarTile> m_boardState;
-
-        public AStarBoardState(AStarTile projectedPlayerTile, int projectedPlayerOrientation, List<Program.Portal> portals, List<AStarTile> boardState)
-        {
-            this.m_projectedPlayerTile = m_projectedPlayerTile;
-            this.m_projectedPlayerOrientation = projectedPlayerOrientation;
-            this.m_portals = portals;
-            this.m_boardState = boardState;
-
-            //Deep copy all of the elements
-
-            //Check for board state changes
-        }
-
-        public AStarBoardState MoveLeft()
-        {
-
-        }
-
-
-        public AStarBoardState MoveRight()
-        {
-
-        }
-
-
-        public AStarBoardState MoveUp()
-        {
-
-        }
-
-
-        public AStarBoardState TurnDown()
-        {
-
-        }
-
-
-
-        public AStarBoardState TurnLeft()
-        {
-
-        }
-
-
-        public AStarBoardState TurnRight()
-        {
-
-        }
-
-
-        public AStarBoardState TurnUp()
-        {
-
-        }
-
-
-        public AStarBoardState TurnDown()
-        {
-
-        }
-
-        public void ShootBluePortal()
-        {
-
-        }
-
-        public void ShootORangePortal()
-        {
-
-        }
-
-    }
-
     public class AStarTile
     {
         public enum blockType
@@ -219,9 +139,9 @@ namespace ConsoleApplication1
 
         public bool isSafeUntil(int until)
         {
-            foreach(int detonationTurn in turnsUntilDangerous)
+            foreach (int detonationTurn in turnsUntilDangerous)
             {
-                if(detonationTurn <= until)
+                if (detonationTurn <= until)
                 {
                     return false;
                 }
@@ -295,12 +215,234 @@ namespace ConsoleApplication1
             X = x;
             Y = y;
         }
+
+        public AStarTile(int x, int y, blockType bt)
+        {
+            X = y;
+            Y = y;
+            m_blockType = bt;
+        }
+
+        public AStarTile CopyConstructor()
+        {
+            AStarTile newTile = new AStarTile(this.X, this.Y, m_blockType);
+
+            foreach (int i in turnsUntilDangerous)
+            {
+                newTile.SetDangerous(i);
+            }
+
+            return newTile;
+        }
     }
 
 
 
     class Program
     {
+
+
+
+        public class AStarBoardState
+        {
+            public AStarTile m_projectedPlayerTile;
+            public int m_projectedPlayerOrientation;
+
+            public int m_cost;
+            public string m_moveToGetHere;
+
+            List<Portal> m_portals;
+            AStarTile[,] m_boardState;
+
+            public AStarBoardState(AStarTile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, AStarTile[,] boardState, int cost)
+            {
+                //Deep copy all of the elements
+                for (int x = 0; x < m_parsed.boardSize; x++)
+                {
+                    for (int y = 0; y < m_parsed.boardSize; y++)
+                    {
+                        boardState[x, y] = boardState[x, y].CopyConstructor();
+                    }
+
+                }
+
+                m_projectedPlayerTile = boardState[projectedPlayerTile.X, projectedPlayerTile.Y];
+
+                m_projectedPlayerOrientation = projectedPlayerOrientation;
+
+                foreach (Portal p in portals)
+                {
+                    m_portals.Add(p.CopyConstructor());
+                }
+
+                m_cost = cost;
+
+            }
+
+            //TODO: update bomb ticks and whatnot
+            public void Update()
+            {
+
+            }
+
+            public AStarBoardState MoveLeft()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2);
+            }
+
+
+            public AStarBoardState MoveRight()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+            public AStarBoardState MoveUp()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+            public AStarBoardState MoveDown()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 3, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+
+            public AStarBoardState TurnLeft()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+            public AStarBoardState TurnRight()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+            public AStarBoardState TurnUp()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 1, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+            public AStarBoardState TurnDown()
+            {
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 3, portals, m_boardState, m_cost + 2);
+
+            }
+
+
+
+            public AStarBoardState ShootBluePortal()
+            {
+                return ShoootPortal(false);
+
+            }
+
+            public AStarBoardState ShoootPortal(bool isOrange)
+            {
+
+                AStarTile tileIt = m_projectedPlayerTile;
+
+                while (tileIt.m_blockType != AStarTile.blockType.HardBlock || tileIt.m_blockType != AStarTile.blockType.SoftBlock)
+                {
+                    if (m_projectedPlayerOrientation == 0)
+                    {
+                        if (tileIt.X + 1 > m_parsed.boardSize)
+                        {
+                            Console.WriteLine("Out of range");
+                            continue;
+
+                        }
+                        tileIt = m_boardState[tileIt.X - 1, tileIt.Y];
+                    }
+                    else if (m_projectedPlayerOrientation == 1)
+                    {
+                        if (tileIt.Y - 1 < 0)
+                        {
+                            Console.WriteLine("Out of range");
+                            continue;
+
+                        }
+                        tileIt = m_boardState[tileIt.X, tileIt.Y - 1];
+
+                    }
+                    else if (m_projectedPlayerOrientation == 2)
+                    {
+                        if (tileIt.X - 1 < 0)
+                        {
+                            Console.WriteLine("Out of range");
+                            continue;
+
+                        }
+                        tileIt = m_boardState[tileIt.X - 1, tileIt.Y];
+                    }
+                    else if (m_projectedPlayerOrientation == 3)
+                    {
+                        if (tileIt.Y + 1 < 0)
+                        {
+                            Console.WriteLine("Out of range");
+                            continue;
+
+                        }
+                        tileIt = m_boardState[tileIt.X, tileIt.Y + 1];
+
+                    }
+                }
+                Portal toRemove = null;
+                foreach (Portal p in portals)
+                {
+                    if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex)
+                    {
+                        toRemove = p;
+                    }
+                }
+
+                if (toRemove != null)
+                {
+                    portals.Remove(toRemove);
+                }
+
+                int newOrientation = 0;
+
+                if (m_projectedPlayerOrientation == 0)
+                {
+                    newOrientation = 2;
+                }
+                else if (m_projectedPlayerOrientation == 1)
+                {
+                    newOrientation = 3;
+                }
+                else if (m_projectedPlayerOrientation == 2)
+                {
+                    newOrientation = 0;
+                }
+                else if (m_projectedPlayerOrientation == 3)
+                {
+                    newOrientation = 1;
+                }
+
+                portals.Add(new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
+
+                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2);
+            }
+
+            public AStarBoardState ShootORangePortal()
+            {
+                return ShoootPortal(true);
+
+            }
+
+        }
         public class Portal
         {
             private Portal m_linkedPortal;
@@ -308,6 +450,7 @@ namespace ConsoleApplication1
             private int m_y;
             private int m_orientation;
             public int m_owner;
+            public bool m_isOrange;
             public BombSearchState GetBombOutlet(BombSearchState inlet)
             {
                 if (m_x != inlet.X || m_y != inlet.Y)
@@ -437,12 +580,18 @@ namespace ConsoleApplication1
                 m_linkedPortal = linkTo;
             }
 
-            public Portal(int x, int y, int orientation, int owner)
+            public Portal(int x, int y, int orientation, int owner, bool isOrange)
             {
                 m_owner = owner;
                 m_x = x;
                 m_y = y;
                 m_orientation = orientation;
+                m_isOrange = isOrange;
+            }
+
+            public Portal CopyConstructor()
+            {
+                return new Portal(m_x, m_y, m_orientation, m_owner, m_isOrange);
             }
         }
 
@@ -534,7 +683,7 @@ namespace ConsoleApplication1
                     {
                         continue;
                     }
-                    
+
                     explosionFrontier.Enqueue(new BombSearchState(current.ChargesLeft - 1, current.PiercesLeft, current.Orientation, current.X - 1, current.Y));
                 }
                 else if (current.Orientation == 1)
@@ -608,7 +757,7 @@ namespace ConsoleApplication1
                     var responseString = reader.ReadToEnd();
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     //////Console.Write(responseString);
-                    if(responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
+                    if (responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
                     {
                         return false;
                     }
@@ -639,13 +788,27 @@ namespace ConsoleApplication1
                             kvp.Value.TryGetValue("portalColor", out object_color);
                             string string_color = object_color.ToString();
 
-                            if (int_owner == 0)
+                            bool bool_color = false;
+
+                            if(string_color == "orange")
                             {
-                                playerOnePortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
+                                bool_color = true;
+                            } else if (string_color == "blue")
+                            {
+                                bool_color = false;
                             }
                             else
                             {
-                                playerTwoPortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
+                                Console.WriteLine("Color error");
+                            }
+
+                            if (int_owner == 0)
+                            {
+                                playerOnePortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner,bool_color));
+                            }
+                            else
+                            {
+                                playerTwoPortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner, bool_color));
 
                             }
                         }
@@ -888,7 +1051,7 @@ namespace ConsoleApplication1
 
                             if (current.X - 1 > 0)
                             {
-                                AStarTile neighbor = m_worldRepresentation[current.X-1, current.Y];
+                                AStarTile neighbor = m_worldRepresentation[current.X - 1, current.Y];
                                 if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
                                 {
                                     neighbor.CameFrom = current;
@@ -922,7 +1085,7 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        
+
                     }
 
 
@@ -1022,7 +1185,7 @@ namespace ConsoleApplication1
                     foreach (AStarTile haven in safeHavens)
                     {
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (superDuperSafeMoves.Contains(haven) && m_playerTile.isSafeUntil(haven.cost+2) && playerBombs < availableBombs &&!m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (superDuperSafeMoves.Contains(haven) && m_playerTile.isSafeUntil(haven.cost + 2) && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
@@ -1113,9 +1276,9 @@ namespace ConsoleApplication1
                         object object_coins;
                         int int_coins;
 
-                        int bombRangeCost = 1;
-                        int bombCountCost = 1;
-                        int bombPierceCost = 1;
+                        int bombRangeCost = 5;
+                        int bombCountCost = 5;
+                        int bombPierceCost = 5;
 
 
                         object object_bombRange;
