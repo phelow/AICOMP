@@ -369,8 +369,16 @@ namespace ConsoleApplication1
 
         static void Main(string[] args)
         {
-            m_random = new Random(0);
-            PlayGame();
+            for(int i = 0; true; i++)
+            {
+                m_random = new Random(i);
+                bool isWin = PlayGame();
+
+                if (!isWin)
+                {
+                    Console.WriteLine("Losing Seed:" + i);
+                }
+            }
         }
         static int HeuristicCalculation(AStarTile from, AStarTile to)
         {
@@ -388,7 +396,7 @@ namespace ConsoleApplication1
 
             object object_bombPiercing;
 
-            int int_bombPiercing = ownerPiercing ;
+            int int_bombPiercing = ownerPiercing;
 
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 0, bombX, bombY));
             explosionFrontier.Enqueue(new BombSearchState(int_bombRange, int_bombPiercing, 1, bombX, bombY));
@@ -406,7 +414,7 @@ namespace ConsoleApplication1
                 {
                     continue;
                 }
-                
+
 
                 bool shouldContinue = false;
                 //TODO: check for portals
@@ -415,7 +423,7 @@ namespace ConsoleApplication1
                     BombSearchState portalState = p.GetBombOutlet(current);
                     if (portalState != null)
                     {
-                        ////Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
+                        Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
                         explosionFrontier.Enqueue(portalState);
                     }
                 }
@@ -427,7 +435,7 @@ namespace ConsoleApplication1
                 }
 
 
-                
+
                 if ((m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].m_blockType == AStarTile.blockType.HardBlock) && !current.DestroyBlock())
                 {
                     continue;
@@ -475,604 +483,612 @@ namespace ConsoleApplication1
             return bombedTiles;
         }
 
-        static void PlayGame()
+        static bool PlayGame()
         {
-            while (true)
+            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
+
+            var postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }";
+            var data = Encoding.ASCII.GetBytes(postData);
+
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.ContentLength = data.Length;
+
+            using (var stream = request.GetRequestStream())
             {
-                var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
+                stream.Write(data, 0, data.Length);
+            }
 
-                var postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }";
-                var data = Encoding.ASCII.GetBytes(postData);
+            var response = (HttpWebResponse)request.GetResponse();
+            bool gameNotCompleted = true;
+            do
+            {
 
-                request.Method = "POST";
-                request.ContentType = "application/json";
-                request.ContentLength = data.Length;
-
-                using (var stream = request.GetRequestStream())
+                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                 {
-                    stream.Write(data, 0, data.Length);
-                }
+                    string chosenAction = "";
+                    var responseString = reader.ReadToEnd();
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    //////Console.Write(responseString);
+                    m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
+                    //Console.Write("Data has been parsed\n");
 
-                var response = (HttpWebResponse)request.GetResponse();
-                bool gameNotCompleted = true;
-                do
-                {
+                    m_worldRepresentation = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
 
-                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    //make the portals
+                    portals = new List<Portal>();
+
+                    List<Portal> playerOnePortals = new List<Portal>();
+
+                    List<Portal> playerTwoPortals = new List<Portal>();
+
+                    foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, object>>> p in m_parsed.portalMap)
                     {
-                        string chosenAction = "";
-                        var responseString = reader.ReadToEnd();
-                        var watch = System.Diagnostics.Stopwatch.StartNew();
-                        ////Console.Write(responseString);
-                        m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
-                        Console.Write("Data has been parsed\n");
+                        int[] coords = p.Key.Split(',').Select(int.Parse).ToArray();
+                        Dictionary<string, object> dict;
 
-                        m_worldRepresentation = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
-
-                        //make the portals
-                        portals = new List<Portal>();
-
-                        List<Portal> playerOnePortals = new List<Portal>();
-
-                        List<Portal> playerTwoPortals = new List<Portal>();
-
-                        foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, object>>> p in m_parsed.portalMap)
+                        foreach (KeyValuePair<string, Dictionary<string, object>> kvp in p.Value)
                         {
-                            int[] coords = p.Key.Split(',').Select(int.Parse).ToArray();
-                            Dictionary<string, object> dict;
+                            object object_owner;
+                            kvp.Value.TryGetValue("owner", out object_owner);
+                            int int_owner;
+                            int_owner = Convert.ToInt32(object_owner);
+                            object object_color;
+                            kvp.Value.TryGetValue("portalColor", out object_color);
+                            string string_color = object_color.ToString();
 
-                            foreach (KeyValuePair<string, Dictionary<string, object>> kvp in p.Value)
+                            if (int_owner == 0)
                             {
-                                object object_owner;
-                                kvp.Value.TryGetValue("owner", out object_owner);
-                                int int_owner;
-                                int_owner = Convert.ToInt32(object_owner);
-                                object object_color;
-                                kvp.Value.TryGetValue("portalColor", out object_color);
-                                string string_color = object_color.ToString();
-
-                                if (int_owner == 0)
-                                {
-                                    playerOnePortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
-                                }
-                                else
-                                {
-                                    playerTwoPortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
-
-                                }
-                            }
-
-
-                        }
-
-                        if (playerOnePortals.Count == 2)
-                        {
-                            Portal.LinkPortals(playerOnePortals[0], playerOnePortals[1]);
-                        }
-
-
-                        if (playerTwoPortals.Count == 2)
-                        {
-                            Portal.LinkPortals(playerTwoPortals[0], playerTwoPortals[1]);
-                        }
-
-                        portals.AddRange(playerOnePortals);
-
-                        portals.AddRange(playerTwoPortals);
-
-                        //TODO: use portals in A* linkages
-
-                        for (int x = 0; x < m_parsed.boardSize; x++)
-                        {
-                            for (int y = 0; y < m_parsed.boardSize; y++)
-                            {
-                                m_worldRepresentation[x, y] = new AStarTile(x, y, m_parsed);
-                            }
-                        }
-
-                        int playerBombs = 0;
-
-                        //TODO: move this search
-                        foreach (KeyValuePair<string, Dictionary<string, int>> bomb in m_parsed.bombMap)
-                        {
-                            int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
-                            int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
-                            //TODO: calculate if in range of bomb including portal traversal and blocking
-                            int owner;
-                            bomb.Value.TryGetValue("owner", out owner);
-
-                            if (owner == m_parsed.playerIndex)
-                            {
-                                playerBombs++;
-                            }
-
-                            int ownerPiercing;
-                            int ownerRange;
-
-                            if (owner == m_parsed.playerIndex)
-                            {
-                                object object_ownerPiercing;
-                                m_parsed.player.TryGetValue("bombPierce", out object_ownerPiercing);
-
-                                ownerPiercing = Convert.ToInt32(object_ownerPiercing);
-
-
-                                object object_ownerRange;
-                                m_parsed.player.TryGetValue("bombRange", out object_ownerRange);
-
-                                ownerRange = Convert.ToInt32(object_ownerRange);
+                                playerOnePortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
                             }
                             else
                             {
-                                object object_ownerPiercing;
-                                m_parsed.opponent.TryGetValue("bombPierce", out object_ownerPiercing);
+                                playerTwoPortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner));
 
-                                ownerPiercing = Convert.ToInt32(object_ownerPiercing);
-
-
-                                object object_ownerRange;
-                                m_parsed.opponent.TryGetValue("bombRange", out object_ownerRange);
-
-                                ownerRange = Convert.ToInt32(object_ownerRange);
-
-                            }
-
-
-
-                            List<AStarTile> bombedSquares = GetBombedSquares(bombX, bombY, ownerPiercing, ownerRange);
-
-                            foreach (AStarTile tile in bombedSquares)
-                            {
-                                int tick;
-                                bomb.Value.TryGetValue("tick", out tick);
-                                ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
-
-                                tile.SetDangerous(tick + 1);
-                                tile.SetDangerous(tick + 2);
                             }
                         }
 
-                        if (m_parsed.trailmap.Count > 0)
+
+                    }
+
+                    if (playerOnePortals.Count == 2)
+                    {
+                        Portal.LinkPortals(playerOnePortals[0], playerOnePortals[1]);
+                    }
+
+
+                    if (playerTwoPortals.Count == 2)
+                    {
+                        Portal.LinkPortals(playerTwoPortals[0], playerTwoPortals[1]);
+                    }
+
+                    portals.AddRange(playerOnePortals);
+
+                    portals.AddRange(playerTwoPortals);
+
+                    //TODO: use portals in A* linkages
+
+                    for (int x = 0; x < m_parsed.boardSize; x++)
+                    {
+                        for (int y = 0; y < m_parsed.boardSize; y++)
                         {
-                            foreach (KeyValuePair<string, object> kvp in m_parsed.trailmap)
-                            {
-                                int[] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
-
-                                m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(0);
-                                m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(1);
-                                m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(2); //TODO SEEMS HACKISH
-                            }
+                            m_worldRepresentation[x, y] = new AStarTile(x, y, m_parsed);
                         }
+                    }
 
+                    int playerBombs = 0;
 
+                    //TODO: move this search
+                    foreach (KeyValuePair<string, Dictionary<string, int>> bomb in m_parsed.bombMap)
+                    {
+                        int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
+                        int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
+                        //TODO: calculate if in range of bomb including portal traversal and blocking
+                        int owner;
+                        bomb.Value.TryGetValue("owner", out owner);
 
-                        gameNotCompleted = m_parsed.state != "complete";
-
-                        object object_playerX;
-                        object object_playerY;
-                        m_parsed.player.TryGetValue("x", out object_playerX);
-                        m_parsed.player.TryGetValue("y", out object_playerY);
-
-                        int int_px = Convert.ToInt32(object_playerX);
-                        int int_py = Convert.ToInt32(object_playerY);
-
-                        m_playerTile = m_worldRepresentation[int_px, int_py];
-
-                        object opponentX;
-                        object opponentY;
-                        m_parsed.opponent.TryGetValue("x", out opponentX);
-                        m_parsed.opponent.TryGetValue("y", out opponentY);
-                        int int_ox = Convert.ToInt32(opponentX);
-                        int int_oy = Convert.ToInt32(opponentY);
-
-                        m_opponentTile = m_worldRepresentation[int_ox, int_oy];
-
-                        HashSet<AStarTile> closedSet = new HashSet<AStarTile>(); //the already evaluated set of nodes
-
-
-                        AStarTile endingTile = null;
-
-                        if (m_parsed.bombMap.Count == 0)
+                        if (owner == m_parsed.playerIndex)
                         {
-                            endingTile = m_opponentTile;
+                            playerBombs++;
                         }
 
+                        int ownerPiercing;
+                        int ownerRange;
 
-                        List<AStarTile> safeMoves = new List<AStarTile>();
-                        HashSet<AStarTile> visited = new HashSet<AStarTile>();
-                        Queue<AStarTile> nextTiles = new Queue<AStarTile>();
-
-                        m_playerTile.cost = 1;
-                        nextTiles.Enqueue(m_playerTile);
-
-
-                        int playerPiercing;
-                        int playerRange;
+                        if (owner == m_parsed.playerIndex)
                         {
                             object object_ownerPiercing;
                             m_parsed.player.TryGetValue("bombPierce", out object_ownerPiercing);
 
-                            playerPiercing = Convert.ToInt32(object_ownerPiercing);
+                            ownerPiercing = Convert.ToInt32(object_ownerPiercing);
 
 
                             object object_ownerRange;
                             m_parsed.player.TryGetValue("bombRange", out object_ownerRange);
 
-                            playerRange = Convert.ToInt32(object_ownerRange);
-                        }
-
-                        //BFS search to find all safe tiles
-                        while (nextTiles.Count > 0)
-                        {
-                            AStarTile current = nextTiles.Dequeue();
-
-                            if (visited.Contains(current))
-                            {
-                                continue;
-                            }
-
-                            visited.Add(current);
-
-                            List<AStarTile> neighbors = new List<AStarTile>();
-
-
-
-                            //TODO:this is a little bit tricky, try to solve it I guess
-                            foreach (Portal p in portals)
-                            {
-                                AStarTile outlet = p.GetTileOutlet(current);
-                                if (outlet != null)
-                                {
-                                    neighbors.Add(outlet);
-                                }
-                            }
-
-                            if (current.m_blockType == AStarTile.blockType.Passable)
-                            {
-
-                                if (current.X + 1 < m_parsed.boardSize)
-                                {
-                                    neighbors.Add(m_worldRepresentation[current.X + 1, current.Y]);
-                                }
-
-                                if (current.Y + 1 < m_parsed.boardSize)
-                                {
-                                    neighbors.Add(m_worldRepresentation[current.X, current.Y + 1]);
-                                }
-
-                                if (current.X - 1 > 0)
-                                {
-                                    neighbors.Add(m_worldRepresentation[current.X - 1, current.Y]);
-                                }
-
-                                if (current.Y - 1 > 0)
-                                {
-                                    neighbors.Add(m_worldRepresentation[current.X, current.Y - 1]);
-                                }
-
-                                if (current.SafeOnStep(current.cost * 2))
-                                {
-                                    safeMoves.Add(current);
-                                }
-                            }
-
-
-
-                            foreach (AStarTile neighbor in neighbors)
-                            {
-                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
-                                {
-                                    neighbor.CameFrom = current;
-                                }
-                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                                {
-                                    neighbor.cost = current.cost + 1;
-                                }
-                                nextTiles.Enqueue(neighbor);
-                            }
-                        }
-
-
-                        //if we can drop a bomb and survive do that
-                        bool canBomb = false;
-                        object orientation;
-                        m_parsed.player.TryGetValue("orientation", out orientation);
-                        int int_orientation = Convert.ToInt32(orientation);
-
-
-                        List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
-
-
-                        foreach (AStarTile tile in safeMoves)
-                        {
-                            if (tile.GetDangerousTurns().Count > 0)
-                            {
-                                continue;
-                            }
-
-                            bool isSuperDuperSafe = true;
-                            AStarTile it = tile;
-
-                            foreach (int dangerous in tile.GetDangerousTurns())
-                            {
-                                Console.WriteLine("Dangerous on " + dangerous);
-                            }
-                            do
-                            {
-                                if (!it.SafeOnStep((it.cost - 1) * 2)) //TODO: consider passing manual check here
-                                {
-                                    Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
-                                    isSuperDuperSafe = false;
-                                }
-                                else
-                                {
-                                    Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
-                                }
-
-
-                                foreach (int dangerousTurns in it.GetDangerousTurns())
-                                {
-                                    Console.Write("\n\t\t" + dangerousTurns);
-                                }
-
-                                it = it.CameFrom;
-                            } while (isSuperDuperSafe == true && it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
-
-                            if (!it.SafeOnStep((it.cost - 1) * 2))
-                            {
-                                isSuperDuperSafe = false;
-                            }
-
-                            if (isSuperDuperSafe)
-                            {
-                                ////Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is safe if timed correctly.");
-                                superDuperSafeMoves.Add(tile);
-                            }
-                        }
-
-                        foreach (AStarTile tile in superDuperSafeMoves)
-                        {
-
-                            List<AStarTile> hypotheticalBombedTiles = GetBombedSquares(tile.X, tile.Y, playerPiercing, playerRange);
-                            int bombCount = 0;
-                            foreach (AStarTile t in hypotheticalBombedTiles)
-                            {
-                                if (t.m_blockType == AStarTile.blockType.SoftBlock)
-                                {
-                                    bombCount++;
-                                }
-                            }
-
-                            tile.m_numTargets = bombCount;
-
-                            if (superDuperSafeMoves.Except(hypotheticalBombedTiles).ToList().Count == 0)
-                            {
-                                tile.m_numTargets = 0;
-                            }
-                        }
-
-
-
-                        List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y, playerPiercing, playerRange);
-
-                        List<AStarTile> safeHavens = superDuperSafeMoves.Except(bTiles).ToList();
-
-                        int availableBombs;
-
-                        object object_availableBombs;
-
-                        m_parsed.player.TryGetValue("bombCount", out object_availableBombs);
-
-                        availableBombs = Convert.ToInt32(object_availableBombs);
-
-
-                        foreach (AStarTile haven in safeHavens)
-                        {
-                            Console.WriteLine("haven.cost:" + haven.cost);
-                            if (haven.cost <= 4 && playerBombs < availableBombs)//TODO: calculate how many bombs you have and drop that many.
-                            {
-                                canBomb = true;
-                            }
-                        }
-
-
-                        AStarTile targetTile = null;
-
-                        //Pick your target tile
-                        if (superDuperSafeMoves.Count == 0)
-                        {
-                            targetTile = m_playerTile;
+                            ownerRange = Convert.ToInt32(object_ownerRange);
                         }
                         else
                         {
-                            foreach (AStarTile tile in superDuperSafeMoves)
-                            {
+                            object object_ownerPiercing;
+                            m_parsed.opponent.TryGetValue("bombPierce", out object_ownerPiercing);
 
-                                Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
-                                if (targetTile == null)
-                                {
-                                    targetTile = tile;
-                                    continue;
-                                }
+                            ownerPiercing = Convert.ToInt32(object_ownerPiercing);
 
-                                if (tile.m_numTargets / (float)tile.cost > targetTile.m_numTargets / (float)targetTile.cost)
-                                {
-                                    targetTile = tile;
-                                }
 
-                            }
+                            object object_ownerRange;
+                            m_parsed.opponent.TryGetValue("bombRange", out object_ownerRange);
+
+                            ownerRange = Convert.ToInt32(object_ownerRange);
+
                         }
 
 
-                        AStarTile origTargetTile = targetTile;
-                        while (targetTile.CameFrom != m_playerTile && targetTile != m_playerTile)
+
+                        List<AStarTile> bombedSquares = GetBombedSquares(bombX, bombY, ownerPiercing, ownerRange);
+
+                        foreach (AStarTile tile in bombedSquares)
                         {
-                            targetTile = targetTile.CameFrom;
+                            int tick;
+                            bomb.Value.TryGetValue("tick", out tick);
+                            ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
+
+                            tile.SetDangerous(tick + 1);
+                            tile.SetDangerous(tick + 2);
                         }
-
-                        //////Console.Write("\nSafeMoves:");
-                        //foreach (AStarTile safeMove in safeMoves)
-                        //{
-                        //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
-                        //}
-
-                        //////Console.Write("\nSuperSafeMoves:");
-                        //foreach (AStarTile safeMove in superSafeMoves)
-                        //{
-                        //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
-                        //}
-
-                        Console.Write("\nSuperDuperSafeMoves:");
-                        foreach (AStarTile safeMove in superDuperSafeMoves)
-                        {
-                            Console.Write("\n" + safeMove.X + " " + safeMove.Y);
-                        }
-                        Console.Write("\n");
-                        Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
-                        Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-                        if (origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
-                        {
-                            chosenAction = "";
-                        }
-                        else if (targetTile.X > m_playerTile.X)
-                        {
-                            chosenAction = "mr";
-                        }
-                        else if (targetTile.X < m_playerTile.X)
-                        {
-                            chosenAction = "ml";
-                        }
-                        else if (targetTile.Y < m_playerTile.Y)
-                        {
-                            chosenAction = "mu";
-                        }
-                        else if (targetTile.Y > m_playerTile.Y)
-                        {
-                            chosenAction = "md";
-                        }
-
-
-                        if (targetTile.MoveToGetHere != "")
-                        {
-                            chosenAction = targetTile.MoveToGetHere;
-                            Console.Write("Making portal move: " + chosenAction);
-                        }
-
-                        bool hasBenefit = false;
-
-                        List<AStarTile> bombedTiles = bTiles;
-                        List<AStarTile> bombableSoftBlocks = bombedTiles.Where(item => item.m_blockType == AStarTile.blockType.SoftBlock).ToList();
-
-                        if (bombedTiles.Contains(m_opponentTile) || bombableSoftBlocks.Count > 0)
-                        {
-                            hasBenefit = true;
-                        }
-
-
-
-                        if (m_playerTile.IsSuperSafe())
-                        {
-
-                            object object_coins;
-                            int int_coins;
-
-                            int bombRangeCost = 1;
-                            int bombCountCost = 1;
-                            int bombPierceCost = 1;
-
-
-                            object object_bombRange;
-                            object object_bombCount;
-                            object object_bombPierce;
-
-                            int int_bombRange;
-                            int int_bombCount;
-                            int int_bombPierce;
-
-                            m_parsed.player.TryGetValue("bombRange", out object_bombRange);
-                            m_parsed.player.TryGetValue("bombCount", out object_bombCount);
-                            m_parsed.player.TryGetValue("bombPierce", out object_bombPierce);
-
-                            int_bombRange = Convert.ToInt32(object_bombRange);
-                            int_bombCount = Convert.ToInt32(object_bombCount);
-                            int_bombPierce = Convert.ToInt32(object_bombPierce);
-
-                            int m_maxBombCount = 2;
-                            int m_maxBombPierce = 8;
-                            int m_maxBombRange = 8;
-
-
-                            int mostNeededCost = 0;
-
-                            m_parsed.player.TryGetValue("coins", out object_coins);
-                            int_coins = Convert.ToInt32(object_coins);
-
-                            if (int_bombCount < m_maxBombCount && int_coins >= bombCountCost)
-                            {
-                                chosenAction = "buy_count";
-                                mostNeededCost = bombCountCost;
-                            }
-                            else if (int_bombRange < int_bombPierce && int_bombRange < m_maxBombRange && int_coins >= bombRangeCost)
-                            {
-                                chosenAction = "buy_range";
-                                mostNeededCost = bombRangeCost;
-                            }
-                            else if (int_bombPierce < m_maxBombPierce && int_coins >= bombPierceCost)
-                            {
-                                chosenAction = "buy_pierce";
-                                mostNeededCost = bombPierceCost;
-                            }
-                            else if (canBomb && hasBenefit)
-                            {
-                                chosenAction = "b";
-                            }
-
-
-
-                            if (chosenAction == "")
-                            {
-                                //TODO: fix portal dropping, only do if safe chosenAction = m_actions[m_random.Next(m_actions.Length)];
-                            }
-
-                        }
-
-
-                        Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
-
-                        //find out which position maps to it
-
-                        //move to that position
-
-                        ////Console.Write(m_parsed.playerID);
-                        ////Console.Write(m_parsed.gameID);
-                        request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
-                        postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
-                        data = Encoding.ASCII.GetBytes(postData);
-                        request.Method = "POST";
-                        request.ContentType = "application/json";
-                        request.ContentLength = data.Length;
-
-                        // the code that you want to measure comes here
-                        watch.Stop();
-
-                        Console.WriteLine(watch.ElapsedMilliseconds);
-
-
-                        Console.Write("\nAction is:" + chosenAction + "\n");
-
-                        using (var stream = request.GetRequestStream())
-                        {
-                            stream.Write(data, 0, data.Length);
-                        }
-                        response = (HttpWebResponse)request.GetResponse();
                     }
-                    ////Console.Write("Sleeping");
-                    System.Threading.Thread.Sleep(100);
-                    ////Console.Write("Start Iteration");
-                } while (gameNotCompleted);
+
+                    if (m_parsed.trailmap.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, object> kvp in m_parsed.trailmap)
+                        {
+                            int[] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
+
+                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(0);
+                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(1);
+                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(2); //TODO SEEMS HACKISH
+                        }
+                    }
 
 
-            }
+
+                    gameNotCompleted = m_parsed.state != "complete";
+
+                    object object_playerX;
+                    object object_playerY;
+                    m_parsed.player.TryGetValue("x", out object_playerX);
+                    m_parsed.player.TryGetValue("y", out object_playerY);
+
+                    int int_px = Convert.ToInt32(object_playerX);
+                    int int_py = Convert.ToInt32(object_playerY);
+
+                    if (int_px == -1)
+                    {
+                        return false;
+                    }
+
+                    m_playerTile = m_worldRepresentation[int_px, int_py];
+
+                    object opponentX;
+                    object opponentY;
+                    m_parsed.opponent.TryGetValue("x", out opponentX);
+                    m_parsed.opponent.TryGetValue("y", out opponentY);
+                    int int_ox = Convert.ToInt32(opponentX);
+                    int int_oy = Convert.ToInt32(opponentY);
+
+                    if (int_ox == -1)
+                    {
+                        return true;
+                    }
+
+                    m_opponentTile = m_worldRepresentation[int_ox, int_oy];
+
+                    HashSet<AStarTile> closedSet = new HashSet<AStarTile>(); //the already evaluated set of nodes
+
+
+                    AStarTile endingTile = null;
+
+                    if (m_parsed.bombMap.Count == 0)
+                    {
+                        endingTile = m_opponentTile;
+                    }
+
+
+                    List<AStarTile> safeMoves = new List<AStarTile>();
+                    HashSet<AStarTile> visited = new HashSet<AStarTile>();
+                    Queue<AStarTile> nextTiles = new Queue<AStarTile>();
+
+                    m_playerTile.cost = 1;
+                    nextTiles.Enqueue(m_playerTile);
+
+
+                    int playerPiercing;
+                    int playerRange;
+                    {
+                        object object_ownerPiercing;
+                        m_parsed.player.TryGetValue("bombPierce", out object_ownerPiercing);
+
+                        playerPiercing = Convert.ToInt32(object_ownerPiercing);
+
+
+                        object object_ownerRange;
+                        m_parsed.player.TryGetValue("bombRange", out object_ownerRange);
+
+                        playerRange = Convert.ToInt32(object_ownerRange);
+                    }
+
+                    //BFS search to find all safe tiles
+                    while (nextTiles.Count > 0)
+                    {
+                        AStarTile current = nextTiles.Dequeue();
+
+                        if (visited.Contains(current))
+                        {
+                            continue;
+                        }
+
+                        visited.Add(current);
+
+                        List<AStarTile> neighbors = new List<AStarTile>();
+
+
+
+                        //TODO:this is a little bit tricky, try to solve it I guess
+                        foreach (Portal p in portals)
+                        {
+                            AStarTile outlet = p.GetTileOutlet(current);
+                            if (outlet != null)
+                            {
+                                neighbors.Add(outlet);
+                            }
+                        }
+
+                        if (current.m_blockType == AStarTile.blockType.Passable)
+                        {
+
+                            if (current.X + 1 < m_parsed.boardSize)
+                            {
+                                neighbors.Add(m_worldRepresentation[current.X + 1, current.Y]);
+                            }
+
+                            if (current.Y + 1 < m_parsed.boardSize)
+                            {
+                                neighbors.Add(m_worldRepresentation[current.X, current.Y + 1]);
+                            }
+
+                            if (current.X - 1 > 0)
+                            {
+                                neighbors.Add(m_worldRepresentation[current.X - 1, current.Y]);
+                            }
+
+                            if (current.Y - 1 > 0)
+                            {
+                                neighbors.Add(m_worldRepresentation[current.X, current.Y - 1]);
+                            }
+
+                            if (current.SafeOnStep(current.cost * 2))
+                            {
+                                safeMoves.Add(current);
+                            }
+                        }
+
+
+
+                        foreach (AStarTile neighbor in neighbors)
+                        {
+                            if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                            {
+                                neighbor.CameFrom = current;
+                            }
+                            if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                            {
+                                neighbor.cost = current.cost + 1;
+                            }
+                            nextTiles.Enqueue(neighbor);
+                        }
+                    }
+
+
+                    //if we can drop a bomb and survive do that
+                    bool canBomb = false;
+                    object orientation;
+                    m_parsed.player.TryGetValue("orientation", out orientation);
+                    int int_orientation = Convert.ToInt32(orientation);
+
+
+                    List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
+
+
+                    foreach (AStarTile tile in safeMoves)
+                    {
+                        if (tile.GetDangerousTurns().Count > 0)
+                        {
+                            continue;
+                        }
+
+                        bool isSuperDuperSafe = true;
+                        AStarTile it = tile;
+
+                        foreach (int dangerous in tile.GetDangerousTurns())
+                        {
+                            /*Console*/.WriteLine("Dangerous on " + dangerous);
+                        }
+                        do
+                        {
+                            if (!it.SafeOnStep((it.cost - 1) * 2)) //TODO: consider passing manual check here
+                            {
+                                //Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
+                                isSuperDuperSafe = false;
+                            }
+                            else
+                            {
+                                //Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
+                            }
+
+
+                            foreach (int dangerousTurns in it.GetDangerousTurns())
+                            {
+                                //Console.Write("\n\t\t" + dangerousTurns);
+                            }
+
+                            it = it.CameFrom;
+                        } while (isSuperDuperSafe == true && it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
+
+                        if (!it.SafeOnStep((it.cost - 1) * 2))
+                        {
+                            isSuperDuperSafe = false;
+                        }
+
+                        if (isSuperDuperSafe)
+                        {
+                            ////Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is safe if timed correctly.");
+                            superDuperSafeMoves.Add(tile);
+                        }
+                    }
+
+                    foreach (AStarTile tile in superDuperSafeMoves)
+                    {
+
+                        List<AStarTile> hypotheticalBombedTiles = GetBombedSquares(tile.X, tile.Y, playerPiercing, playerRange);
+                        int bombCount = 0;
+                        foreach (AStarTile t in hypotheticalBombedTiles)
+                        {
+                            if (t.m_blockType == AStarTile.blockType.SoftBlock)
+                            {
+                                bombCount++;
+                            }
+                        }
+
+                        tile.m_numTargets = bombCount;
+
+                        if (superDuperSafeMoves.Except(hypotheticalBombedTiles).ToList().Count == 0)
+                        {
+                            tile.m_numTargets = 0;
+                        }
+                    }
+
+
+
+                    List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y, playerPiercing, playerRange);
+
+                    List<AStarTile> safeHavens = superDuperSafeMoves.Except(bTiles).ToList();
+
+                    int availableBombs;
+
+                    object object_availableBombs;
+
+                    m_parsed.player.TryGetValue("bombCount", out object_availableBombs);
+
+                    availableBombs = Convert.ToInt32(object_availableBombs);
+
+
+                    foreach (AStarTile haven in safeHavens)
+                    {
+                        //Console.WriteLine("haven.cost:" + haven.cost);
+                        if (haven.cost <= 4 && playerBombs < availableBombs)//TODO: calculate how many bombs you have and drop that many.
+                        {
+                            canBomb = true;
+                        }
+                    }
+
+
+                    AStarTile targetTile = null;
+
+                    //Pick your target tile
+                    if (superDuperSafeMoves.Count == 0)
+                    {
+                        targetTile = m_playerTile;
+                    }
+                    else
+                    {
+                        foreach (AStarTile tile in superDuperSafeMoves)
+                        {
+
+                            //Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
+                            if (targetTile == null)
+                            {
+                                targetTile = tile;
+                                continue;
+                            }
+
+                            if (tile.m_numTargets / (float)tile.cost > targetTile.m_numTargets / (float)targetTile.cost)
+                            {
+                                targetTile = tile;
+                            }
+
+                        }
+                    }
+
+
+                    AStarTile origTargetTile = targetTile;
+                    while (targetTile.CameFrom != m_playerTile && targetTile != m_playerTile)
+                    {
+                        targetTile = targetTile.CameFrom;
+                    }
+
+                    //////Console.Write("\nSafeMoves:");
+                    //foreach (AStarTile safeMove in safeMoves)
+                    //{
+                    //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
+                    //}
+
+                    //////Console.Write("\nSuperSafeMoves:");
+                    //foreach (AStarTile safeMove in superSafeMoves)
+                    //{
+                    //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
+                    //}
+
+                    Console.Write("\nSuperDuperSafeMoves:");
+                    foreach (AStarTile safeMove in superDuperSafeMoves)
+                    {
+                        //Console.Write("\n" + safeMove.X + " " + safeMove.Y);
+                    }
+                    //Console.Write("\n");
+                    //Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
+                    //Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
+                    if (origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
+                    {
+                        chosenAction = "";
+                    }
+                    else if (targetTile.X > m_playerTile.X)
+                    {
+                        chosenAction = "mr";
+                    }
+                    else if (targetTile.X < m_playerTile.X)
+                    {
+                        chosenAction = "ml";
+                    }
+                    else if (targetTile.Y < m_playerTile.Y)
+                    {
+                        chosenAction = "mu";
+                    }
+                    else if (targetTile.Y > m_playerTile.Y)
+                    {
+                        chosenAction = "md";
+                    }
+
+
+                    if (targetTile.MoveToGetHere != "")
+                    {
+                        chosenAction = targetTile.MoveToGetHere;
+                        //Console.Write("Making portal move: " + chosenAction);
+                    }
+
+                    bool hasBenefit = false;
+
+                    List<AStarTile> bombedTiles = bTiles;
+                    List<AStarTile> bombableSoftBlocks = bombedTiles.Where(item => item.m_blockType == AStarTile.blockType.SoftBlock).ToList();
+
+                    if (bombedTiles.Contains(m_opponentTile) || bombableSoftBlocks.Count > 0)
+                    {
+                        hasBenefit = true;
+                    }
+
+
+
+                    if (m_playerTile.IsSuperSafe())
+                    {
+
+                        object object_coins;
+                        int int_coins;
+
+                        int bombRangeCost = 1;
+                        int bombCountCost = 1;
+                        int bombPierceCost = 1;
+
+
+                        object object_bombRange;
+                        object object_bombCount;
+                        object object_bombPierce;
+
+                        int int_bombRange;
+                        int int_bombCount;
+                        int int_bombPierce;
+
+                        m_parsed.player.TryGetValue("bombRange", out object_bombRange);
+                        m_parsed.player.TryGetValue("bombCount", out object_bombCount);
+                        m_parsed.player.TryGetValue("bombPierce", out object_bombPierce);
+
+                        int_bombRange = Convert.ToInt32(object_bombRange);
+                        int_bombCount = Convert.ToInt32(object_bombCount);
+                        int_bombPierce = Convert.ToInt32(object_bombPierce);
+
+                        int m_maxBombCount = 2;
+                        int m_maxBombPierce = 8;
+                        int m_maxBombRange = 8;
+
+
+                        int mostNeededCost = 0;
+
+                        m_parsed.player.TryGetValue("coins", out object_coins);
+                        int_coins = Convert.ToInt32(object_coins);
+
+                        if (int_bombCount < m_maxBombCount && int_coins >= bombCountCost)
+                        {
+                            chosenAction = "buy_count";
+                            mostNeededCost = bombCountCost;
+                        }
+                        else if (int_bombRange < int_bombPierce && int_bombRange < m_maxBombRange && int_coins >= bombRangeCost)
+                        {
+                            chosenAction = "buy_range";
+                            mostNeededCost = bombRangeCost;
+                        }
+                        else if (int_bombPierce < m_maxBombPierce && int_coins >= bombPierceCost)
+                        {
+                            chosenAction = "buy_pierce";
+                            mostNeededCost = bombPierceCost;
+                        }
+                        else if (canBomb && hasBenefit)
+                        {
+                            chosenAction = "b";
+                        }
+
+
+
+                        if (chosenAction == "")
+                        {
+                            //TODO: fix portal dropping, only do if safe chosenAction = m_actions[m_random.Next(m_actions.Length)];
+                        }
+
+                    }
+
+
+                    //Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
+
+                    //find out which position maps to it
+
+                    //move to that position
+
+                    ////Console.Write(m_parsed.playerID);
+                    ////Console.Write(m_parsed.gameID);
+                    request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
+                    postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
+                    data = Encoding.ASCII.GetBytes(postData);
+                    request.Method = "POST";
+                    request.ContentType = "application/json";
+                    request.ContentLength = data.Length;
+
+                    // the code that you want to measure comes here
+                    watch.Stop();
+
+                    //Console.WriteLine(watch.ElapsedMilliseconds);
+
+
+                    //Console.Write("\nAction is:" + chosenAction + "\n");
+
+                    using (var stream = request.GetRequestStream())
+                    {
+                        stream.Write(data, 0, data.Length);
+                    }
+                    response = (HttpWebResponse)request.GetResponse();
+                }
+                ////Console.Write("Sleeping");
+                System.Threading.Thread.Sleep(100);
+                ////Console.Write("Start Iteration");
+            } while (gameNotCompleted);
+
+
+
         }
     }
 }
