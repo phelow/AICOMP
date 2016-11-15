@@ -139,7 +139,17 @@ namespace ConsoleApplication1
 
         private List<int> turnsUntilDangerous; //if this is 0 then it is currently dangerous
 
-
+        public bool isSafeUntil(int until)
+        {
+            foreach(int detonationTurn in turnsUntilDangerous)
+            {
+                if(detonationTurn <= until)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         public bool IsSuperSafe()
         {
@@ -899,7 +909,7 @@ namespace ConsoleApplication1
                     foreach (AStarTile haven in safeHavens)
                     {
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (superDuperSafeMoves.Contains(haven) && playerBombs < availableBombs &&!m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (superDuperSafeMoves.Contains(haven) && m_playerTile.isSafeUntil(haven.cost) && playerBombs < availableBombs &&!m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
