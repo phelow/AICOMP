@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.IO;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace ConsoleApplication1
 {
@@ -359,7 +360,6 @@ namespace ConsoleApplication1
 
         static string[] m_actions = { /*"mu", "ml", "md", "mr", "tu", "tl", "td", "tr", "b", */"op", "bp" };
         static string[] m_buyActions = { "buy_count", "buy_pierce", "buy_range", "buy_block" };
-        static Random m_random;
         static AStarTile m_playerTile;
         static AStarTile m_opponentTile;
         static AStarTile[,] m_worldRepresentation;
@@ -369,15 +369,14 @@ namespace ConsoleApplication1
 
         static void Main(string[] args)
         {
-            for(int i = 0; true; i++)
+            while (true)
             {
-                m_random = new Random(i);
-                bool isWin = PlayGame();
+                Thread player = new Thread(PlayPlayerThread);
+                Thread opponent = new Thread(PlayOpponentThread);
 
-                if (!isWin)
-                {
-                    Console.WriteLine("Losing Seed:" + i);
-                }
+                player.Start();
+                opponent.Start();
+                Thread.Sleep(10000);
             }
         }
         static int HeuristicCalculation(AStarTile from, AStarTile to)
@@ -483,11 +482,22 @@ namespace ConsoleApplication1
             return bombedTiles;
         }
 
-        static bool PlayGame()
+        static void PlayPlayerThread()
         {
-            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");
+            PlayGame("{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }", "5820df82d7d4995d08393b9f");
+        }
 
-            var postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"username\": \"keyboardkommander\" }";
+
+        static void PlayOpponentThread()
+        {
+            PlayGame("{\"devkey\": \"582b14eb8ba62d91533b1312\", \"username\": \"testaccount\" }", "582b14eb8ba62d91533b1312");
+
+        }
+
+        static bool PlayGame(string postData,string key)
+        {
+            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");
+            
             var data = Encoding.ASCII.GetBytes(postData);
 
             request.Method = "POST";
@@ -511,7 +521,7 @@ namespace ConsoleApplication1
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     //////Console.Write(responseString);
                     m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
-                    //Console.Write("Data has been parsed\n");
+                    Console.Write("Data has been parsed\n" + postData);
 
                     m_worldRepresentation = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
 
@@ -811,7 +821,7 @@ namespace ConsoleApplication1
 
                         foreach (int dangerous in tile.GetDangerousTurns())
                         {
-                            /*Console*/.WriteLine("Dangerous on " + dangerous);
+                            //Console.WriteLine("Dangerous on " + dangerous);
                         }
                         do
                         {
@@ -938,7 +948,7 @@ namespace ConsoleApplication1
                     //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
                     //}
 
-                    Console.Write("\nSuperDuperSafeMoves:");
+                    //Console.Write("\nSuperDuperSafeMoves:");
                     foreach (AStarTile safeMove in superDuperSafeMoves)
                     {
                         //Console.Write("\n" + safeMove.X + " " + safeMove.Y);
@@ -1062,7 +1072,7 @@ namespace ConsoleApplication1
                     ////Console.Write(m_parsed.playerID);
                     ////Console.Write(m_parsed.gameID);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
-                    postData = "{\"devkey\": \"5820df82d7d4995d08393b9f\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
+                    postData = "{\"devkey\": \"" + key+ "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
                     request.Method = "POST";
                     request.ContentType = "application/json";
@@ -1075,20 +1085,18 @@ namespace ConsoleApplication1
 
 
                     //Console.Write("\nAction is:" + chosenAction + "\n");
-
+                    
                     using (var stream = request.GetRequestStream())
                     {
                         stream.Write(data, 0, data.Length);
                     }
                     response = (HttpWebResponse)request.GetResponse();
                 }
-                ////Console.Write("Sleeping");
-                System.Threading.Thread.Sleep(100);
                 ////Console.Write("Start Iteration");
             } while (gameNotCompleted);
 
 
-
+            return false;
         }
     }
 }
