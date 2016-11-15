@@ -867,7 +867,7 @@ namespace ConsoleApplication1
                         int bombCount = 0;
                         foreach (AStarTile t in hypotheticalBombedTiles)
                         {
-                            if (t.m_blockType == AStarTile.blockType.SoftBlock)
+                            if (t.m_blockType == AStarTile.blockType.SoftBlock || (m_opponentTile.X == t.X && m_opponentTile.Y == t.Y))
                             {
                                 bombCount++;
                             }
