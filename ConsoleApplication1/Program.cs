@@ -494,10 +494,10 @@ namespace ConsoleApplication1
 
         }
 
-        static bool PlayGame(string postData,string key)
+        static bool PlayGame(string postData, string key)
         {
             var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");
-            
+
             var data = Encoding.ASCII.GetBytes(postData);
 
             request.Method = "POST";
@@ -1072,7 +1072,7 @@ namespace ConsoleApplication1
                     ////Console.Write(m_parsed.playerID);
                     ////Console.Write(m_parsed.gameID);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
-                    postData = "{\"devkey\": \"" + key+ "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
+                    postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
                     request.Method = "POST";
                     request.ContentType = "application/json";
@@ -1085,18 +1085,20 @@ namespace ConsoleApplication1
 
 
                     //Console.Write("\nAction is:" + chosenAction + "\n");
-                    
+
                     using (var stream = request.GetRequestStream())
                     {
                         stream.Write(data, 0, data.Length);
                     }
+                    Thread.Sleep(100);
                     response = (HttpWebResponse)request.GetResponse();
+                    Thread.Sleep(100);
                 }
                 ////Console.Write("Start Iteration");
             } while (gameNotCompleted);
 
-
             return false;
         }
+
     }
 }
