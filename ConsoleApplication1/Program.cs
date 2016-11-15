@@ -376,7 +376,7 @@ namespace ConsoleApplication1
 
                 player.Start();
                 opponent.Start();
-                Thread.Sleep(10000);
+                Thread.Sleep(100000);
             }
         }
         static int HeuristicCalculation(AStarTile from, AStarTile to)
@@ -520,6 +520,10 @@ namespace ConsoleApplication1
                     var responseString = reader.ReadToEnd();
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     //////Console.Write(responseString);
+                    if(responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
+                    {
+                        return false;
+                    }
                     m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
                     Console.Write("Data has been parsed\n" + postData);
 
