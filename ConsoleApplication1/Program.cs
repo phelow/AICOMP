@@ -780,7 +780,7 @@ namespace ConsoleApplication1
                                 neighbors.Add(m_worldRepresentation[current.X, current.Y - 1]);
                             }
 
-                            if (current.SafeOnStep(current.cost * 2))
+                            if (current.SafeOnStep(current.cost * 2) && current != m_opponentTile)
                             {
                                 safeMoves.Add(current);
                             }
@@ -899,7 +899,7 @@ namespace ConsoleApplication1
                     foreach (AStarTile haven in safeHavens)
                     {
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (haven.cost <= 4 && playerBombs < availableBombs)//TODO: calculate how many bombs you have and drop that many.
+                        if (haven.cost <= 4 && playerBombs < availableBombs &&!m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
@@ -999,8 +999,11 @@ namespace ConsoleApplication1
                     }
 
 
-
-                    if (m_playerTile.IsSuperSafe())
+                    if (canBomb && hasBenefit)
+                    {
+                        chosenAction = "b";
+                    }
+                    else if (m_playerTile.IsSuperSafe())
                     {
 
                         object object_coins;
@@ -1051,10 +1054,6 @@ namespace ConsoleApplication1
                         {
                             chosenAction = "buy_pierce";
                             mostNeededCost = bombPierceCost;
-                        }
-                        else if (canBomb && hasBenefit)
-                        {
-                            chosenAction = "b";
                         }
 
 
