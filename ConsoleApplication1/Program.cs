@@ -456,7 +456,7 @@ namespace ConsoleApplication1
                     {
                         continue;
                     }
-
+                    
                     explosionFrontier.Enqueue(new BombSearchState(current.ChargesLeft - 1, current.PiercesLeft, current.Orientation, current.X - 1, current.Y));
                 }
                 else if (current.Orientation == 1)
@@ -760,10 +760,18 @@ namespace ConsoleApplication1
                         //TODO:this is a little bit tricky, try to solve it I guess
                         foreach (Portal p in portals)
                         {
-                            AStarTile outlet = p.GetTileOutlet(current);
-                            if (outlet != null)
+                            AStarTile neighbor = p.GetTileOutlet(current);
+                            if (neighbor != null)
                             {
-                                neighbors.Add(outlet);
+                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                {
+                                    neighbor.CameFrom = current;
+                                }
+                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                                {
+                                    neighbor.cost = current.cost + 1;
+                                }
+                                nextTiles.Enqueue(neighbor);
                             }
                         }
 
@@ -772,22 +780,62 @@ namespace ConsoleApplication1
 
                             if (current.X + 1 < m_parsed.boardSize)
                             {
-                                neighbors.Add(m_worldRepresentation[current.X + 1, current.Y]);
+                                AStarTile neighbor = m_worldRepresentation[current.X + 1, current.Y];
+                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                {
+                                    neighbor.CameFrom = current;
+                                }
+                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                                {
+                                    neighbor.cost = current.cost + 1;
+                                    neighbor.MoveToGetHere = "mr";
+                                }
+                                nextTiles.Enqueue(neighbor);
                             }
 
                             if (current.Y + 1 < m_parsed.boardSize)
                             {
-                                neighbors.Add(m_worldRepresentation[current.X, current.Y + 1]);
+                                AStarTile neighbor = m_worldRepresentation[current.X, current.Y + 1];
+                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                {
+                                    neighbor.CameFrom = current;
+                                }
+                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                                {
+                                    neighbor.cost = current.cost + 1;
+                                    neighbor.MoveToGetHere = "md";
+                                }
+                                nextTiles.Enqueue(neighbor);
                             }
 
                             if (current.X - 1 > 0)
                             {
-                                neighbors.Add(m_worldRepresentation[current.X - 1, current.Y]);
+                                AStarTile neighbor = m_worldRepresentation[current.X-1, current.Y];
+                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                {
+                                    neighbor.CameFrom = current;
+                                }
+                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                                {
+                                    neighbor.cost = current.cost + 1;
+                                    neighbor.MoveToGetHere = "ml";
+                                }
+                                nextTiles.Enqueue(neighbor);
                             }
 
                             if (current.Y - 1 > 0)
                             {
-                                neighbors.Add(m_worldRepresentation[current.X, current.Y - 1]);
+                                AStarTile neighbor = m_worldRepresentation[current.X, current.Y - 1];
+                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                {
+                                    neighbor.CameFrom = current;
+                                }
+                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
+                                {
+                                    neighbor.cost = current.cost + 1;
+                                    neighbor.MoveToGetHere = "mu";
+                                }
+                                nextTiles.Enqueue(neighbor);
                             }
 
                             if (current.SafeOnStep(current.cost * 2) && current != m_opponentTile)
@@ -796,20 +844,7 @@ namespace ConsoleApplication1
                             }
                         }
 
-
-
-                        foreach (AStarTile neighbor in neighbors)
-                        {
-                            if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
-                            {
-                                neighbor.CameFrom = current;
-                            }
-                            if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                            {
-                                neighbor.cost = current.cost + 1;
-                            }
-                            nextTiles.Enqueue(neighbor);
-                        }
+                        
                     }
 
 
@@ -974,28 +1009,9 @@ namespace ConsoleApplication1
                     {
                         chosenAction = "";
                     }
-                    else if (targetTile.X > m_playerTile.X)
-                    {
-                        chosenAction = "mr";
-                    }
-                    else if (targetTile.X < m_playerTile.X)
-                    {
-                        chosenAction = "ml";
-                    }
-                    else if (targetTile.Y < m_playerTile.Y)
-                    {
-                        chosenAction = "mu";
-                    }
-                    else if (targetTile.Y > m_playerTile.Y)
-                    {
-                        chosenAction = "md";
-                    }
-
-
-                    if (targetTile.MoveToGetHere != "")
+                    else
                     {
                         chosenAction = targetTile.MoveToGetHere;
-                        //Console.Write("Making portal move: " + chosenAction);
                     }
 
                     bool hasBenefit = false;
