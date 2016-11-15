@@ -121,7 +121,85 @@ namespace ConsoleApplication1
         }
     }
 
+    public class AStarBoardState
+    {
+        public AStarTile m_projectedPlayerTile;
+        public int m_projectedPlayerOrientation;
 
+        List<Program.Portal> m_portals;
+        List<AStarTile> m_boardState;
+
+        public AStarBoardState(AStarTile projectedPlayerTile, int projectedPlayerOrientation, List<Program.Portal> portals, List<AStarTile> boardState)
+        {
+            this.m_projectedPlayerTile = m_projectedPlayerTile;
+            this.m_projectedPlayerOrientation = projectedPlayerOrientation;
+            this.m_portals = portals;
+            this.m_boardState = boardState;
+
+            //Deep copy all of the elements
+
+            //Check for board state changes
+        }
+
+        public AStarBoardState MoveLeft()
+        {
+
+        }
+
+
+        public AStarBoardState MoveRight()
+        {
+
+        }
+
+
+        public AStarBoardState MoveUp()
+        {
+
+        }
+
+
+        public AStarBoardState TurnDown()
+        {
+
+        }
+
+
+
+        public AStarBoardState TurnLeft()
+        {
+
+        }
+
+
+        public AStarBoardState TurnRight()
+        {
+
+        }
+
+
+        public AStarBoardState TurnUp()
+        {
+
+        }
+
+
+        public AStarBoardState TurnDown()
+        {
+
+        }
+
+        public void ShootBluePortal()
+        {
+
+        }
+
+        public void ShootORangePortal()
+        {
+
+        }
+
+    }
 
     public class AStarTile
     {
