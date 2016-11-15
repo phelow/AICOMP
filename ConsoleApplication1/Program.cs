@@ -909,7 +909,7 @@ namespace ConsoleApplication1
                     foreach (AStarTile haven in safeHavens)
                     {
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (superDuperSafeMoves.Contains(haven) && m_playerTile.isSafeUntil(haven.cost) && playerBombs < availableBombs &&!m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (superDuperSafeMoves.Contains(haven) && m_playerTile.isSafeUntil(haven.cost+2) && playerBombs < availableBombs &&!m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
