@@ -671,15 +671,12 @@ namespace ConsoleApplication1
 
         static void Main(string[] args)
         {
-            while (true)
-            {
-                Thread player = new Thread(PlayPlayerThread);
-                Thread opponent = new Thread(PlayOpponentThread);
+            Thread player = new Thread(PlayPlayerThread);
+            Thread opponent = new Thread(PlayOpponentThread);
 
-                player.Start();
-                opponent.Start();
-                Thread.Sleep(100000);
-            }
+            player.Start();
+            opponent.Start();
+
         }
         static int HeuristicCalculation(AStarTile from, AStarTile to)
         {
@@ -1161,7 +1158,7 @@ namespace ConsoleApplication1
 
 
                     }
-                    
+
 
 
                     //if we can drop a bomb and survive do that
@@ -1382,7 +1379,7 @@ namespace ConsoleApplication1
                         Console.Write("\nTarget tile final:" + targetTile.m_projectedPlayerTile.X + " " + targetTile.m_projectedPlayerTile.Y + " " + targetTile.m_projectedPlayerTile.m_blockType + " Target Tile Original" + origTargetTile.m_projectedPlayerTile.X + " " + origTargetTile.m_projectedPlayerTile.Y + "\n");
                         Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
                     }
-                        if (origTargetTile == null || (origTargetTile.m_projectedPlayerTile.X == m_playerTile.X && origTargetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
+                    if (origTargetTile == null || (origTargetTile.m_projectedPlayerTile.X == m_playerTile.X && origTargetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
                     {
                         chosenAction = "";
                     }
