@@ -1282,7 +1282,7 @@ namespace ConsoleApplication1
                         while(it.m_projectedPlayerTile.X == m_playerTile.X && it.m_projectedPlayerTile.Y == m_playerTile.Y)
                         {
                             Console.WriteLine("Bombing Route: " + it.m_projectedPlayerTile.X + " " + it.m_projectedPlayerTile.Y);
-                            if(!it.m_projectedPlayerTile.isSafeUntil(it.m_cost*2 + 3)) //TODO: this is broken. We don't need to look this far ahead
+                            if(!it.m_projectedPlayerTile.isSafeUntil(7)) //TODO: this is broken. We don't need to look this far ahead
                             {
                                 isSuperSafeRoute = false;
                             }
@@ -1291,7 +1291,7 @@ namespace ConsoleApplication1
 
 
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (m_playerTile.isSafeUntil(haven.m_cost*2 + 3)  && isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (m_playerTile.isSafeUntil(7)  && isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
