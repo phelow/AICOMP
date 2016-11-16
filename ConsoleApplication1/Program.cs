@@ -1197,7 +1197,7 @@ namespace ConsoleApplication1
 
 
                             it = it.m_cameFrom;
-                        } while (isSuperDuperSafe == true && it != null && it.m_cameFrom != null /*TODO: this seems sloppy*/ && !(it.m_cameFrom.m_projectedPlayerTile.X == m_playerTile.X && it.m_cameFrom.m_projectedPlayerTile.Y == m_playerTile.Y));
+                        } while (isSuperDuperSafe == true && it != null/*TODO: this seems sloppy*/ && !(it.m_projectedPlayerTile.X == m_playerTile.X && it.m_projectedPlayerTile.Y == m_playerTile.Y));
 
 
                         if (isSuperDuperSafe && tile.m_projectedPlayerTile.isSafeUntil(999))
@@ -1371,15 +1371,18 @@ namespace ConsoleApplication1
                         //Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
                     }
 
-                    //Console.Write("\nSuperDuperSafeMoves:");
+                    Console.Write("\nSuperDuperSafeMoves:");
                     foreach (AStarBoardState safeMove in superDuperSafeMoves)
                     {
-                        //Console.Write("\n" + safeMove.m_projectedPlayerTile.X + " " + safeMove.m_projectedPlayerTile.Y);
+                        Console.Write("\n" + safeMove.m_projectedPlayerTile.X + " " + safeMove.m_projectedPlayerTile.Y);
                     }
                     ////Console.Write("\n");
-                    ////Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
-                    ////Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-                    if (origTargetTile == null || (origTargetTile.m_projectedPlayerTile.X == m_playerTile.X && origTargetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
+                    if (targetTile != null)
+                    {
+                        Console.Write("\nTarget tile final:" + targetTile.m_projectedPlayerTile.X + " " + targetTile.m_projectedPlayerTile.Y + " " + targetTile.m_projectedPlayerTile.m_blockType + " Target Tile Original" + origTargetTile.m_projectedPlayerTile.X + " " + origTargetTile.m_projectedPlayerTile.Y + "\n");
+                        Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
+                    }
+                        if (origTargetTile == null || (origTargetTile.m_projectedPlayerTile.X == m_playerTile.X && origTargetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
                     {
                         chosenAction = "";
                     }
