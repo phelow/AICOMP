@@ -1139,18 +1139,10 @@ namespace ConsoleApplication1
 
                     foreach (AStarBoardState tile in safeMoves)
                     {
-                        if (tile.m_projectedPlayerTile.GetDangerousTurns().Count > 0)
-                        {
-                            continue;
-                        }
 
                         bool isSuperDuperSafe = true;
                         AStarBoardState it = tile;
-
-                        foreach (int dangerous in tile.m_projectedPlayerTile.GetDangerousTurns())
-                        {
-                            ////Console.WriteLine("Dangerous on " + dangerous);
-                        }
+                        
                         do
                         {
                             if (!(it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost + 2)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost + 3)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost + 1)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 1)))) //TODO: consider passing manual check here
@@ -1279,14 +1271,14 @@ namespace ConsoleApplication1
                         bool isSuperSafeRoute = true;
                         AStarBoardState it = haven;
 
-                        while(it.m_projectedPlayerTile.X == m_playerTile.X && it.m_projectedPlayerTile.Y == m_playerTile.Y)
+                        while(!(it.m_projectedPlayerTile.X == m_playerTile.X && it.m_projectedPlayerTile.Y == m_playerTile.Y))
                         {
                             //Console.WriteLine("Bombing Route: " + it.m_projectedPlayerTile.X + " " + it.m_projectedPlayerTile.Y);
                             if(!it.m_projectedPlayerTile.isSafeUntil(7)) //TODO: this is broken. We don't need to look this far ahead
                             {
                                 isSuperSafeRoute = false;
                             }
-                            it = haven.m_cameFrom;
+                            it = it.m_cameFrom;
                         }
 
 
