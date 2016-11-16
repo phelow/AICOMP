@@ -163,7 +163,7 @@ namespace ConsoleApplication1
         {
             if (turnsUntilDangerous.Count == 0)
             {
-                ////Console.Write("\n" + X + " " + Y + " is completely safe");
+                //////Console.Write("\n" + X + " " + Y + " is completely safe");
                 return true;
             }
 
@@ -171,16 +171,16 @@ namespace ConsoleApplication1
             {
                 if (dangerousTurn == step) //TODO: This is extremely sloppy coding please fix this
                 {
-                    ////Console.Write("\n" + X + " " + Y + " is not safe " + dangerousTurn + " is too similar to " + step);
+                    //////Console.Write("\n" + X + " " + Y + " is not safe " + dangerousTurn + " is too similar to " + step);
                     return false;
                 }
             }
 
-            ////Console.Write("\n" + X + " " + Y + " is safe on turn" + step + " it is unsafe on:");
+            //////Console.Write("\n" + X + " " + Y + " is safe on turn" + step + " it is unsafe on:");
 
             foreach (int dangerousTurn in turnsUntilDangerous)
             {
-                ////Console.Write("\n" + dangerousTurn);
+                //////Console.Write("\n" + dangerousTurn);
             }
 
             return true; //TODO: this seems hack, re-evaluate and talk to darwin.
@@ -392,7 +392,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.X + 1 > m_parsed.boardSize)
                         {
-                            //Console.WriteLine("Out of range");
+                            ////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -402,7 +402,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.Y - 1 < 0)
                         {
-                            //Console.WriteLine("Out of range");
+                            ////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -413,7 +413,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.X - 1 < 0)
                         {
-                            //Console.WriteLine("Out of range");
+                            ////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -423,7 +423,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.Y + 1 < 0)
                         {
-                            //Console.WriteLine("Out of range");
+                            ////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -681,7 +681,7 @@ namespace ConsoleApplication1
             {
                 BombSearchState current = explosionFrontier.Dequeue();
 
-                ////Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
+                //////Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
 
                 bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
                 if (current.ChargesLeft == 1) //TODO: THISISHACKPLZFIX
@@ -697,7 +697,7 @@ namespace ConsoleApplication1
                     BombSearchState portalState = p.GetBombOutlet(current);
                     if (portalState != null)
                     {
-                        //Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
+                        ////Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
                         explosionFrontier.Enqueue(portalState);
                     }
                 }
@@ -794,13 +794,13 @@ namespace ConsoleApplication1
                     string chosenAction = "";
                     var responseString = reader.ReadToEnd();
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    //////Console.Write(responseString);
+                    ////////Console.Write(responseString);
                     if (responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
                     {
                         return false;
                     }
                     m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
-                    //Console.Write("Data has been parsed\n" + postData);
+                    ////Console.Write("Data has been parsed\n" + postData);
 
                     m_worldRepresentation = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
 
@@ -837,7 +837,7 @@ namespace ConsoleApplication1
                             }
                             else
                             {
-                                Console.WriteLine("Color error");
+                                //Console.WriteLine("Color error");
                             }
 
                             if (int_owner == 0)
@@ -934,7 +934,7 @@ namespace ConsoleApplication1
                         {
                             int tick;
                             bomb.Value.TryGetValue("tick", out tick);
-                            ////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
+                            //////Console.Write("\n Setting " + tile.X + " " + tile.Y + " to dangerous on " + tick);
 
                             tile.SetDangerous(tick + 1);
                             tile.SetDangerous(tick + 2);
@@ -1032,7 +1032,7 @@ namespace ConsoleApplication1
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
-                        //Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
+                        ////Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
 
                         bool shouldContinue = false;
 
@@ -1122,7 +1122,7 @@ namespace ConsoleApplication1
                             }
                             else
                             {
-                                //Console.Write(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
+                                ////Console.Write(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
                             }
                         }
 
@@ -1149,24 +1149,24 @@ namespace ConsoleApplication1
 
                         foreach (int dangerous in tile.m_projectedPlayerTile.GetDangerousTurns())
                         {
-                            //Console.WriteLine("Dangerous on " + dangerous);
+                            ////Console.WriteLine("Dangerous on " + dangerous);
                         }
                         do
                         {
                             if (!(it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost + 1)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 1)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 2)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost+2)))) //TODO: consider passing manual check here
                             {
-                                //Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
+                                ////Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
                                 isSuperDuperSafe = false;
                             }
                             else
                             {
-                                //Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
+                                ////Console.Write("\n " + it.X + " " + it.Y + " is compleely safe on turn " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
                             }
 
 
                             foreach (int dangerousTurns in it.m_projectedPlayerTile.GetDangerousTurns())
                             {
-                                //Console.Write("\n\t\t" + dangerousTurns);
+                                ////Console.Write("\n\t\t" + dangerousTurns);
                             }
 
                             
@@ -1176,7 +1176,7 @@ namespace ConsoleApplication1
 
                         if (isSuperDuperSafe)
                         {
-                            ////Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is safe if timed correctly.");
+                            //////Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is safe if timed correctly.");
                             superDuperSafeMoves.Add(tile);
                         }
                     }
@@ -1281,7 +1281,7 @@ namespace ConsoleApplication1
 
                         while(it.m_projectedPlayerTile.X == m_playerTile.X && it.m_projectedPlayerTile.Y == m_playerTile.Y)
                         {
-                            Console.WriteLine("Bombing Route: " + it.m_projectedPlayerTile.X + " " + it.m_projectedPlayerTile.Y);
+                            //Console.WriteLine("Bombing Route: " + it.m_projectedPlayerTile.X + " " + it.m_projectedPlayerTile.Y);
                             if(!it.m_projectedPlayerTile.isSafeUntil(7)) //TODO: this is broken. We don't need to look this far ahead
                             {
                                 isSuperSafeRoute = false;
@@ -1290,9 +1290,10 @@ namespace ConsoleApplication1
                         }
 
 
-                        //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (m_playerTile.isSafeUntil(7)  && isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        ////Console.WriteLine("haven.cost:" + haven.cost);
+                        if (m_playerTile.isSafeUntil(7) && haven.m_cost <= 7  && isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
+                            Console.WriteLine("The tile we can bomb at is:" + haven.m_projectedPlayerTile.X + " " + haven.m_projectedPlayerTile.Y);
                             canBomb = true;
                         }
                     }
@@ -1310,7 +1311,7 @@ namespace ConsoleApplication1
                         foreach (AStarBoardState tile in superDuperSafeMoves)
                         {
 
-                            //Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
+                            ////Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
                             if (targetTile == null)
                             {
                                 targetTile = tile;
@@ -1332,26 +1333,26 @@ namespace ConsoleApplication1
                         targetTile = targetTile.m_cameFrom;
                     }
 
-                    Console.Write("\nsafemoves:");
+                    //Console.Write("\nsafemoves:");
                     foreach (AStarBoardState safemove in safeMoves)
                     {
-                        Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
+                        //Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
                     }
 
-                    Console.Write("\nsupersafemoves:");
+                    //Console.Write("\nsupersafemoves:");
                     foreach (AStarBoardState safemove in superDuperSafeMoves)
                     {
-                        Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
+                        //Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
                     }
 
-                    Console.Write("\nSuperDuperSafeMoves:");
+                    //Console.Write("\nSuperDuperSafeMoves:");
                     foreach (AStarBoardState safeMove in superDuperSafeMoves)
                     {
-                        Console.Write("\n" + safeMove.m_projectedPlayerTile.X + " " + safeMove.m_projectedPlayerTile.Y);
+                        //Console.Write("\n" + safeMove.m_projectedPlayerTile.X + " " + safeMove.m_projectedPlayerTile.Y);
                     }
-                    //Console.Write("\n");
-                    //Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
-                    //Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
+                    ////Console.Write("\n");
+                    ////Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
+                    ////Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
                     if (origTargetTile == null || (origTargetTile.m_projectedPlayerTile.X == m_playerTile.X && origTargetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
                     {
                         chosenAction = "";
@@ -1439,16 +1440,16 @@ namespace ConsoleApplication1
                     }
 
 
-                    //Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
+                    ////Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
 
                     //find out which position maps to it
 
                     //move to that position
 
-                    ////Console.Write(m_parsed.playerID);
-                    ////Console.Write(m_parsed.gameID);
+                    //////Console.Write(m_parsed.playerID);
+                    //////Console.Write(m_parsed.gameID);
 
-                    Console.WriteLine("ChosenAction:" + chosenAction);
+                    //Console.WriteLine("ChosenAction:" + chosenAction);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
@@ -1459,10 +1460,10 @@ namespace ConsoleApplication1
                     // the code that you want to measure comes here
                     watch.Stop();
 
-                    //Console.WriteLine(watch.ElapsedMilliseconds);
+                    ////Console.WriteLine(watch.ElapsedMilliseconds);
 
 
-                    //Console.Write("\nAction is:" + chosenAction + "\n");
+                    ////Console.Write("\nAction is:" + chosenAction + "\n");
 
                     using (var stream = request.GetRequestStream())
                     {
@@ -1472,7 +1473,7 @@ namespace ConsoleApplication1
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
                 }
-                ////Console.Write("Start Iteration");
+                //////Console.Write("Start Iteration");
             } while (gameNotCompleted);
 
             return false;
