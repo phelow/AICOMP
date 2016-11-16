@@ -1208,7 +1208,7 @@ namespace ConsoleApplication1
                                 }
                             }
 
-                            if (isSafe)
+                            if (isSafe && t.m_projectedPlayerTile.cost <= 7)
                             {
                                 safeTilesCount++;
                             }
