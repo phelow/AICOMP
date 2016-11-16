@@ -392,7 +392,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.X + 1 > m_parsed.boardSize)
                         {
-                            Console.WriteLine("Out of range");
+                            //Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -402,7 +402,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.Y - 1 < 0)
                         {
-                            Console.WriteLine("Out of range");
+                            //Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -413,7 +413,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.X - 1 < 0)
                         {
-                            Console.WriteLine("Out of range");
+                            //Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -423,7 +423,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.Y + 1 < 0)
                         {
-                            Console.WriteLine("Out of range");
+                            //Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -697,7 +697,7 @@ namespace ConsoleApplication1
                     BombSearchState portalState = p.GetBombOutlet(current);
                     if (portalState != null)
                     {
-                        Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
+                        //Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
                         explosionFrontier.Enqueue(portalState);
                     }
                 }
@@ -800,7 +800,7 @@ namespace ConsoleApplication1
                         return false;
                     }
                     m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
-                    Console.Write("Data has been parsed\n" + postData);
+                    //Console.Write("Data has been parsed\n" + postData);
 
                     m_worldRepresentation = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
 
@@ -1032,7 +1032,7 @@ namespace ConsoleApplication1
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
-                        Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
+                        //Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
 
                         bool shouldContinue = false;
 
@@ -1122,7 +1122,7 @@ namespace ConsoleApplication1
                             }
                             else
                             {
-                                Console.Write(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
+                                //Console.Write(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
                             }
                         }
 
@@ -1153,7 +1153,7 @@ namespace ConsoleApplication1
                         }
                         do
                         {
-                            if (!it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 2))) //TODO: consider passing manual check here
+                            if (!(it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost + 1)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 1)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 2)) && it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost+2)))) //TODO: consider passing manual check here
                             {
                                 //Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
                                 isSuperDuperSafe = false;
@@ -1276,8 +1276,21 @@ namespace ConsoleApplication1
 
                     foreach (AStarBoardState haven in safeHavens)
                     {
+                        bool isSuperSafeRoute = true;
+                        AStarBoardState it = haven;
+
+                        while(it.m_cameFrom.m_projectedPlayerTile.X == m_playerTile.X && it.m_cameFrom.m_projectedPlayerTile.Y == m_playerTile.Y)
+                        {
+                            if(!m_playerTile.isSafeUntil(haven.m_cost + 2))
+                            {
+                                isSuperSafeRoute = false;
+                            }
+                            it = haven.m_cameFrom;
+                        }
+
+
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (m_playerTile.isSafeUntil(haven.m_cost) && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
@@ -1330,10 +1343,10 @@ namespace ConsoleApplication1
                         Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
                     }
 
-                    //Console.Write("\nSuperDuperSafeMoves:");
+                    Console.Write("\nSuperDuperSafeMoves:");
                     foreach (AStarBoardState safeMove in superDuperSafeMoves)
                     {
-                        //Console.Write("\n" + safeMove.X + " " + safeMove.Y);
+                        Console.Write("\n" + safeMove.m_projectedPlayerTile.X + " " + safeMove.m_projectedPlayerTile.Y);
                     }
                     //Console.Write("\n");
                     //Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
