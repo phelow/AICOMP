@@ -1166,7 +1166,7 @@ namespace ConsoleApplication1
                         } while (isSuperDuperSafe == true && it != null && it.m_cameFrom != null /*TODO: this seems sloppy*/ && !(it.m_cameFrom.m_projectedPlayerTile.X == m_playerTile.X && it.m_cameFrom.m_projectedPlayerTile.Y == m_playerTile.Y) );
                         
 
-                        if (isSuperDuperSafe)
+                        if (isSuperDuperSafe && tile.m_projectedPlayerTile.isSafeUntil(999))
                         {
                             //////Console.Write("\n Adding" + tile.X + " " + tile.Y + " because the path too it is safe if timed correctly.");
                             superDuperSafeMoves.Add(tile);
@@ -1310,7 +1310,7 @@ namespace ConsoleApplication1
                                 continue;
                             }
 
-                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost && tile.m_projectedPlayerTile.isSafeUntil(targetTile.m_cost + 3))
+                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost && tile.m_projectedPlayerTile.isSafeUntil(targetTile.m_cost + 99))
                             {
                                 targetTile = tile;
                             }
@@ -1440,6 +1440,8 @@ namespace ConsoleApplication1
 
                     //////Console.Write(m_parsed.playerID);
                     //////Console.Write(m_parsed.gameID);
+
+                    Console.WriteLine(targetTile.m_projectedPlayerTile.X + " " + targetTile.m_projectedPlayerTile.Y);
 
                     //Console.WriteLine("ChosenAction:" + chosenAction);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
