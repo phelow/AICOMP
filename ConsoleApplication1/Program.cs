@@ -218,6 +218,7 @@ namespace ConsoleApplication1
 
         public AStarTile(int x, int y, blockType bt)
         {
+            turnsUntilDangerous = new List<int>();
             X = y;
             Y = y;
             m_blockType = bt;
@@ -249,24 +250,30 @@ namespace ConsoleApplication1
             public int m_projectedPlayerOrientation;
 
             public int m_cost;
+            
             public string m_moveToGetHere;
 
-            List<Portal> m_portals;
-            AStarTile[,] m_boardState;
+
+            public List<Portal> m_portals;
+            public AStarTile[,] m_boardState;
+            public AStarBoardState m_cameFrom;
 
             public AStarBoardState(AStarTile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, AStarTile[,] boardState, int cost)
             {
+                m_portals = new List<Portal>();
+                m_boardState = new AStarTile[m_parsed.boardSize, m_parsed.boardSize];
                 //Deep copy all of the elements
                 for (int x = 0; x < m_parsed.boardSize; x++)
                 {
                     for (int y = 0; y < m_parsed.boardSize; y++)
                     {
-                        boardState[x, y] = boardState[x, y].CopyConstructor();
+
+                        m_boardState[x, y] = boardState[x, y];//TODO: this boardState[x, y].CopyConstructor();
                     }
 
                 }
 
-                m_projectedPlayerTile = boardState[projectedPlayerTile.X, projectedPlayerTile.Y];
+                m_projectedPlayerTile = m_boardState[projectedPlayerTile.X, projectedPlayerTile.Y];
 
                 m_projectedPlayerOrientation = projectedPlayerOrientation;
 
@@ -284,67 +291,93 @@ namespace ConsoleApplication1
             {
 
             }
-
-            public AStarBoardState MoveLeft()
+            //TODO: this is all wiggity wack you
+            public AStarBoardState MoveLeft(AStarBoardState last)
             {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2);
+                AStarBoardState state =  new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "mr";
+                state.m_cameFrom = last;
+                return state;
             }
 
 
-            public AStarBoardState MoveRight()
+            public AStarBoardState MoveRight(AStarBoardState last)
             {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2);
-
-            }
-
-
-            public AStarBoardState MoveUp()
-            {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2);
-
-            }
-
-
-            public AStarBoardState MoveDown()
-            {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 3, portals, m_boardState, m_cost + 2);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "ml";
+                state.m_cameFrom = last;
+                return state;
 
             }
 
 
-
-            public AStarBoardState TurnLeft()
+            public AStarBoardState MoveUp(AStarBoardState last)
             {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2);
-
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "mu";
+                state.m_cameFrom = last;
+                return state;
             }
 
 
-            public AStarBoardState TurnRight()
+            public AStarBoardState MoveDown(AStarBoardState last)
             {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2);
-
-            }
-
-
-            public AStarBoardState TurnUp()
-            {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 1, portals, m_boardState, m_cost + 2);
-
-            }
-
-
-            public AStarBoardState TurnDown()
-            {
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 3, portals, m_boardState, m_cost + 2);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "md";
+                state.m_cameFrom = last;
+                return state;
 
             }
 
 
 
-            public AStarBoardState ShootBluePortal()
+            public AStarBoardState TurnLeft(AStarBoardState last)
             {
-                return ShoootPortal(false);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "tl";
+                state.m_cameFrom = last;
+                return state;
+
+            }
+
+
+            public AStarBoardState TurnRight(AStarBoardState last)
+            {
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "tr";
+                state.m_cameFrom = last;
+                return state;
+
+            }
+
+
+            public AStarBoardState TurnUp(AStarBoardState last)
+            {
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 1, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "tu";
+                state.m_cameFrom = last;
+                return state;
+
+            }
+
+
+            public AStarBoardState TurnDown(AStarBoardState last)
+            {
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 3, portals, m_boardState, m_cost + 2);
+                state.m_moveToGetHere = "td";
+                state.m_cameFrom = last;
+                return state;
+
+            }
+
+
+
+            public AStarBoardState ShootBluePortal(AStarBoardState last)
+            {
+                AStarBoardState state = ShoootPortal(false);
+                state.m_moveToGetHere = "op";
+                state.m_cameFrom = last;
+                return state;
 
             }
 
@@ -353,7 +386,7 @@ namespace ConsoleApplication1
 
                 AStarTile tileIt = m_projectedPlayerTile;
 
-                while (tileIt.m_blockType != AStarTile.blockType.HardBlock || tileIt.m_blockType != AStarTile.blockType.SoftBlock)
+                while (! (tileIt.m_blockType == AStarTile.blockType.HardBlock || tileIt.m_blockType == AStarTile.blockType.SoftBlock))
                 {
                     if (m_projectedPlayerOrientation == 0)
                     {
@@ -436,9 +469,12 @@ namespace ConsoleApplication1
                 return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2);
             }
 
-            public AStarBoardState ShootORangePortal()
+            public AStarBoardState ShootORangePortal(AStarBoardState last)
             {
-                return ShoootPortal(true);
+                AStarBoardState state = ShoootPortal(true);
+                state.m_moveToGetHere = "bp";
+                state.m_cameFrom = last;
+                return state;
 
             }
 
@@ -446,8 +482,8 @@ namespace ConsoleApplication1
         public class Portal
         {
             private Portal m_linkedPortal;
-            private int m_x;
-            private int m_y;
+            public int m_x;
+            public int m_y;
             private int m_orientation;
             public int m_owner;
             public bool m_isOrange;
@@ -526,12 +562,12 @@ namespace ConsoleApplication1
                 }
             }
 
-            public AStarTile GetTileOutlet(AStarTile inlet)
+            public AStarBoardState GetTileOutlet(AStarBoardState inlet)
             {
-                if (!((inlet.Y == this.m_y && inlet.X - 1 == this.m_x) && this.m_orientation == 2) /*inlet is left and this is right*/
-                    || ((inlet.Y == this.m_y && inlet.X + 1 == this.m_x) && this.m_orientation == 0 /*inlet is right and this is left*/
-                    || ((inlet.Y == this.m_y - 1 && inlet.X == this.m_x) && this.m_orientation == 3) /*inlet is up and this is down*/
-                    || ((inlet.Y == this.m_y + 1 && inlet.X == this.m_x) && this.m_orientation == 1) /*inlet is down and this is up*/
+                if (!((inlet.m_projectedPlayerTile.Y == this.m_y && inlet.m_projectedPlayerTile.X - 1 == this.m_x) && this.m_orientation == 2) /*inlet is left and this is right*/
+                    || ((inlet.m_projectedPlayerTile.Y == this.m_y && inlet.m_projectedPlayerTile.X + 1 == this.m_x) && this.m_orientation == 0 /*inlet is right and this is left*/
+                    || ((inlet.m_projectedPlayerTile.Y == this.m_y - 1 && inlet.m_projectedPlayerTile.X == this.m_x) && this.m_orientation == 3) /*inlet is up and this is down*/
+                    || ((inlet.m_projectedPlayerTile.Y == this.m_y + 1 && inlet.m_projectedPlayerTile.X == this.m_x) && this.m_orientation == 1) /*inlet is down and this is up*/
 
                     ))
                 {
@@ -544,27 +580,29 @@ namespace ConsoleApplication1
                 }
 
                 AStarTile ret = m_linkedPortal.OutletAStarTile();
+                AStarBoardState retu = new AStarBoardState( inlet.m_boardState[ret.X, ret.Y],0,inlet.m_portals,inlet.m_boardState,inlet.m_cost + 2);
 
                 if (this.m_orientation == 2) //TODO: check these orientations
                 {
-                    ret.MoveToGetHere = "mr";
+                    retu.m_moveToGetHere = "mr";
+                    
                 }
                 else if (this.m_orientation == 0)
                 {
-                    ret.MoveToGetHere = "ml";
+                    retu.m_moveToGetHere = "ml";
                 }
                 else if (this.m_orientation == 3)
                 {
-                    ret.MoveToGetHere = "mu";
+                    retu.m_moveToGetHere = "mu";
                 }
                 else
                 {
-                    ret.MoveToGetHere = "md";
+                    retu.m_moveToGetHere = "md";
                 }
 
 
 
-                return ret;
+                return retu;
 
             }
 
@@ -919,6 +957,10 @@ namespace ConsoleApplication1
 
                     gameNotCompleted = m_parsed.state != "complete";
 
+                    object object_playerOrientation;
+                    m_parsed.player.TryGetValue("orientation", out object_playerOrientation);
+                    int int_orientation = Convert.ToInt32(object_playerOrientation);
+
                     object object_playerX;
                     object object_playerY;
                     m_parsed.player.TryGetValue("x", out object_playerX);
@@ -959,12 +1001,15 @@ namespace ConsoleApplication1
                     }
 
 
-                    List<AStarTile> safeMoves = new List<AStarTile>();
-                    HashSet<AStarTile> visited = new HashSet<AStarTile>();
-                    Queue<AStarTile> nextTiles = new Queue<AStarTile>();
+                    List<AStarBoardState> safeMoves = new List<AStarBoardState>();
+                    HashSet<AStarBoardState> visited = new HashSet<AStarBoardState>();
+                    Queue<AStarBoardState> nextTiles = new Queue<AStarBoardState>();
 
                     m_playerTile.cost = 1;
-                    nextTiles.Enqueue(m_playerTile);
+
+
+
+                    nextTiles.Enqueue(new AStarBoardState(m_playerTile, int_orientation,portals,m_worldRepresentation,1));
 
 
                     int playerPiercing;
@@ -985,103 +1030,99 @@ namespace ConsoleApplication1
                     //BFS search to find all safe tiles
                     while (nextTiles.Count > 0)
                     {
-                        AStarTile current = nextTiles.Dequeue();
+                        AStarBoardState current = nextTiles.Dequeue();
 
-                        if (visited.Contains(current))
+                        Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
+
+                        bool shouldContinue = false;
+
+                        foreach(AStarBoardState it in visited)
+                        {
+                            bool different = false;
+
+                            for(int i = 0; i < it.m_portals.Count; i++)
+                            {
+                                if(it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y)
+                                {
+                                }
+                                else
+                                {
+                                    different = true;
+                                }
+                            }
+
+                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
+                            {
+                                shouldContinue = true;
+                            }
+                        }
+
+
+                        if (shouldContinue) //TODO: This will no longer work fix this
                         {
                             continue;
                         }
 
                         visited.Add(current);
-
-                        List<AStarTile> neighbors = new List<AStarTile>();
+                        
 
 
 
                         //TODO:this is a little bit tricky, try to solve it I guess
                         foreach (Portal p in portals)
                         {
-                            AStarTile neighbor = p.GetTileOutlet(current);
+                            AStarBoardState neighbor = p.GetTileOutlet(current);
                             if (neighbor != null)
                             {
-                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
+                                if (neighbor.m_cameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
                                 {
-                                    neighbor.CameFrom = current;
-                                }
-                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                                {
-                                    neighbor.cost = current.cost + 1;
+                                    neighbor.m_cameFrom = current;
                                 }
                                 nextTiles.Enqueue(neighbor);
                             }
                         }
 
-                        if (current.m_blockType == AStarTile.blockType.Passable)
+                        if (current.m_projectedPlayerTile.m_blockType == AStarTile.blockType.Passable)
                         {
 
-                            if (current.X + 1 < m_parsed.boardSize)
+
+                            nextTiles.Enqueue(current.TurnDown(current));
+
+                            nextTiles.Enqueue(current.TurnLeft(current));
+                            nextTiles.Enqueue(current.TurnRight(current));
+                            nextTiles.Enqueue(current.TurnUp(current));
+
+                            nextTiles.Enqueue(current.ShootBluePortal(current));
+                            nextTiles.Enqueue(current.ShootORangePortal(current));
+                            if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                             {
-                                AStarTile neighbor = m_worldRepresentation[current.X + 1, current.Y];
-                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
-                                {
-                                    neighbor.CameFrom = current;
-                                }
-                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                                {
-                                    neighbor.cost = current.cost + 1;
-                                    neighbor.MoveToGetHere = "mr";
-                                }
-                                nextTiles.Enqueue(neighbor);
+                               
+                                nextTiles.Enqueue(current.MoveLeft(current));
                             }
 
-                            if (current.Y + 1 < m_parsed.boardSize)
+                            if (current.m_projectedPlayerTile.Y + 1 < m_parsed.boardSize)
                             {
-                                AStarTile neighbor = m_worldRepresentation[current.X, current.Y + 1];
-                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
-                                {
-                                    neighbor.CameFrom = current;
-                                }
-                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                                {
-                                    neighbor.cost = current.cost + 1;
-                                    neighbor.MoveToGetHere = "md";
-                                }
-                                nextTiles.Enqueue(neighbor);
+                                nextTiles.Enqueue(current.MoveDown(current));
                             }
 
-                            if (current.X - 1 > 0)
+                            if (current.m_projectedPlayerTile.X - 1 > 0)
                             {
-                                AStarTile neighbor = m_worldRepresentation[current.X - 1, current.Y];
-                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
-                                {
-                                    neighbor.CameFrom = current;
-                                }
-                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                                {
-                                    neighbor.cost = current.cost + 1;
-                                    neighbor.MoveToGetHere = "ml";
-                                }
-                                nextTiles.Enqueue(neighbor);
+                                nextTiles.Enqueue(current.MoveRight(current));
                             }
 
-                            if (current.Y - 1 > 0)
+                            if (current.m_projectedPlayerTile.Y - 1 > 0)
                             {
-                                AStarTile neighbor = m_worldRepresentation[current.X, current.Y - 1];
-                                if (neighbor.CameFrom == null) //TODO: this is not write, it should overwrite. This is a hack fix. Plzfix
-                                {
-                                    neighbor.CameFrom = current;
-                                }
-                                if (neighbor.cost < 0 || current.cost + 1 < neighbor.cost)
-                                {
-                                    neighbor.cost = current.cost + 1;
-                                    neighbor.MoveToGetHere = "mu";
-                                }
-                                nextTiles.Enqueue(neighbor);
+                                nextTiles.Enqueue(current.MoveUp(current));
                             }
 
-                            if (current.SafeOnStep(current.cost * 2) && current != m_opponentTile)
+
+                            if (current.m_projectedPlayerTile.SafeOnStep(current.m_cost) && !(current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y) )
                             {
                                 safeMoves.Add(current);
+                            }
+                            else
+                            {
+                                Console.Write(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
                             }
                         }
 
@@ -1091,31 +1132,28 @@ namespace ConsoleApplication1
 
                     //if we can drop a bomb and survive do that
                     bool canBomb = false;
-                    object orientation;
-                    m_parsed.player.TryGetValue("orientation", out orientation);
-                    int int_orientation = Convert.ToInt32(orientation);
 
 
-                    List<AStarTile> superDuperSafeMoves = new List<AStarTile>(); //safe moves with paths consisting of safe moves
+                    List<AStarBoardState> superDuperSafeMoves = new List<AStarBoardState>(); //safe moves with paths consisting of safe moves
 
 
-                    foreach (AStarTile tile in safeMoves)
+                    foreach (AStarBoardState tile in safeMoves)
                     {
-                        if (tile.GetDangerousTurns().Count > 0)
+                        if (tile.m_projectedPlayerTile.GetDangerousTurns().Count > 0)
                         {
                             continue;
                         }
 
                         bool isSuperDuperSafe = true;
-                        AStarTile it = tile;
+                        AStarBoardState it = tile;
 
-                        foreach (int dangerous in tile.GetDangerousTurns())
+                        foreach (int dangerous in tile.m_projectedPlayerTile.GetDangerousTurns())
                         {
                             //Console.WriteLine("Dangerous on " + dangerous);
                         }
                         do
                         {
-                            if (!it.SafeOnStep((it.cost - 1) * 2)) //TODO: consider passing manual check here
+                            if (!it.m_projectedPlayerTile.SafeOnStep((it.m_projectedPlayerTile.cost - 2))) //TODO: consider passing manual check here
                             {
                                 //Console.Write("\n XXXX" + it.X + " " + it.Y + " is not safe " + ((it.cost - 1) * 2) + " the only time when the player would cross it");
                                 isSuperDuperSafe = false;
@@ -1126,18 +1164,15 @@ namespace ConsoleApplication1
                             }
 
 
-                            foreach (int dangerousTurns in it.GetDangerousTurns())
+                            foreach (int dangerousTurns in it.m_projectedPlayerTile.GetDangerousTurns())
                             {
                                 //Console.Write("\n\t\t" + dangerousTurns);
                             }
 
-                            it = it.CameFrom;
-                        } while (isSuperDuperSafe == true && it != null && it.CameFrom != m_playerTile && !(it.X == m_playerTile.X && it.Y == m_playerTile.Y));
-
-                        if (!it.SafeOnStep((it.cost - 1) * 2))
-                        {
-                            isSuperDuperSafe = false;
-                        }
+                            
+                            it = it.m_cameFrom;
+                        } while (isSuperDuperSafe == true && it != null && it.m_cameFrom != null /*TODO: this seems sloppy*/ && !(it.m_cameFrom.m_projectedPlayerTile.X == m_playerTile.X && it.m_cameFrom.m_projectedPlayerTile.Y == m_playerTile.Y) );
+                        
 
                         if (isSuperDuperSafe)
                         {
@@ -1146,10 +1181,10 @@ namespace ConsoleApplication1
                         }
                     }
 
-                    foreach (AStarTile tile in superDuperSafeMoves)
+                    foreach (AStarBoardState tile in superDuperSafeMoves)
                     {
 
-                        List<AStarTile> hypotheticalBombedTiles = GetBombedSquares(tile.X, tile.Y, playerPiercing, playerRange);
+                        List<AStarTile> hypotheticalBombedTiles = GetBombedSquares(tile.m_projectedPlayerTile.X, tile.m_projectedPlayerTile.Y, playerPiercing, playerRange); //TODO: account for tiles that will be destroyed then
                         int bombCount = 0;
                         foreach (AStarTile t in hypotheticalBombedTiles)
                         {
@@ -1159,11 +1194,30 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        tile.m_numTargets = bombCount;
+                        tile.m_projectedPlayerTile.m_numTargets = bombCount;
 
-                        if (superDuperSafeMoves.Except(hypotheticalBombedTiles).ToList().Count == 0)
+                        int safeTilesCount = 0;
+                        foreach(AStarBoardState t in superDuperSafeMoves)
                         {
-                            tile.m_numTargets = 0;
+                            bool isSafe = true;
+                            foreach (AStarTile bombedTile in hypotheticalBombedTiles)
+                            {
+                                if(t.m_projectedPlayerTile.X == bombedTile.X && t.m_projectedPlayerTile.Y == bombedTile.Y)
+                                {
+                                    isSafe = false;
+                                }
+                            }
+
+                            if (isSafe)
+                            {
+                                safeTilesCount++;
+                            }
+                        }
+
+
+                        if (safeTilesCount == 0)
+                        {
+                            tile.m_projectedPlayerTile.m_numTargets = 0;
                         }
                     }
 
@@ -1171,7 +1225,45 @@ namespace ConsoleApplication1
 
                     List<AStarTile> bTiles = GetBombedSquares(m_playerTile.X, m_playerTile.Y, playerPiercing, playerRange);
 
-                    List<AStarTile> safeHavens = superDuperSafeMoves.Except(bTiles).ToList();
+
+                    //TODO: stop looking for safe havens just try to stay alive the longest
+                    List<AStarBoardState> safeHavens = new List<AStarBoardState>();// = superDuperSafeMoves.Except(bTiles).ToList();
+
+                    foreach(AStarBoardState state in superDuperSafeMoves)
+                    {
+                        bool isSafeHaven = true;
+
+                        foreach(AStarTile t in bTiles)
+                        {
+                            if(state.m_projectedPlayerTile.X == t.X && state.m_projectedPlayerTile.Y == t.Y)
+                            {
+                                isSafeHaven = false;
+                            }
+                        }
+
+                        if (isSafeHaven)
+                        {
+                            safeHavens.Add(state);
+                        }
+                    }
+
+                    foreach(AStarTile tile in bTiles)
+                    {
+                        List<AStarBoardState> toRemove = new List<AStarBoardState>();
+                        foreach(AStarBoardState state in safeHavens)
+                        {
+                            if(state.m_projectedPlayerTile.X == tile.X && state.m_projectedPlayerTile.Y == tile.Y)
+                            {
+                                toRemove.Add(state);
+                            }
+                        }
+
+                        foreach (AStarBoardState r in toRemove)
+                        {
+                            safeHavens.Remove(r);
+                        }
+                    }
+
 
                     int availableBombs;
 
@@ -1182,26 +1274,26 @@ namespace ConsoleApplication1
                     availableBombs = Convert.ToInt32(object_availableBombs);
 
 
-                    foreach (AStarTile haven in safeHavens)
+                    foreach (AStarBoardState haven in safeHavens)
                     {
                         //Console.WriteLine("haven.cost:" + haven.cost);
-                        if (superDuperSafeMoves.Contains(haven) && m_playerTile.isSafeUntil(haven.cost + 2) && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (m_playerTile.isSafeUntil(haven.m_cost) && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             canBomb = true;
                         }
                     }
 
 
-                    AStarTile targetTile = null;
+                    AStarBoardState targetTile = null;
 
                     //Pick your target tile
                     if (superDuperSafeMoves.Count == 0)
                     {
-                        targetTile = m_playerTile;
+                        targetTile = null;
                     }
                     else
                     {
-                        foreach (AStarTile tile in superDuperSafeMoves)
+                        foreach (AStarBoardState tile in superDuperSafeMoves)
                         {
 
                             //Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
@@ -1211,7 +1303,7 @@ namespace ConsoleApplication1
                                 continue;
                             }
 
-                            if (tile.m_numTargets / (float)tile.cost > targetTile.m_numTargets / (float)targetTile.cost)
+                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost)
                             {
                                 targetTile = tile;
                             }
@@ -1220,39 +1312,39 @@ namespace ConsoleApplication1
                     }
 
 
-                    AStarTile origTargetTile = targetTile;
-                    while (targetTile.CameFrom != m_playerTile && targetTile != m_playerTile)
+                    AStarBoardState origTargetTile = targetTile;
+                    while (/*TODO: plzno*/ targetTile != null && targetTile.m_cameFrom != null && !(targetTile.m_cameFrom.m_projectedPlayerTile.X == m_playerTile.X && targetTile.m_cameFrom.m_projectedPlayerTile.Y == m_playerTile.Y) && !(targetTile.m_projectedPlayerTile.X == m_playerTile.X && targetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
                     {
-                        targetTile = targetTile.CameFrom;
+                        targetTile = targetTile.m_cameFrom;
                     }
 
-                    //////Console.Write("\nSafeMoves:");
-                    //foreach (AStarTile safeMove in safeMoves)
-                    //{
-                    //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
-                    //}
+                    Console.Write("\nsafemoves:");
+                    foreach (AStarBoardState safemove in safeMoves)
+                    {
+                        Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
+                    }
 
-                    //////Console.Write("\nSuperSafeMoves:");
-                    //foreach (AStarTile safeMove in superSafeMoves)
-                    //{
-                    //    ////Console.Write("\n" + safeMove.X + " " + safeMove.Y);
-                    //}
+                    Console.Write("\nsupersafemoves:");
+                    foreach (AStarBoardState safemove in superDuperSafeMoves)
+                    {
+                        Console.Write("\n" + safemove.m_projectedPlayerTile.X + " " + safemove.m_projectedPlayerTile.Y);
+                    }
 
                     //Console.Write("\nSuperDuperSafeMoves:");
-                    foreach (AStarTile safeMove in superDuperSafeMoves)
+                    foreach (AStarBoardState safeMove in superDuperSafeMoves)
                     {
                         //Console.Write("\n" + safeMove.X + " " + safeMove.Y);
                     }
                     //Console.Write("\n");
                     //Console.Write("\nTarget tile final:" + targetTile.X + " " + targetTile.Y + " " + targetTile.m_blockType + " Target Tile Original" + origTargetTile.X + " " + origTargetTile.Y + "\n");
                     //Console.Write("\nMy position:" + m_playerTile.X + " " + m_playerTile.Y + "\n");
-                    if (origTargetTile.X == m_playerTile.X && origTargetTile.Y == m_playerTile.Y)
+                    if (origTargetTile == null || (origTargetTile.m_projectedPlayerTile.X == m_playerTile.X && origTargetTile.m_projectedPlayerTile.Y == m_playerTile.Y))
                     {
                         chosenAction = "";
                     }
                     else
                     {
-                        chosenAction = targetTile.MoveToGetHere;
+                        chosenAction = targetTile.m_moveToGetHere;
                     }
 
                     bool hasBenefit = false;
@@ -1341,6 +1433,8 @@ namespace ConsoleApplication1
 
                     ////Console.Write(m_parsed.playerID);
                     ////Console.Write(m_parsed.gameID);
+
+                    Console.WriteLine("ChosenAction:" + chosenAction);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
