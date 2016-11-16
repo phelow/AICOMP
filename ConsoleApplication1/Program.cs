@@ -1283,7 +1283,7 @@ namespace ConsoleApplication1
 
 
                         ////Console.WriteLine("haven.cost:" + haven.cost);
-                        if (m_playerTile.isSafeUntil(7) && haven.m_cost <= 7  && isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
+                        if (m_playerTile.isSafeUntil(7) && haven.m_projectedPlayerTile.isSafeUntil(haven.m_cost) && haven.m_cost <= 7  && isSuperSafeRoute && playerBombs < availableBombs && !m_parsed.bombMap.ContainsKey(m_playerTile.X + "," + m_playerTile.Y))//TODO: calculate how many bombs you have and drop that many.
                         {
                             Console.WriteLine("The tile we can bomb at is:" + haven.m_projectedPlayerTile.X + " " + haven.m_projectedPlayerTile.Y);
                             canBomb = true;
@@ -1310,7 +1310,7 @@ namespace ConsoleApplication1
                                 continue;
                             }
 
-                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost && tile.m_projectedPlayerTile.isSafeUntil(2))
+                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost && tile.m_projectedPlayerTile.isSafeUntil(targetTile.m_cost + 3))
                             {
                                 targetTile = tile;
                             }
