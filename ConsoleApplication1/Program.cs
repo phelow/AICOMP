@@ -1318,7 +1318,7 @@ namespace ConsoleApplication1
                                 continue;
                             }
 
-                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost)
+                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost && tile.m_projectedPlayerTile.isSafeUntil(2))
                             {
                                 targetTile = tile;
                             }
