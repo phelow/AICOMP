@@ -465,6 +465,30 @@ namespace ConsoleApplication1
                 }
 
                 portals.Add(new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
+                List<Portal> playerPortals = new List<Portal>();
+                List<Portal> opponentPortals = new List<Portal>();
+                foreach(Portal p in portals)
+                {
+                    if (p.m_owner == m_parsed.playerIndex)
+                    {
+                        playerPortals.Add(p);
+                    }
+                    else
+                    {
+                        opponentPortals.Add(p);
+                    }
+                }
+
+                if(opponentPortals.Count == 2)
+                {
+                    Portal.LinkPortals(opponentPortals[0], opponentPortals[1]);
+                }
+
+
+                if (playerPortals.Count == 2)
+                {
+                    Portal.LinkPortals(playerPortals[0], playerPortals[1]);
+                }
 
                 return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2);
             }
@@ -1042,15 +1066,22 @@ namespace ConsoleApplication1
                         {
                             bool different = false;
 
-                            for(int i = 0; i < it.m_portals.Count; i++)
+                            if (it.m_portals.Count == current.m_portals.Count)
                             {
-                                if(it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y)
+                                for (int i = 0; i < it.m_portals.Count; i++)
                                 {
+                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        different = true;
+                                    }
                                 }
-                                else
-                                {
-                                    different = true;
-                                }
+                            }
+                            else
+                            {
+                                different = true;
                             }
 
                             if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
