@@ -949,7 +949,9 @@ namespace ConsoleApplication1
 
                             m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(0);
                             m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(1);
-                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(2); //TODO SEEMS HACKISH
+                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(2);
+                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(3);
+                            m_worldRepresentation[bombCoords[0], bombCoords[1]].SetDangerous(4); //TODO SEEMS HACKISH
                         }
                     }
 
