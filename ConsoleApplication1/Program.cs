@@ -1279,7 +1279,7 @@ namespace ConsoleApplication1
                         bool isSuperSafeRoute = true;
                         AStarBoardState it = haven;
 
-                        while(it.m_cameFrom.m_projectedPlayerTile.X == m_playerTile.X && it.m_cameFrom.m_projectedPlayerTile.Y == m_playerTile.Y)
+                        while(it.m_projectedPlayerTile.X == m_playerTile.X && it.m_projectedPlayerTile.Y == m_playerTile.Y)
                         {
                             if(!it.m_projectedPlayerTile.isSafeUntil(it.m_cost + 2))
                             {
