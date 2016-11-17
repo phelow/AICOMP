@@ -213,10 +213,11 @@ namespace ConsoleApplication1
 
             public float GetScore()
             {//TODO: cache sco
-                if (m_safeMoves.Count == 0)
+                if(Safe() == false)
                 {
-                    return -1000;
+                    return 0;
                 }
+
                 float score = 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
 
 
@@ -435,7 +436,7 @@ namespace ConsoleApplication1
 
                 foreach (Tile t in bombedTiles)
                 {
-                    t.m_bombTick = tick;
+                    m_worldRepresentation[t.X, t.Y].m_bombTick = tick;
                 }
                 return true;
             }
@@ -518,6 +519,11 @@ namespace ConsoleApplication1
                     if (m_bombMap[key] < 0 && m_bombMap[key] > -4) //TODO: not accounting for trail
                     {
                         List<Tile> bombedSquares = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
+
+                        if (bombedSquares.Contains(m_projectedPlayerTile))
+                        {
+                            m_coinsAvailable = -9000;
+                        }
 
                         foreach (Tile t in bombedSquares)
                         {
