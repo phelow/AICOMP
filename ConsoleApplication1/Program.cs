@@ -214,6 +214,7 @@ namespace ConsoleApplication1
             public float GetScore()
             {//TODO: cache sco
                 float score = 10 * (m_pierce + m_count + m_range) + m_coinsAvailable + m_portals.Count * 100;
+                score = score / m_cost;
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
@@ -915,10 +916,10 @@ namespace ConsoleApplication1
         static void Main(string[] args)
         {
             Thread player = new Thread(PlayPlayerThread);
-            Thread opponent = new Thread(PlayOpponentThread);
+            //Thread opponent = new Thread(PlayOpponentThread);
 
             player.Start();
-            opponent.Start();
+            //opponent.Start();
 
 
         }
@@ -942,7 +943,7 @@ namespace ConsoleApplication1
 
         static bool PlayGame(string postData, string key)
         {
-            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");
+            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");
 
             var data = Encoding.ASCII.GetBytes(postData);
 
