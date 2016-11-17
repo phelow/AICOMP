@@ -375,7 +375,7 @@ namespace ConsoleApplication1
             public AStarBoardState ShootBluePortal(AStarBoardState last)
             {
                 AStarBoardState state = ShoootPortal(false);
-                state.m_moveToGetHere = "op";
+                state.m_moveToGetHere = "bp";
                 state.m_cameFrom = last;
                 return state;
 
@@ -431,20 +431,6 @@ namespace ConsoleApplication1
 
                     }
                 }
-                Portal toRemove = null;
-                foreach (Portal p in portals)
-                {
-                    if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex)
-                    {
-                        toRemove = p;
-                    }
-                }
-
-                if (toRemove != null)
-                {
-                    portals.Remove(toRemove);
-                }
-
                 int newOrientation = 0;
 
                 if (m_projectedPlayerOrientation == 0)
@@ -463,6 +449,20 @@ namespace ConsoleApplication1
                 {
                     newOrientation = 1;
                 }
+                Portal toRemove = null;
+                foreach (Portal p in portals)
+                {
+                    if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex || (p.m_x == tileIt.X && p.m_y == tileIt.Y && p.m_orientation == newOrientation))
+                    {
+                        toRemove = p;
+                    }
+                }
+
+                if (toRemove != null)
+                {
+                    portals.Remove(toRemove);
+                }
+
 
                 portals.Add(new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
                 List<Portal> playerPortals = new List<Portal>();
@@ -493,10 +493,10 @@ namespace ConsoleApplication1
                 return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2);
             }
 
-            public AStarBoardState ShootORangePortal(AStarBoardState last)
+            public AStarBoardState ShootOrangePortal(AStarBoardState last)
             {
                 AStarBoardState state = ShoootPortal(true);
-                state.m_moveToGetHere = "bp";
+                state.m_moveToGetHere = "op";
                 state.m_cameFrom = last;
                 return state;
 
@@ -508,7 +508,7 @@ namespace ConsoleApplication1
             private Portal m_linkedPortal;
             public int m_x;
             public int m_y;
-            private int m_orientation;
+            public int m_orientation;
             public int m_owner;
             public bool m_isOrange;
             public BombSearchState GetBombOutlet(BombSearchState inlet)
@@ -666,6 +666,7 @@ namespace ConsoleApplication1
         static AStarTile m_opponentTile;
         static AStarTile[,] m_worldRepresentation;
         static List<Portal> portals;
+        static bool locked = false;
 
         static ServerResponse m_parsed;
 
@@ -676,6 +677,7 @@ namespace ConsoleApplication1
 
             player.Start();
             opponent.Start();
+
 
         }
         static int HeuristicCalculation(AStarTile from, AStarTile to)
@@ -812,6 +814,11 @@ namespace ConsoleApplication1
             bool gameNotCompleted = true;
             do
             {
+                while (locked)
+                {
+                    Thread.Sleep(1000);
+                }
+                locked = true;
 
                 using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                 {
@@ -1055,7 +1062,7 @@ namespace ConsoleApplication1
                     }
 
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 5000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
@@ -1071,7 +1078,7 @@ namespace ConsoleApplication1
                             {
                                 for (int i = 0; i < it.m_portals.Count; i++)
                                 {
-                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y)
+                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
                                     {
                                     }
                                     else
@@ -1123,7 +1130,7 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.TurnUp(current));
 
                             nextTiles.Enqueue(current.ShootBluePortal(current));
-                            nextTiles.Enqueue(current.ShootORangePortal(current));
+                            nextTiles.Enqueue(current.ShootOrangePortal(current));
                             if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                             {
 
@@ -1334,14 +1341,28 @@ namespace ConsoleApplication1
                         foreach (AStarBoardState tile in superDuperSafeMoves)
                         {
 
-                            ////Console.Write("\n" + tile.X + " " + tile.Y + " " + tile.m_numTargets / (float)tile.cost);
+                            Console.Write("\n" + tile.m_projectedPlayerTile.X + " " + tile.m_projectedPlayerTile.Y + " " + tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost);
+                            AStarBoardState it = tile;
+                            while (it.m_cameFrom != null)
+                            {
+                                Console.Write("\n\t\t " + it.m_projectedPlayerTile.X + " " + it.m_projectedPlayerTile.Y + " " + it.m_moveToGetHere);
+
+                                it = it.m_cameFrom;
+                            }
+
                             if (targetTile == null)
                             {
                                 targetTile = tile;
                                 continue;
                             }
 
-                            if (tile.m_projectedPlayerTile.m_numTargets / (float)tile.m_cost > targetTile.m_projectedPlayerTile.m_numTargets / (float)targetTile.m_cost && tile.m_projectedPlayerTile.isSafeUntil(targetTile.m_cost + 99))
+
+                            float tileValue = tile.m_portals.Count * 1000 + (tile.m_projectedPlayerTile.m_numTargets) / (float)tile.m_cost;
+                            float currentValue = targetTile.m_portals.Count * 1000 + (targetTile.m_projectedPlayerTile.m_numTargets) / (float)targetTile.m_cost;
+
+
+
+                            if (tileValue > currentValue && tile.m_projectedPlayerTile.isSafeUntil(targetTile.m_cost + 99))
                             {
                                 targetTile = tile;
                             }
@@ -1398,12 +1419,13 @@ namespace ConsoleApplication1
                         hasBenefit = true;
                     }
 
+                    
 
                     if (canBomb && hasBenefit)
                     {
                         chosenAction = "b";
                     }
-                    else if (m_playerTile.IsSuperSafe())
+                    else if (m_playerTile.IsSuperSafe() && chosenAction == "") //TODO: bake these moves into the AStar search
                     {
 
                         object object_coins;
@@ -1465,7 +1487,6 @@ namespace ConsoleApplication1
 
                     }
 
-
                     ////Console.Write("Canbomb:" + canBomb + " hasBenefit:" + hasBenefit);
 
                     //find out which position maps to it
@@ -1477,7 +1498,7 @@ namespace ConsoleApplication1
 
                     //Console.WriteLine(targetTile.m_projectedPlayerTile.X + " " + targetTile.m_projectedPlayerTile.Y);
 
-                    //Console.WriteLine("ChosenAction:" + chosenAction);
+                    Console.WriteLine("ChosenAction:" + chosenAction);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
@@ -1488,7 +1509,7 @@ namespace ConsoleApplication1
                     // the code that you want to measure comes here
                     watch.Stop();
 
-                    ////Console.WriteLine(watch.ElapsedMilliseconds);
+                    Console.WriteLine("Time:" + watch.ElapsedMilliseconds);
 
 
                     ////Console.Write("\nAction is:" + chosenAction + "\n");
@@ -1497,6 +1518,7 @@ namespace ConsoleApplication1
                     {
                         stream.Write(data, 0, data.Length);
                     }
+                    locked = false;
                     Thread.Sleep(100);
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
