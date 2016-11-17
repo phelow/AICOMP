@@ -211,33 +211,40 @@ namespace ConsoleApplication1
 
             public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
 
+            public float StateScore()
+            {
+                return 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+            }
+
             public float GetScore(float tabs = 0)
-            {//TODO: cache sco
-                if(Safe() == false)
+            {//TODO: cache sco                    
+                string t = "";
+
+                for (int i = 0; i < tabs; i++)
                 {
+                    t += " ";
+                }
+                if (Safe() == false || m_safeMoves.Count == 0)
+                {
+                    //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return 0;
                 }
 
-                float score = 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+                float score = StateScore();// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
 
 
                 //                Console.WriteLine("\t\t-" + score);
 
-                score = score / m_cost;
+                score = score;// / m_cost;
 
                 float scoreAdd = 0;
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
-                    string t = "";
 
-                    for(int i = 0; i < tabs; i++)
-                    {
-                        t += " ";
-                    }
 
-                   // Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
-                    scoreAdd += child.GetScore(tabs + 1) ;
+                    Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
+                    scoreAdd += child.GetScore(tabs + 1);
                 }
                 score += scoreAdd;
 
@@ -727,7 +734,7 @@ namespace ConsoleApplication1
                 {
                     if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex)
                     {
-                        if(p.m_orientation == newOrientation)
+                        if (p.m_orientation == newOrientation)
                         {
                             return null;
                         }
@@ -1259,17 +1266,17 @@ namespace ConsoleApplication1
 
 
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 200)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
-                        if (current == null || current.Safe() == false)
+                        if (current == null || current.Safe() == false || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                         {
                             continue;
                         }
 
                         current.TickBombs();
 
-                        ////Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
+                        //Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
 
                         bool shouldContinue = false;
 
@@ -1277,17 +1284,18 @@ namespace ConsoleApplication1
                         {
                             bool different = false;
 
-                            if(current.m_cost != it.m_cost)
+                            if (current.m_cost + 100 > it.m_cost && current.StateScore() < it.StateScore())
                             {
-                                different = true;
+                                shouldContinue = false;
+                                break;
                             }
 
 
-                            if(it.m_bombMap.Count == current.m_bombMap.Count)
+                            if (it.m_bombMap.Count == current.m_bombMap.Count)
                             {
-                                for(int i =0; i < current.m_bombMap.Keys.Count; i++)
+                                for (int i = 0; i < current.m_bombMap.Keys.Count; i++)
                                 {
-                                    if(current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
+                                    if (current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
                                     {
 
                                     }
@@ -1320,7 +1328,7 @@ namespace ConsoleApplication1
                                 different = true;
                             }
 
-                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
+                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation) && it.m_cost == current.m_cost)
                             {
                                 shouldContinue = true;
                             }
@@ -1331,6 +1339,7 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
+                        //Console.WriteLine("Visiting " + current.m_moveToGetHere + " " + current.m_cost + " " + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " " + current.m_projectedPlayerOrientation);
 
                         visited.Add(current);
 
@@ -1352,7 +1361,6 @@ namespace ConsoleApplication1
 
 
                             nextTiles.Enqueue(current.TurnDown(current));
-
                             nextTiles.Enqueue(current.TurnLeft(current));
                             nextTiles.Enqueue(current.TurnRight(current));
                             nextTiles.Enqueue(current.TurnUp(current));
@@ -1387,16 +1395,9 @@ namespace ConsoleApplication1
                             }
 
                             //TODO: calculate safe on step in individual tiles
-                            if (!(current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                            if (current.m_cameFrom != null)
                             {
-                                if (current != firstMove && (firstMove == current.m_cameFrom || current.m_cameFrom == null))
-                                {
-                                    firstMove.AddSafeMove(current);
-                                }
-                                else if (current.m_cameFrom != null)
-                                {
-                                    current.m_cameFrom.AddSafeMove(current);
-                                }
+                                current.m_cameFrom.AddSafeMove(current);
                             }
                         }
 
