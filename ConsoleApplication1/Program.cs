@@ -1348,7 +1348,7 @@ namespace ConsoleApplication1
                                 {
                                     firstMove.AddSafeMove(current);
                                 }
-                                if (current.m_cameFrom != null)
+                                else if (current.m_cameFrom != null)
                                 {
                                     current.m_cameFrom.AddSafeMove(current);
                                 }
