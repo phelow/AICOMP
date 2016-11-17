@@ -227,18 +227,30 @@ namespace ConsoleApplication1
                     return 0;
                 }
 
-                return 1 + 10000 * (m_pierce + m_count - 1 + m_range - 3) + 5000 * m_coinsAvailable;
+                return m_cost + 60000000 * (m_pierce + m_count - 1 + m_range - 3) + 50000000 * m_coinsAvailable;
             }
+
+            float? calculatedScore = null;
 
             public float GetScore(float tabs = 0)
             {//TODO: cache sco                    
+                if(calculatedScore != null)
+                {
+                    return (float)calculatedScore;
+                }
+
+                if (!Safe())
+                {
+                    return 0 ;
+                }
+
                 string t = "";
 
                 for (int i = 0; i < tabs; i++)
                 {
                     t += " ";
                 }
-                if (Safe() == false || m_safeMoves.Count == 0)
+                if ( m_safeMoves.Count == 0)
                 {
                     ////Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return 0;
@@ -257,11 +269,11 @@ namespace ConsoleApplication1
                 score = score;// / m_cost;
 
                 float scoreAdd = 0;
+                Console.WriteLine(t + "StateScore():" + score+ " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost +" isSafe:" + this.Safe());
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
 
-                    //   //Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere + " parent:" + child.m_cameFrom.m_moveToGetHere);
 
                     scoreAdd += .9f *child.GetScore(tabs + 1);
                 }
@@ -270,7 +282,7 @@ namespace ConsoleApplication1
                     score += scoreAdd/m_safeMoves.Count;
                 }
 
-
+                calculatedScore = score;
                 return score;
 
             }
@@ -281,7 +293,7 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
-                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
+                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
 
                     if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
@@ -1303,62 +1315,62 @@ namespace ConsoleApplication1
                             continue;
                         }
                         current.TickBombs();
-                        if (current.Safe() == false || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                        if ((current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                         {
                             continue;
                         }
 
-                        ////Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
+                        //Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " current.m_cost:" + current.m_cost);
 
                         bool shouldContinue = false;
 
-                        //foreach (AStarBoardState it in visited)
-                        //{
-                        //    bool different = false;
+                        foreach (AStarBoardState it in visited)
+                        {
+                            bool different = false;
 
 
-                        //    if (it.m_bombMap.Count == current.m_bombMap.Count)
-                        //    {
-                        //        for (int i = 0; i < current.m_bombMap.Keys.Count; i++)
-                        //        {
-                        //            if (current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
-                        //            {
+                            if (it.m_bombMap.Count == current.m_bombMap.Count)
+                            {
+                                for (int i = 0; i < current.m_bombMap.Keys.Count; i++)
+                                {
+                                    if (current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap[it.m_bombMap.ElementAt(i).Key] == it.m_bombMap[it.m_bombMap.ElementAt(i).Key] && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
+                                    {
 
-                        //            }
-                        //            else
-                        //            {
-                        //                different = true;
-                        //            }
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        different = true;
-                        //    }
+                                    }
+                                    else
+                                    {
+                                        different = true;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                different = true;
+                            }
 
-                        //    if (it.m_portals.Count == current.m_portals.Count)
-                        //    {
-                        //        for (int i = 0; i < it.m_portals.Count; i++)
-                        //        {
-                        //            if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
-                        //            {
-                        //            }
-                        //            else
-                        //            {
-                        //                different = true;
-                        //            }
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        different = true;
-                        //    }
+                            if (it.m_portals.Count == current.m_portals.Count)
+                            {
+                                for (int i = 0; i < it.m_portals.Count; i++)
+                                {
+                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        different = true;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                different = true;
+                            }
 
-                        //    if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation) && it.m_cost == current.m_cost)
-                        //    {
-                        //        shouldContinue = true;
-                        //    }
-                        //}
+                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation) && it.m_cost == current.m_cost)
+                            {
+                                shouldContinue = true;
+                            }
+                        }
 
 
                         if (shouldContinue || current.m_cost > 35) //TODO: This will no longer work fix this
@@ -1461,6 +1473,7 @@ namespace ConsoleApplication1
                         stream.Write(data, 0, data.Length);
                     }
                     locked = false;
+                    Thread.Sleep(9999999);
                     Thread.Sleep(100);
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
