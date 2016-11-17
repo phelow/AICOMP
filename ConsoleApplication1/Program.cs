@@ -224,10 +224,10 @@ namespace ConsoleApplication1
                 }
                 if(m_moveToGetHere == "")
                 {
-                    return 0;
+                    return -10;
                 }
 
-                return m_cost + 60000000 * (m_pierce + m_count - 1 + m_range - 3) + 50000000 * m_coinsAvailable;
+                return m_cost + 600 * (m_pierce + m_count - 1 + m_bombMap.Count + m_range - 3) + 500 * m_coinsAvailable;
             }
 
             float? calculatedScore = null;
@@ -239,11 +239,6 @@ namespace ConsoleApplication1
                     return (float)calculatedScore;
                 }
 
-                if (!Safe())
-                {
-                    return 0 ;
-                }
-
                 string t = "";
 
                 for (int i = 0; i < tabs; i++)
@@ -253,11 +248,15 @@ namespace ConsoleApplication1
                 if ( m_safeMoves.Count == 0)
                 {
                     ////Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
-                    return 0;
+                    return -100;
                 }
 
-                float score = StateScore() / m_count;// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+                float score = 0;
 
+                if (m_count >= 1)
+                {
+                    score = StateScore() / m_count;// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+                }
                 if (score > 0)
                 {
                     //     //Console.WriteLine(score);
@@ -269,17 +268,23 @@ namespace ConsoleApplication1
                 score = score;// / m_cost;
 
                 float scoreAdd = 0;
+                float scoreAve = 0;
                 Console.WriteLine(t + "StateScore():" + score+ " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost +" isSafe:" + this.Safe());
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
+                    float tr = .6f * child.GetScore(tabs + 1);
+                    if (tr > scoreAdd)
+                    {
+                        scoreAdd = tr;
+                    }
 
-
-                    scoreAdd += .9f *child.GetScore(tabs + 1);
+                    scoreAve = .5f * tr;
+                   
                 }
                 if (m_safeMoves.Count > 0)
                 {
-                    score += scoreAdd/m_safeMoves.Count;
+                    score += scoreAdd + scoreAve/m_safeMoves.Count;
                 }
 
                 calculatedScore = score;
@@ -326,7 +331,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick >= 0)
+                if (tick > -1)
                 {
 
                     return true;
@@ -1315,7 +1320,7 @@ namespace ConsoleApplication1
                             continue;
                         }
                         current.TickBombs();
-                        if ((current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                        if ( current.Safe() == false|| (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                         {
                             continue;
                         }
@@ -1473,7 +1478,7 @@ namespace ConsoleApplication1
                         stream.Write(data, 0, data.Length);
                     }
                     locked = false;
-                    Thread.Sleep(9999999);
+                    //Thread.Sleep(9999999);
                     Thread.Sleep(100);
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
