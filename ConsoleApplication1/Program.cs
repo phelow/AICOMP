@@ -215,19 +215,19 @@ namespace ConsoleApplication1
             {//TODO: cache sco
                 if (!this.Safe())
                 {
-                    return 0;
+                    return -10;
                 }
 
                 float score = 10 * (m_pierce + m_count + m_range) + m_coinsAvailable;
 
-                //Console.WriteLine("\t\t-" + m_moveToGetHere);
+//                Console.WriteLine("\t\t-" + score);
 
                 float scoreAdd = 0;
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
                     // Console.WriteLine("child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
-                    scoreAdd += .99f * child.GetScore() / m_cost;
+                    scoreAdd += .99f * child.GetScore();/// m_cost;
                 }
                 if (m_safeMoves.Count >= 1)
                 {
@@ -270,7 +270,7 @@ namespace ConsoleApplication1
 
                 }
 
-                if (m_projectedPlayerTile.m_bombTick > 0)
+                if ( m_projectedPlayerTile.m_bombTick > 0)
                 {
                     return true;
                 }
@@ -1337,7 +1337,7 @@ namespace ConsoleApplication1
                             }
 
                             //TODO: calculate safe on step in individual tiles
-                            if (current.Safe() && !(current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                            if (!(current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                             {
                                 if (current != firstMove && (firstMove == current.m_cameFrom || current.m_cameFrom == null))
                                 {
