@@ -350,7 +350,7 @@ namespace ConsoleApplication1
                 Queue<BombSearchState> explosionFrontier = new Queue<BombSearchState>();
 
                 //TODO: get the stats from the state instead of from the parsed
-                int int_bombRange = ownerRange + 1;
+                int int_bombRange = ownerRange;
 
                 object object_bombPiercing;
 
