@@ -554,7 +554,7 @@ namespace ConsoleApplication1
                     KeyValuePair<int, int> key = m_bombMap.Keys.ElementAt(i);
                     m_bombMap[key] = m_bombMap[key] - 2;
 
-                    if (m_bombMap[key] < 0 && m_bombMap[key] > -4) //TODO: not accounting for trail
+                    if (m_bombMap[key] < 0 && m_bombMap[key] > -6) //TODO: not accounting for trail
                     {
                         List<Tile> bombedSquares = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
 
@@ -567,7 +567,7 @@ namespace ConsoleApplication1
                             }
                         }
                     }
-                    else if (m_bombMap[key] < -4)
+                    else if (m_bombMap[key] < -6)
                     {
                         toRemove.Add(key);
                     }
@@ -664,6 +664,11 @@ namespace ConsoleApplication1
             public AStarBoardState ShootBluePortal(AStarBoardState last)
             {
                 AStarBoardState state = ShoootPortal(false);
+                if(state == null)
+                {
+                    return null;
+                }
+
                 state.m_moveToGetHere = "bp";
                 state.m_cameFrom = last;
                 return state;
@@ -796,6 +801,11 @@ namespace ConsoleApplication1
             public AStarBoardState ShootOrangePortal(AStarBoardState last)
             {
                 AStarBoardState state = ShoootPortal(true);
+                if (state == null)
+                {
+                    return null;
+                }
+
                 state.m_moveToGetHere = "op";
                 state.m_cameFrom = last;
                 return state;
@@ -1371,17 +1381,17 @@ namespace ConsoleApplication1
                         {
 
 
-                            nextTiles.Enqueue(current.TurnDown(current));
-                            nextTiles.Enqueue(current.TurnLeft(current));
-                            nextTiles.Enqueue(current.TurnRight(current));
-                            nextTiles.Enqueue(current.TurnUp(current));
+                            //nextTiles.Enqueue(current.TurnDown(current));
+                            //nextTiles.Enqueue(current.TurnLeft(current));
+                            //nextTiles.Enqueue(current.TurnRight(current));
+                            //nextTiles.Enqueue(current.TurnUp(current));
 
-                            nextTiles.Enqueue(current.ShootBluePortal(current));
-                            nextTiles.Enqueue(current.ShootOrangePortal(current));
+                            //nextTiles.Enqueue(current.ShootBluePortal(current));
+                            //nextTiles.Enqueue(current.ShootOrangePortal(current));
                             nextTiles.Enqueue(current.DropBomb(current));
-                            nextTiles.Enqueue(current.BuyPierce(current));
-                            nextTiles.Enqueue(current.BuyBombs(current));
-                            nextTiles.Enqueue(current.BuyRange(current));
+                            //nextTiles.Enqueue(current.BuyPierce(current));
+                            //nextTiles.Enqueue(current.BuyBombs(current));
+                            //nextTiles.Enqueue(current.BuyRange(current));
                             nextTiles.Enqueue(current.DoNothing(current));
 
                             if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
