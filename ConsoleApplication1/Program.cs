@@ -1321,15 +1321,13 @@ namespace ConsoleApplication1
                             //TODO: calculate safe on step in individual tiles
                             if (current.Safe() && !(current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                             {
+                                if (current != firstMove && (firstMove == current.m_cameFrom || current.m_cameFrom == null ))
+                                {
+                                    firstMove.AddSafeMove(current);
+                                }
                                 if (current.m_cameFrom != null)
                                 {
                                     current.m_cameFrom.AddSafeMove(current);
-                                }
-                                else {
-                                    if (firstMove != current)
-                                    {
-                                        firstMove.AddSafeMove(current);
-                                    }
                                 }
                             }
                         }
