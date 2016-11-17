@@ -150,11 +150,11 @@ namespace ConsoleApplication1
         public Tile(int x, int y, ServerResponse server)
         {
             m_blockType = blockType.Passable;
-            if (1 == server.hardBlockBoard[y + x * server.boardSize])
+            if (1 == server.hardBlockBoard[x + y * server.boardSize])
             {
                 m_blockType = blockType.HardBlock;
             }
-            if (1 == server.softBlockBoard[y + x * server.boardSize])
+            if (1 == server.softBlockBoard[x + y * server.boardSize])
             {
                 m_blockType = blockType.SoftBlock;
             }
@@ -166,7 +166,7 @@ namespace ConsoleApplication1
 
         public Tile(int x, int y, blockType bt, int tick)
         {
-            X = y;
+            X = x;
             Y = y;
             m_bombTick = tick;
             m_blockType = bt;
@@ -213,13 +213,15 @@ namespace ConsoleApplication1
 
             public float GetScore()
             {//TODO: cache sco
-                float score = 10 * (m_pierce + m_count + m_range) + m_coinsAvailable + m_portals.Count * 100;
+                float score = 10 * (m_pierce + m_count + m_range) + m_coinsAvailable + m_portals.Count * 5;
                 score = score / m_cost;
+
+                //Console.WriteLine("\t\t-" + m_moveToGetHere);
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
                    // Console.WriteLine("child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
-                    score += child.GetScore();
+                    score += .9f*child.GetScore()/m_safeMoves.Count;
                 }
 
                 return score;      
@@ -232,7 +234,7 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach(AStarBoardState move in m_safeMoves)
                 {
-                    Console.WriteLine("move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
+                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
 
                     if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
@@ -398,7 +400,6 @@ namespace ConsoleApplication1
                 {
                     for (int y = 0; y < m_parsed.boardSize; y++)
                     {
-
                         m_boardState[x, y] = boardState[x, y].CopyConstructor();//TODO: this boardState[x, y].CopyConstructor();
                     }
 
@@ -626,33 +627,14 @@ namespace ConsoleApplication1
 
             public AStarBoardState ShoootPortal(bool isOrange)
             {
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
 
-                Tile tileIt = m_projectedPlayerTile;
+
+                Tile tileIt = state.m_projectedPlayerTile;
 
                 while (!(tileIt.m_blockType == Tile.blockType.HardBlock || tileIt.m_blockType == Tile.blockType.SoftBlock))
                 {
-                    if (m_projectedPlayerOrientation == 0)
-                    {
-                        if (tileIt.X + 1 > m_parsed.boardSize)
-                        {
-                            ////Console.WriteLine("Out of range");
-                            continue;
-
-                        }
-                        tileIt = m_boardState[tileIt.X - 1, tileIt.Y];
-                    }
-                    else if (m_projectedPlayerOrientation == 1)
-                    {
-                        if (tileIt.Y - 1 < 0)
-                        {
-                            ////Console.WriteLine("Out of range");
-                            continue;
-
-                        }
-                        tileIt = m_boardState[tileIt.X, tileIt.Y - 1];
-
-                    }
-                    else if (m_projectedPlayerOrientation == 2)
+                    if (state.m_projectedPlayerOrientation == 0)
                     {
                         if (tileIt.X - 1 < 0)
                         {
@@ -660,9 +642,30 @@ namespace ConsoleApplication1
                             continue;
 
                         }
-                        tileIt = m_boardState[tileIt.X - 1, tileIt.Y];
+                        tileIt = state.m_boardState[tileIt.X - 1, tileIt.Y];
                     }
-                    else if (m_projectedPlayerOrientation == 3)
+                    else if (state.m_projectedPlayerOrientation == 1)
+                    {
+                        if (tileIt.Y - 1 < 0)
+                        {
+                            ////Console.WriteLine("Out of range");
+                            continue;
+
+                        }
+                        tileIt = state.m_boardState[tileIt.X, tileIt.Y - 1];
+
+                    }
+                    else if (state.m_projectedPlayerOrientation == 2)
+                    {
+                        if (tileIt.X + 1 > m_parsed.boardSize)
+                        {
+                            ////Console.WriteLine("Out of range");
+                            continue;
+
+                        }
+                        tileIt = state.m_boardState[tileIt.X - 1, tileIt.Y];
+                    }
+                    else if (state.m_projectedPlayerOrientation == 3)
                     {
                         if (tileIt.Y + 1 < 0)
                         {
@@ -670,32 +673,37 @@ namespace ConsoleApplication1
                             continue;
 
                         }
-                        tileIt = m_boardState[tileIt.X, tileIt.Y + 1];
+                        tileIt = state.m_boardState[tileIt.X, tileIt.Y + 1];
 
                     }
                 }
                 int newOrientation = 0;
 
-                if (m_projectedPlayerOrientation == 0)
+                if (state.m_projectedPlayerOrientation == 0)
                 {
                     newOrientation = 2;
                 }
-                else if (m_projectedPlayerOrientation == 1)
+                else if (state.m_projectedPlayerOrientation == 1)
                 {
                     newOrientation = 3;
                 }
-                else if (m_projectedPlayerOrientation == 2)
+                else if (state.m_projectedPlayerOrientation == 2)
                 {
                     newOrientation = 0;
                 }
-                else if (m_projectedPlayerOrientation == 3)
+                else if (state.m_projectedPlayerOrientation == 3)
                 {
                     newOrientation = 1;
                 }
                 Portal toRemove = null;
-                foreach (Portal p in portals)
+                foreach (Portal p in state.m_portals)
                 {
-                    if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex || (p.m_x == tileIt.X && p.m_y == tileIt.Y && p.m_orientation == newOrientation))
+                    if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex)
+                    {
+                        toRemove = p;
+                    }
+
+                    if((p.m_x == tileIt.X && p.m_y == tileIt.Y && p.m_orientation == newOrientation))
                     {
                         toRemove = p;
                     }
@@ -703,14 +711,14 @@ namespace ConsoleApplication1
 
                 if (toRemove != null)
                 {
-                    portals.Remove(toRemove);
+                    state.m_portals.Remove(toRemove);
                 }
 
 
-                portals.Add(new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
+                state.m_portals.Add(new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
                 List<Portal> playerPortals = new List<Portal>();
                 List<Portal> opponentPortals = new List<Portal>();
-                foreach (Portal p in portals)
+                foreach (Portal p in state.m_portals)
                 {
                     if (p.m_owner == m_parsed.playerIndex)
                     {
@@ -733,7 +741,7 @@ namespace ConsoleApplication1
                     Portal.LinkPortals(playerPortals[0], playerPortals[1]);
                 }
 
-                return new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                return state;
             }
 
             public AStarBoardState ShootOrangePortal(AStarBoardState last)
@@ -1209,7 +1217,7 @@ namespace ConsoleApplication1
                   
 
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 1000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
                         if(current == null)
