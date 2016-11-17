@@ -130,7 +130,12 @@ namespace ConsoleApplication1
             Passable
         }
 
-        public blockType m_blockType;
+        private blockType m_blockType;
+
+        public blockType GetBlockType()
+        {
+            return m_blockType;
+        }
 
         public int m_numTargets;
         public int m_bombTick = 99999;
@@ -174,7 +179,7 @@ namespace ConsoleApplication1
 
         public Tile CopyConstructor()
         {
-            Tile newTile = new Tile(this.X, this.Y, this.m_blockType, this.m_bombTick);
+            Tile newTile = this; //TODO: refactor
 
             return newTile;
         }
@@ -278,13 +283,20 @@ namespace ConsoleApplication1
 
             public bool Safe() //TODO: account for transitive exploding
             {
+                int tick = 999;
                 foreach (KeyValuePair<int, int> key in m_bombMap.Keys)
                 {
-                    AddBombToMap(key.Key, key.Value, m_bombMap[key]);
-
+                    List<Tile> bombedTile = GetBombedSquares(key.Key, key.Value,m_pierce,m_range);//TODO: account for owner range not just player range
+                    foreach(Tile t in bombedTile)
+                    {
+                        if(t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y && m_bombMap[key] < tick)
+                        {
+                            tick = m_bombMap[key];
+                        }
+                    }
                 }
 
-                if (m_projectedPlayerTile.m_bombTick > 1)
+                if (tick > 1)
                 {
                     return true;
                 }
@@ -346,7 +358,7 @@ namespace ConsoleApplication1
 
 
 
-                    if ((m_worldRepresentation[current.X, current.Y].m_blockType == Tile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].m_blockType == Tile.blockType.HardBlock) && !current.DestroyBlock())
+                    if ((m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.HardBlock) && !current.DestroyBlock())
                     {
                         continue;
                     }
@@ -445,13 +457,7 @@ namespace ConsoleApplication1
 
                 //TODO: grab piercing and range from player state in this tile
                 m_bombMap.Add(new KeyValuePair<int, int>(x, y), tick);
-
-                List<Tile> bombedTiles = GetBombedSquares(x, y, 1, 3);
-
-                foreach (Tile t in bombedTiles)
-                {
-                    m_worldRepresentation[t.X, t.Y].m_bombTick = tick;
-                }
+                
                 return true;
             }
 
@@ -549,9 +555,9 @@ namespace ConsoleApplication1
 
                         foreach (Tile t in bombedSquares)
                         {
-                            if (t.m_blockType == Tile.blockType.SoftBlock)
+                            if (t.GetBlockType() == Tile.blockType.SoftBlock)
                             {
-                                t.m_blockType = Tile.blockType.Passable;
+                                m_worldRepresentation[t.X, t.Y] = new Tile(t.X, t.Y, Tile.blockType.Passable, 999);
                                 m_coinsAvailable += (int)Math.Floor((double)(m_parsed.boardSize - 1 - t.X) * t.X * (m_parsed.boardSize - 1 - t.Y) * t.Y * 10 / ((m_parsed.boardSize - 1) ^ 4 / 16));
                             }
                         }
@@ -666,7 +672,7 @@ namespace ConsoleApplication1
 
                 Tile tileIt = state.m_projectedPlayerTile;
 
-                while (!(tileIt.m_blockType == Tile.blockType.HardBlock || tileIt.m_blockType == Tile.blockType.SoftBlock))
+                while (!(tileIt.GetBlockType() == Tile.blockType.HardBlock || tileIt.GetBlockType() == Tile.blockType.SoftBlock))
                 {
                     if (state.m_projectedPlayerOrientation == 0)
                     {
@@ -1266,7 +1272,7 @@ namespace ConsoleApplication1
 
 
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 200)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
                         if (current == null || current.Safe() == false || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
@@ -1335,7 +1341,7 @@ namespace ConsoleApplication1
                         }
 
 
-                        if (shouldContinue) //TODO: This will no longer work fix this
+                        if (shouldContinue || current.m_cost > 20) //TODO: This will no longer work fix this
                         {
                             continue;
                         }
@@ -1356,7 +1362,7 @@ namespace ConsoleApplication1
                             }
                         }
 
-                        if (current.m_projectedPlayerTile.m_blockType == Tile.blockType.Passable)
+                        if (current.m_projectedPlayerTile.GetBlockType() == Tile.blockType.Passable)
                         {
 
 
