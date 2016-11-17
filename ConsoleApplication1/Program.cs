@@ -217,6 +217,7 @@ namespace ConsoleApplication1
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
+                   // Console.WriteLine("child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
                     score += child.GetScore();
                 }
 
@@ -230,6 +231,8 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach(AStarBoardState move in m_safeMoves)
                 {
+                    Console.WriteLine("move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
+
                     if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
                         bestMove = move;
@@ -958,7 +961,8 @@ namespace ConsoleApplication1
             {
                 while (locked)
                 {
-                    Thread.Sleep(1000);
+                    Console.WriteLine("Waiting for control");
+                    Thread.Sleep(500);
                 }
                 locked = true;
 
@@ -1204,7 +1208,7 @@ namespace ConsoleApplication1
                   
 
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 5000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
                         if(current == null)
@@ -1216,43 +1220,43 @@ namespace ConsoleApplication1
 
                         ////Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
 
-                        bool shouldContinue = false;
+                        //bool shouldContinue = false;
 
-                        foreach (AStarBoardState it in visited)
-                        {
-                            bool different = false;
+                        //foreach (AStarBoardState it in visited)
+                        //{
+                        //    bool different = false;
 
-                            if (it.m_portals.Count == current.m_portals.Count)
-                            {
-                                for (int i = 0; i < it.m_portals.Count; i++)
-                                {
-                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
-                                    {
-                                    }
-                                    else
-                                    {
-                                        different = true;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                different = true;
-                            }
+                        //    if (it.m_portals.Count == current.m_portals.Count)
+                        //    {
+                        //        for (int i = 0; i < it.m_portals.Count; i++)
+                        //        {
+                        //            if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
+                        //            {
+                        //            }
+                        //            else
+                        //            {
+                        //                different = true;
+                        //            }
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        different = true;
+                        //    }
 
-                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
-                            {
-                                shouldContinue = true;
-                            }
-                        }
+                        //    if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
+                        //    {
+                        //        shouldContinue = true;
+                        //    }
+                        //}
 
 
-                        if (shouldContinue) //TODO: This will no longer work fix this
-                        {
-                            continue;
-                        }
+                        //if (shouldContinue) //TODO: This will no longer work fix this
+                        //{
+                        //    continue;
+                        //}
 
-                        visited.Add(current);
+                        //visited.Add(current);
 
 
 
@@ -1330,7 +1334,7 @@ namespace ConsoleApplication1
                         chosenAction = bestMove.m_moveToGetHere;
                     }
 
-                    Console.WriteLine("ChosenAction:" + chosenAction);
+                    Console.WriteLine("ChosenAction:" + chosenAction + " " + bestMove.GetScore());
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
