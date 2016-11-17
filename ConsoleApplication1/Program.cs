@@ -133,7 +133,7 @@ namespace ConsoleApplication1
         public blockType m_blockType;
 
         public int m_numTargets;
-        public int m_bombTick = -1;
+        public int m_bombTick = 99999;
 
         public int X;
         public int Y;
@@ -212,7 +212,7 @@ namespace ConsoleApplication1
             public Dictionary<string, Dictionary<string, int>> m_bombMap;
 
             public float GetScore()
-            {//TODO: cache score
+            {//TODO: cache sco
                 float score = 10 * (m_pierce + m_count + m_range) + m_coinsAvailable + m_portals.Count * 100;
 
                 foreach (AStarBoardState child in m_safeMoves)
@@ -245,9 +245,37 @@ namespace ConsoleApplication1
                 m_safeMoves.Add(move);
             }
 
-            public bool Safe()
+            public bool Safe() //TODO: account for transitive exploding
             {
-                return m_projectedPlayerTile.m_bombTick > 2;
+                foreach (string key in m_bombMap.Keys)
+                {
+                    if (!m_bombMap.ContainsKey(key))
+                    {
+                        m_bombMap.Add(key, new Dictionary<string, int>());
+                    }
+                    foreach (KeyValuePair<string, int> kvp in m_bombMap[key])
+                    {
+                        string[] sArr = kvp.Key.Split(',');
+
+                        if (kvp.Key == "tick")
+                        {
+                            AddBombToMap(Convert.ToInt32(sArr[0]), Convert.ToInt32(sArr[1]), kvp.Value);
+                        }
+
+                        m_boardState[Convert.ToInt32(sArr[0]), Convert.ToInt32(sArr[1])].AddBomb(kvp.Value);
+
+                        m_bombMap[key].Add(kvp.Key, kvp.Value);
+                    }
+                }
+
+                if (m_projectedPlayerTile.m_bombTick != 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
 
@@ -408,7 +436,7 @@ namespace ConsoleApplication1
 
             }
 
-            public void AddBombToMap(int x, int y, int tick)
+            public void AddBombToMap(int x, int y, int tick) //TODO: include transitive bombing
             {
                 //TODO: grab piercing and range from player state in this tile
 
@@ -483,15 +511,19 @@ namespace ConsoleApplication1
                 foreach (string key in m_bombMap.Keys)
                 {
                     m_bombMap[key]["tick"] = m_bombMap[key]["tick"] - 2;
-                    string[] s = key.Split(',');
-                    List<Tile> bombedSquares = GetBombedSquares(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), m_pierce, m_range);
 
-                    foreach(Tile t in bombedSquares)
+                    if (m_bombMap[key]["tick"] < 0)
                     {
-                        if(t.m_blockType == Tile.blockType.SoftBlock)
+                        string[] s = key.Split(',');
+                        List<Tile> bombedSquares = GetBombedSquares(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), m_pierce, m_range);
+
+                        foreach (Tile t in bombedSquares)
                         {
-                            t.m_blockType = Tile.blockType.Passable;
-                            m_coinsAvailable += (int)Math.Floor((double)(m_parsed.boardSize - 1 - t.X) * t.X * (m_parsed.boardSize - 1 - t.Y) * t.Y * 10 / ((m_parsed.boardSize - 1) ^ 4 / 16));
+                            if (t.m_blockType == Tile.blockType.SoftBlock)
+                            {
+                                t.m_blockType = Tile.blockType.Passable;
+                                m_coinsAvailable += (int)Math.Floor((double)(m_parsed.boardSize - 1 - t.X) * t.X * (m_parsed.boardSize - 1 - t.Y) * t.Y * 10 / ((m_parsed.boardSize - 1) ^ 4 / 16));
+                            }
                         }
                     }
                 }
@@ -1281,16 +1313,22 @@ namespace ConsoleApplication1
                                     current.m_cameFrom.AddSafeMove(current);
                                 }
                                 else {
-                                    firstMove.AddSafeMove(current);
+                                    if (firstMove != current)
+                                    {
+                                        firstMove.AddSafeMove(current);
+                                    }
                                 }
                             }
                         }
 
 
                     }
+                    AStarBoardState bestMove = firstMove.GetBestMove();
 
-                    chosenAction = firstMove.GetBestMove().m_moveToGetHere;
-
+                    if (bestMove != null)
+                    {
+                        chosenAction = bestMove.m_moveToGetHere;
+                    }
 
                     Console.WriteLine("ChosenAction:" + chosenAction);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
