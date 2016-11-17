@@ -213,6 +213,11 @@ namespace ConsoleApplication1
 
             public float GetScore()
             {//TODO: cache sco
+                if (!this.Safe())
+                {
+                    return 0;
+                }
+
                 float score = 10 * (m_pierce + m_count + m_range) + m_coinsAvailable;
 
                 //Console.WriteLine("\t\t-" + m_moveToGetHere);
@@ -228,6 +233,8 @@ namespace ConsoleApplication1
                 {
                     score += scoreAdd / m_safeMoves.Count;
                 }
+                
+
                 return score;
 
             }
