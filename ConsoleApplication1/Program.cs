@@ -236,7 +236,7 @@ namespace ConsoleApplication1
                         t += " ";
                     }
 
-                    Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
+                   // Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
                     scoreAdd += child.GetScore(tabs + 1) ;
                 }
                 score += scoreAdd;
@@ -277,7 +277,7 @@ namespace ConsoleApplication1
 
                 }
 
-                if (m_projectedPlayerTile.m_bombTick > 3)
+                if (m_projectedPlayerTile.m_bombTick > 1)
                 {
                     return true;
                 }
@@ -727,6 +727,10 @@ namespace ConsoleApplication1
                 {
                     if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex)
                     {
+                        if(p.m_orientation == newOrientation)
+                        {
+                            return null;
+                        }
                         toRemove = p;
                     }
 
@@ -1273,6 +1277,12 @@ namespace ConsoleApplication1
                         {
                             bool different = false;
 
+                            if(current.m_cost != it.m_cost)
+                            {
+                                different = true;
+                            }
+
+
                             if(it.m_bombMap.Count == current.m_bombMap.Count)
                             {
                                 for(int i =0; i < current.m_bombMap.Keys.Count; i++)
@@ -1286,6 +1296,10 @@ namespace ConsoleApplication1
                                         different = true;
                                     }
                                 }
+                            }
+                            else
+                            {
+                                different = true;
                             }
 
                             if (it.m_portals.Count == current.m_portals.Count)
@@ -1416,7 +1430,7 @@ namespace ConsoleApplication1
                         stream.Write(data, 0, data.Length);
                     }
                     locked = false;
-                    Thread.Sleep(100000000);
+                    Thread.Sleep(100);
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
                 }
