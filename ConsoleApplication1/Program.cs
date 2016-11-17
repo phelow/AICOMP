@@ -220,7 +220,7 @@ namespace ConsoleApplication1
             {
                 if (m_coinsAvailable > 0)
                 {
-                    Console.WriteLine(m_coinsAvailable);
+                    //Console.WriteLine(m_coinsAvailable);
                 }
                 if(m_moveToGetHere == "")
                 {
@@ -247,7 +247,7 @@ namespace ConsoleApplication1
                 }
                 if ( m_safeMoves.Count == 0)
                 {
-                    ////Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
+                    //////Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return -100;
                 }
 
@@ -259,17 +259,17 @@ namespace ConsoleApplication1
                 }
                 if (score > 0)
                 {
-                    //     //Console.WriteLine(score);
+                    //     ////Console.WriteLine(score);
                 }
 
 
-                //                //Console.WriteLine("\t\t-" + score);
+                //                ////Console.WriteLine("\t\t-" + score);
 
                 score = score;// / m_cost;
 
                 float scoreAdd = 0;
                 float scoreAve = 0;
-                Console.WriteLine(t + "StateScore():" + score+ " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost +" isSafe:" + this.Safe());
+                //Console.WriteLine(t + "StateScore():" + score+ " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost +" isSafe:" + this.Safe());
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
@@ -298,7 +298,7 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
-                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
+                    //Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
 
                     if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
@@ -313,7 +313,7 @@ namespace ConsoleApplication1
             public void AddSafeMove(AStarBoardState move)
             {
                 m_safeMoves.Add(move);
-                //Console.WriteLine(m_safeMoves.Count);
+                ////Console.WriteLine(m_safeMoves.Count);
             }
 
             public bool Safe() //TODO: account for transitive exploding
@@ -365,7 +365,7 @@ namespace ConsoleApplication1
                 {
                     BombSearchState current = explosionFrontier.Dequeue();
 
-                    ////////Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
+                    //////////Console.Write("\n current explosion frontier tile is" + current.X + " " + current.Y);
 
                     bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
                     if (current.ChargesLeft == 1) //TODO: THISISHACKPLZFIX
@@ -381,7 +381,7 @@ namespace ConsoleApplication1
                         BombSearchState portalState = p.GetBombOutlet(current);
                         if (portalState != null)
                         {
-                            //////Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
+                            ////////Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
                             explosionFrontier.Enqueue(portalState);
                         }
                     }
@@ -712,7 +712,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.X - 1 < 0)
                         {
-                            //////Console.WriteLine("Out of range");
+                            ////////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -722,7 +722,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.Y - 1 < 0)
                         {
-                            //////Console.WriteLine("Out of range");
+                            ////////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -733,7 +733,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.X + 1 > m_parsed.boardSize)
                         {
-                            //////Console.WriteLine("Out of range");
+                            ////////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -743,7 +743,7 @@ namespace ConsoleApplication1
                     {
                         if (tileIt.Y + 1 < 0)
                         {
-                            //////Console.WriteLine("Out of range");
+                            ////////Console.WriteLine("Out of range");
                             continue;
 
                         }
@@ -1053,7 +1053,7 @@ namespace ConsoleApplication1
             {
                 while (locked)
                 {
-                    //Console.WriteLine("Waiting for control");
+                    ////Console.WriteLine("Waiting for control");
                     Thread.Sleep(500);
                 }
                 locked = true;
@@ -1063,13 +1063,13 @@ namespace ConsoleApplication1
                     string chosenAction = "";
                     var responseString = reader.ReadToEnd();
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    //////////Console.Write(responseString);
+                    ////////////Console.Write(responseString);
                     if (responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
                     {
                         return false;
                     }
                     m_parsed = JsonConvert.DeserializeObject<ServerResponse>(responseString);
-                    //////Console.Write("Data has been parsed\n" + postData);
+                    ////////Console.Write("Data has been parsed\n" + postData);
 
                     m_worldRepresentation = new Tile[m_parsed.boardSize, m_parsed.boardSize];
 
@@ -1107,7 +1107,7 @@ namespace ConsoleApplication1
                             }
                             else
                             {
-                                ////Console.WriteLine("Color error");
+                                //////Console.WriteLine("Color error");
                             }
 
                             if (int_owner == 0)
@@ -1325,7 +1325,7 @@ namespace ConsoleApplication1
                             continue;
                         }
 
-                        //Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " current.m_cost:" + current.m_cost);
+                        ////Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " current.m_cost:" + current.m_cost);
 
                         bool shouldContinue = false;
 
@@ -1382,7 +1382,7 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        ////Console.WriteLine("Visiting " + current.m_moveToGetHere + " " + current.m_cost + " " + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " " + current.m_projectedPlayerOrientation);
+                        //////Console.WriteLine("Visiting " + current.m_moveToGetHere + " " + current.m_cost + " " + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " " + current.m_projectedPlayerOrientation);
 
                         visited.Add(current);
 
@@ -1457,7 +1457,7 @@ namespace ConsoleApplication1
                         chosenAction = "";
                     }
 
-                    Console.WriteLine("ChosenAction:" + chosenAction + " ");
+                    //Console.WriteLine("ChosenAction:" + chosenAction + " ");
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
@@ -1468,10 +1468,10 @@ namespace ConsoleApplication1
                     // the code that you want to measure comes here
                     watch.Stop();
 
-                    //Console.WriteLine("Time:" + watch.ElapsedMilliseconds);
+                    ////Console.WriteLine("Time:" + watch.ElapsedMilliseconds);
 
 
-                    //////Console.Write("\nAction is:" + chosenAction + "\n");
+                    ////////Console.Write("\nAction is:" + chosenAction + "\n");
 
                     using (var stream = request.GetRequestStream())
                     {
@@ -1483,7 +1483,7 @@ namespace ConsoleApplication1
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
                 }
-                ////////Console.Write("Start Iteration");
+                //////////Console.Write("Start Iteration");
             } while (gameNotCompleted);
             return false;
         }
