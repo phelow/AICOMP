@@ -56,7 +56,7 @@ namespace ConsoleApplication1
         public bool DestroyBlock()
         {
             m_piercesLeft--;
-            return m_piercesLeft > 1 ? true : false;
+            return m_piercesLeft > 0 ? true : false;
         }
 
         public int ChargesLeft
