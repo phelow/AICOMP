@@ -209,7 +209,7 @@ namespace ConsoleApplication1
 
             public List<AStarBoardState> m_safeMoves;
 
-            public Dictionary<string, Dictionary<string, int>> m_bombMap;
+            public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
 
             public float GetScore()
             {//TODO: cache sco
@@ -222,13 +222,13 @@ namespace ConsoleApplication1
                 foreach (AStarBoardState child in m_safeMoves)
                 {
                     // Console.WriteLine("child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
-                    scoreAdd += .99f * child.GetScore()/m_cost;
+                    scoreAdd += .99f * child.GetScore() / m_cost;
                 }
                 if (m_safeMoves.Count >= 1)
                 {
                     score += scoreAdd / m_safeMoves.Count;
                 }
-                return score;      
+                return score;
 
             }
 
@@ -236,7 +236,7 @@ namespace ConsoleApplication1
             {
                 //TODO: bake victory into best move selection
                 AStarBoardState bestMove = null;
-                foreach(AStarBoardState move in m_safeMoves)
+                foreach (AStarBoardState move in m_safeMoves)
                 {
                     Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
 
@@ -257,27 +257,13 @@ namespace ConsoleApplication1
 
             public bool Safe() //TODO: account for transitive exploding
             {
-                foreach (string key in m_bombMap.Keys)
+                foreach (KeyValuePair<int, int> key in m_bombMap.Keys)
                 {
-                    if (!m_bombMap.ContainsKey(key))
-                    {
-                        m_bombMap.Add(key, new Dictionary<string, int>());
-                    }
-                    foreach (KeyValuePair<string, int> kvp in m_bombMap[key])
-                    {
-                        string[] sArr = key.Split(',');
+                    AddBombToMap(key.Key, key.Value, m_bombMap[key]);
 
-                        if (kvp.Key == "tick")
-                        {
-                            AddBombToMap(Convert.ToInt32(sArr[0].Substring(1)), Convert.ToInt32(sArr[1].Substring(0, sArr[1].Length - 1)), kvp.Value);
-                        }
-
-                        m_boardState[Convert.ToInt32(sArr[0].Substring(1)), Convert.ToInt32(sArr[1].Substring(0, sArr[1].Length - 1))].AddBomb(kvp.Value);
-                        
-                    }
                 }
 
-                if (m_projectedPlayerTile.m_bombTick != 0)
+                if (m_projectedPlayerTile.m_bombTick > 0)
                 {
                     return true;
                 }
@@ -386,9 +372,9 @@ namespace ConsoleApplication1
                 return bombedTiles;
             }
 
-            public AStarBoardState(Tile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, Tile[,] boardState, int cost, Dictionary<string, Dictionary<string, int>> bombMap,int range, int count, int pierce, int coinsAvailable)
+            public AStarBoardState(Tile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, Tile[,] boardState, int cost, Dictionary<KeyValuePair<int, int>, int> bombMap, int range, int count, int pierce, int coinsAvailable)
             {
-                m_bombMap = new Dictionary<string, Dictionary<string, int>>();
+                m_bombMap = new Dictionary<KeyValuePair<int, int>, int>();
                 m_coinsAvailable = coinsAvailable;
                 m_range = range;
                 m_count = count;
@@ -409,25 +395,10 @@ namespace ConsoleApplication1
                 }
 
 
-                foreach (string key in bombMap.Keys)
+                foreach (KeyValuePair<int, int> key in bombMap.Keys)
                 {
-                    if (!m_bombMap.ContainsKey(key))
-                    {
-                        m_bombMap.Add(key, new Dictionary<string, int>());
-                    }
-                    foreach (KeyValuePair<string, int> kvp in bombMap[key])
-                    {
-                        string[] sArr = key.Split(',');
+                    AddBombToMap(key.Key,key.Value,bombMap[key]);
 
-                        if (kvp.Key == "tick")
-                        {
-                            AddBombToMap(Convert.ToInt32(sArr[0].Substring(1)), Convert.ToInt32(sArr[1].Substring(0,sArr[1].Length-1)), kvp.Value);
-                        }
-
-                        m_boardState[Convert.ToInt32(sArr[0].Substring(1)), Convert.ToInt32(sArr[1].Substring(0, sArr[1].Length - 1))].AddBomb(kvp.Value);
-
-                        m_bombMap[key].Add(kvp.Key, kvp.Value);
-                    }
                 }
 
 
@@ -444,36 +415,42 @@ namespace ConsoleApplication1
 
             }
 
-            public void AddBombToMap(int x, int y, int tick) //TODO: include transitive bombing
+            public bool AddBombToMap(int x, int y, int tick) //TODO: include transitive bombing
             {
+                if(m_bombMap.ContainsKey(new KeyValuePair<int, int>(x, y)))
+                {
+                    return false;
+                }
+
                 //TODO: grab piercing and range from player state in this tile
+                m_bombMap.Add(new KeyValuePair<int, int>(x, y), tick);
 
+                List<Tile> bombedTiles = GetBombedSquares(x, y, 1, 3);
 
-                List<Tile> bombedTiles = GetBombedSquares(x, y,1,3);
-
-                foreach(Tile t in bombedTiles)
+                foreach (Tile t in bombedTiles)
                 {
                     t.m_bombTick = tick;
                 }
-
+                return true;
             }
 
             public AStarBoardState DropBomb(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X , m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range,m_count,m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
 
                 Dictionary<string, int> d = new Dictionary<string, int>();
                 d.Add("tick", 5);
 
-                string k = "[" + m_projectedPlayerTile.X + "," + m_projectedPlayerTile.Y + "]";
 
-                if (state.m_bombMap.ContainsKey(k))
+                if (state.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)))
                 {
                     return null;
                 }
 
-                state.m_bombMap.Add(k,d);
-                state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 3);
+                if(!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 5))
+                {
+                    return null;
+                }
 
                 state.m_moveToGetHere = "b";
                 state.m_cameFrom = last;
@@ -483,12 +460,12 @@ namespace ConsoleApplication1
 
             public AStarBoardState BuyPierce(AStarBoardState last)
             {
-                if(m_coinsAvailable < 5)
+                if (m_coinsAvailable < 5)
                 {
                     return null;
                 }
 
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce+1, m_coinsAvailable-5);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce + 1, m_coinsAvailable - 5);
                 state.m_moveToGetHere = "buy_pierce";
                 state.m_cameFrom = last;
                 return state;
@@ -502,7 +479,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range + 1, m_count, m_pierce , m_coinsAvailable - 5);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range + 1, m_count, m_pierce, m_coinsAvailable - 5);
                 state.m_moveToGetHere = "buy_range";
                 state.m_cameFrom = last;
                 return state;
@@ -526,15 +503,15 @@ namespace ConsoleApplication1
 
             public void TickBombs()
             {
-
-                foreach (string key in m_bombMap.Keys)
+                List<KeyValuePair<int, int>> toRemove = new List<KeyValuePair<int, int>>();
+                for(int i = 0; i <m_bombMap.Keys.Count; i++)
                 {
-                    m_bombMap[key]["tick"] = m_bombMap[key]["tick"] - 2;
+                    KeyValuePair<int, int> key = m_bombMap.Keys.ElementAt(i);
+                    m_bombMap[key] = m_bombMap[key]- 2;
 
-                    if (m_bombMap[key]["tick"] < 0)
+                    if (m_bombMap[key]< 0 && m_bombMap[key] > -4) //TODO: not accounting for trail
                     {
-                        string[] s = key.Split(',');
-                        List<Tile> bombedSquares = GetBombedSquares(Convert.ToInt32(s[0].Substring(1)), Convert.ToInt32(s[1].Substring(0, s[1].Length - 1)), m_pierce, m_range);
+                        List<Tile> bombedSquares = GetBombedSquares(key.Key,key.Value, m_pierce, m_range);
 
                         foreach (Tile t in bombedSquares)
                         {
@@ -545,6 +522,15 @@ namespace ConsoleApplication1
                             }
                         }
                     }
+                    else if(m_bombMap[key] < -4)
+                    {
+                        toRemove.Add(key);
+                    }
+                }
+
+                foreach(KeyValuePair<int,int> kvp in toRemove)
+                {
+                    m_bombMap.Remove(kvp);
                 }
 
             }
@@ -717,7 +703,7 @@ namespace ConsoleApplication1
                         toRemove = p;
                     }
 
-                    if((p.m_x == tileIt.X && p.m_y == tileIt.Y && p.m_orientation == newOrientation))
+                    if ((p.m_x == tileIt.X && p.m_y == tileIt.Y && p.m_orientation == newOrientation))
                     {
                         toRemove = p;
                     }
@@ -1126,7 +1112,7 @@ namespace ConsoleApplication1
                             ownerRange = Convert.ToInt32(object_ownerRange);
 
                         }
-                        
+
                     }
 
                     if (m_parsed.trailmap.Count > 0)
@@ -1185,7 +1171,7 @@ namespace ConsoleApplication1
                         endingTile = m_opponentTile;
                     }
 
-                    
+
                     HashSet<AStarBoardState> visited = new HashSet<AStarBoardState>();
                     Queue<AStarBoardState> nextTiles = new Queue<AStarBoardState>();
 
@@ -1225,16 +1211,27 @@ namespace ConsoleApplication1
                     m_parsed.player.TryGetValue("coins", out object_coins);
                     int_coins = Convert.ToInt32(object_coins);
 
-                    AStarBoardState firstMove = new AStarBoardState(m_playerTile, int_orientation, portals, m_worldRepresentation, 1, m_parsed.bombMap, int_bombRange, int_bombCount, int_bombPierce, int_coins);
+                    Dictionary<KeyValuePair<int, int>, int> newBombMap = new Dictionary<KeyValuePair<int, int>, int>();
+                    foreach(string k in m_parsed.bombMap.Keys)
+                    {
+                        int v = m_parsed.bombMap[k]["tick"];
+                        string[] s = k.Split(',');
+
+                        newBombMap.Add(new KeyValuePair<int,int>(Convert.ToInt32( s[0].Substring(1)), Convert.ToInt32(s[1].Substring(0, s[1].Length))), v);
+
+                    }
+
+
+                    AStarBoardState firstMove = new AStarBoardState(m_playerTile, int_orientation, portals, m_worldRepresentation, 1, newBombMap, int_bombRange, int_bombCount, int_bombPierce, int_coins);
                     nextTiles.Enqueue(firstMove);
 
-                  
+
 
                     //BFS search to find all safe tiles
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
-                        if(current == null)
+                        if (current == null)
                         {
                             continue;
                         }
@@ -1335,7 +1332,7 @@ namespace ConsoleApplication1
                             //TODO: calculate safe on step in individual tiles
                             if (current.Safe() && !(current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                             {
-                                if (current != firstMove && (firstMove == current.m_cameFrom || current.m_cameFrom == null ))
+                                if (current != firstMove && (firstMove == current.m_cameFrom || current.m_cameFrom == null))
                                 {
                                     firstMove.AddSafeMove(current);
                                 }
