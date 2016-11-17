@@ -227,7 +227,7 @@ namespace ConsoleApplication1
                     return -10;
                 }
 
-                return m_cost + 600 * (m_pierce + m_count - 1 + m_bombMap.Count + m_range - 3) + 500 * m_coinsAvailable;
+                return m_cost + 5000 * (m_pierce + m_count - 1 + m_bombMap.Count + m_range - 3) + 500 * m_coinsAvailable;
             }
 
             float? calculatedScore = null;
