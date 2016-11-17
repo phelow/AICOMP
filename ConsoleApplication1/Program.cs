@@ -211,7 +211,7 @@ namespace ConsoleApplication1
 
             public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
 
-            public float GetScore()
+            public float GetScore(float tabs = 0)
             {//TODO: cache sco
                 if(Safe() == false)
                 {
@@ -229,8 +229,15 @@ namespace ConsoleApplication1
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
-                    //Console.WriteLine("child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
-                    scoreAdd += child.GetScore() ;
+                    string t = "";
+
+                    for(int i = 0; i < tabs; i++)
+                    {
+                        t += " ";
+                    }
+
+                    Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere);
+                    scoreAdd += child.GetScore(tabs + 1) ;
                 }
                 score += scoreAdd;
 
@@ -477,6 +484,14 @@ namespace ConsoleApplication1
                 state.m_cameFrom = last;
                 return state;
 
+            }
+
+            public AStarBoardState DoNothing(AStarBoardState last)
+            {
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                state.m_moveToGetHere = "";
+                state.m_cameFrom = last;
+                return state;
             }
 
             public AStarBoardState BuyRange(AStarBoardState last)
@@ -1252,43 +1267,58 @@ namespace ConsoleApplication1
 
                         ////Console.WriteLine(nextTiles.Count + " "  + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
 
-                        //bool shouldContinue = false;
+                        bool shouldContinue = false;
 
-                        //foreach (AStarBoardState it in visited)
-                        //{
-                        //    bool different = false;
+                        foreach (AStarBoardState it in visited)
+                        {
+                            bool different = false;
 
-                        //    if (it.m_portals.Count == current.m_portals.Count)
-                        //    {
-                        //        for (int i = 0; i < it.m_portals.Count; i++)
-                        //        {
-                        //            if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
-                        //            {
-                        //            }
-                        //            else
-                        //            {
-                        //                different = true;
-                        //            }
-                        //        }
-                        //    }
-                        //    else
-                        //    {
-                        //        different = true;
-                        //    }
+                            if(it.m_bombMap.Count == current.m_bombMap.Count)
+                            {
+                                for(int i =0; i < current.m_bombMap.Keys.Count; i++)
+                                {
+                                    if(current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
+                                    {
 
-                        //    if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
-                        //    {
-                        //        shouldContinue = true;
-                        //    }
-                        //}
+                                    }
+                                    else
+                                    {
+                                        different = true;
+                                    }
+                                }
+                            }
+
+                            if (it.m_portals.Count == current.m_portals.Count)
+                            {
+                                for (int i = 0; i < it.m_portals.Count; i++)
+                                {
+                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        different = true;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                different = true;
+                            }
+
+                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation))
+                            {
+                                shouldContinue = true;
+                            }
+                        }
 
 
-                        //if (shouldContinue) //TODO: This will no longer work fix this
-                        //{
-                        //    continue;
-                        //}
+                        if (shouldContinue) //TODO: This will no longer work fix this
+                        {
+                            continue;
+                        }
 
-                        //visited.Add(current);
+                        visited.Add(current);
 
 
 
@@ -1319,6 +1349,7 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyPierce(current));
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
+                            nextTiles.Enqueue(current.DoNothing(current));
 
                             if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                             {
@@ -1385,13 +1416,12 @@ namespace ConsoleApplication1
                         stream.Write(data, 0, data.Length);
                     }
                     locked = false;
-                    Thread.Sleep(100);
+                    Thread.Sleep(100000000);
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
                 }
                 //////Console.Write("Start Iteration");
             } while (gameNotCompleted);
-
             return false;
         }
 
