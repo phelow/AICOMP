@@ -220,10 +220,10 @@ namespace ConsoleApplication1
             {
                 if (m_coinsAvailable > 0)
                 {
-              //      //Console.WriteLine(m_coinsAvailable);
+                    Console.WriteLine(m_coinsAvailable);
                 }
 
-                return 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+                return 1 + 100 * (m_pierce + m_count - 1 + m_range - 3) + 50 * m_coinsAvailable;
             }
 
             public float GetScore(float tabs = 0)
@@ -240,11 +240,11 @@ namespace ConsoleApplication1
                     return 0;
                 }
 
-                float score = StateScore();// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+                float score = StateScore() / m_count;// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
 
                 if (score > 0)
                 {
-               //     //Console.WriteLine(score);
+                    //     //Console.WriteLine(score);
                 }
 
 
@@ -257,7 +257,7 @@ namespace ConsoleApplication1
                 foreach (AStarBoardState child in m_safeMoves)
                 {
 
-                 //   //Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere + " parent:" + child.m_cameFrom.m_moveToGetHere);
+                    //   //Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere + " parent:" + child.m_cameFrom.m_moveToGetHere);
 
                     scoreAdd += child.GetScore(tabs + 1);
                 }
@@ -274,7 +274,7 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
-                    //Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
+                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore());
 
                     if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
@@ -307,7 +307,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick >= -2)
+                if (tick >= 0)
                 {
 
                     return true;
@@ -476,7 +476,7 @@ namespace ConsoleApplication1
             public AStarBoardState DropBomb(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                
+
 
 
                 if (state.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)))
@@ -664,7 +664,7 @@ namespace ConsoleApplication1
             public AStarBoardState ShootBluePortal(AStarBoardState last)
             {
                 AStarBoardState state = ShoootPortal(false);
-                if(state == null)
+                if (state == null)
                 {
                     return null;
                 }
@@ -1290,12 +1290,16 @@ namespace ConsoleApplication1
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
-                        if (current == null || current.Safe() == false || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+
+                        if (current == null)
                         {
                             continue;
                         }
-
                         current.TickBombs();
+                        if (current.Safe() == false || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                        {
+                            continue;
+                        }
 
                         ////Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y);
 
@@ -1392,7 +1396,7 @@ namespace ConsoleApplication1
                             //nextTiles.Enqueue(current.BuyPierce(current));
                             //nextTiles.Enqueue(current.BuyBombs(current));
                             //nextTiles.Enqueue(current.BuyRange(current));
-                            nextTiles.Enqueue(current.DoNothing(current));
+                            //nextTiles.Enqueue(current.DoNothing(current));
 
                             if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                             {
@@ -1424,8 +1428,12 @@ namespace ConsoleApplication1
                     {
                         chosenAction = bestMove.m_moveToGetHere;
                     }
+                    else
+                    {
+                        chosenAction = "";
+                    }
 
-                    //Console.WriteLine("ChosenAction:" + chosenAction + " " + bestMove.GetScore());
+                    Console.WriteLine("ChosenAction:" + chosenAction + " ");
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
