@@ -284,7 +284,7 @@ namespace ConsoleApplication1
                 }
                 if (m_safeMoves.Count > 0)
                 {
-                    score += scoreAdd + scoreAve/m_safeMoves.Count;
+                    score += .9f*scoreAdd + .1f*scoreAve/m_safeMoves.Count;
                 }
 
                 calculatedScore = score;
