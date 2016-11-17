@@ -1311,7 +1311,7 @@ namespace ConsoleApplication1
 
 
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 14000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
@@ -1377,8 +1377,13 @@ namespace ConsoleApplication1
                             }
                         }
 
+                        if (current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable)
+                        {
+                            continue;
+                        }
 
-                        if (shouldContinue || current.m_cost > 35) //TODO: This will no longer work fix this
+
+                            if (shouldContinue || current.m_cost > 50) //TODO: This will no longer work fix this
                         {
                             continue;
                         }
