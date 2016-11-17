@@ -1217,7 +1217,7 @@ namespace ConsoleApplication1
                         int v = m_parsed.bombMap[k]["tick"];
                         string[] s = k.Split(',');
 
-                        newBombMap.Add(new KeyValuePair<int,int>(Convert.ToInt32( s[0].Substring(1)), Convert.ToInt32(s[1].Substring(0, s[1].Length))), v);
+                        newBombMap.Add(new KeyValuePair<int,int>(Convert.ToInt32( s[0]), Convert.ToInt32(s[1])), v);
 
                     }
 
