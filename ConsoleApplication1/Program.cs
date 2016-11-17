@@ -222,8 +222,12 @@ namespace ConsoleApplication1
                 {
                     Console.WriteLine(m_coinsAvailable);
                 }
+                if(m_moveToGetHere == "")
+                {
+                    return 0;
+                }
 
-                return 1 + 100 * (m_pierce + m_count - 1 + m_range - 3) + 50 * m_coinsAvailable;
+                return 1 + 10000 * (m_pierce + m_count - 1 + m_range - 3) + 5000 * m_coinsAvailable;
             }
 
             public float GetScore(float tabs = 0)
@@ -259,9 +263,12 @@ namespace ConsoleApplication1
 
                     //   //Console.WriteLine(t + "child.GetScore():" + child.GetScore() + " child.m_moveToGetHere:" + child.m_moveToGetHere + " parent:" + child.m_cameFrom.m_moveToGetHere);
 
-                    scoreAdd += child.GetScore(tabs + 1);
+                    scoreAdd += .9f *child.GetScore(tabs + 1);
                 }
-                score += scoreAdd;
+                if (m_safeMoves.Count > 0)
+                {
+                    score += scoreAdd/m_safeMoves.Count;
+                }
 
 
                 return score;
@@ -1396,7 +1403,7 @@ namespace ConsoleApplication1
                             //nextTiles.Enqueue(current.BuyPierce(current));
                             //nextTiles.Enqueue(current.BuyBombs(current));
                             //nextTiles.Enqueue(current.BuyRange(current));
-                            //nextTiles.Enqueue(current.DoNothing(current));
+                            nextTiles.Enqueue(current.DoNothing(current));
 
                             if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                             {
