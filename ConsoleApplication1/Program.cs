@@ -155,11 +155,11 @@ namespace ConsoleApplication1
         public Tile(int x, int y, ServerResponse server)
         {
             m_blockType = blockType.Passable;
-            if (1 == server.hardBlockBoard[x * server.boardSize + y ])
+            if (1 == server.hardBlockBoard[x * server.boardSize + y])
             {
                 m_blockType = blockType.HardBlock;
             }
-            if (1 == server.softBlockBoard[x * server.boardSize + y ])
+            if (1 == server.softBlockBoard[x * server.boardSize + y])
             {
                 m_blockType = blockType.SoftBlock;
             }
@@ -247,11 +247,10 @@ namespace ConsoleApplication1
 
             float? calculatedScore = null;
             int cc;
-            public float GetScore(out int cost, float tabs = 0)
+            public float GetScore(float tabs = 0)
             {//TODO: cache sco                    
                 if (calculatedScore != null)
                 {
-                    cost = cc;
                     return (float)calculatedScore;
                 }
 
@@ -263,25 +262,22 @@ namespace ConsoleApplication1
                 }
                 if (m_safeMoves.Count == 0)
                 {
-                    cost = this.m_cost;
-                    cc = cost;
                     //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return -1000;
                 }
 
                 float score = 0;
-                
+
                 score = StateScore();
-               
+
 
                 float scoreAdd = 0;
                 float scoreAve = 0;
                 //Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
-                cost = this.m_cost;
-                cc = cost;
+
                 foreach (AStarBoardState child in m_safeMoves)
                 {
-                    float tr = .99f * child.GetScore(out cost, tabs + 1);
+                    float tr = .99f * child.GetScore(tabs + 1);
                     scoreAve += .5f * tr;
                     if (tr > scoreAdd)
                     {
@@ -298,21 +294,20 @@ namespace ConsoleApplication1
 
             }
 
-            public AStarBoardState GetBestMove(out int cost)
+            public AStarBoardState GetBestMove()
             {
                 //TODO: bake victory into best move selection
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
-                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore(out cost) + " cost:" + move.m_cost);
+                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
 
-                    if (bestMove == null || bestMove.GetScore(out cost) < move.GetScore(out cost))
+                    if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
                         bestMove = move;
                     }
                 }
 
-                bestMove.GetScore(out cost);
 
                 return bestMove;
 
@@ -342,7 +337,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick > 0)
+                if (tick >= 0)
                 {
 
                     return true;
@@ -519,7 +514,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 6))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 7))
                 {
                     return null;
                 }
@@ -1337,13 +1332,17 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        if (current.Safe() == false || current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+
+                        if (current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                         {
-                            
-                            //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
-                            continue; 
+                            continue;
                         }
-                        
+                        if (!current.Safe())
+                        {
+                            Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
+                            continue;
+                        }
+
                         if (current.StateScore() > m_minScore)
                         {
                             m_minScore = current.StateScore();
@@ -1483,7 +1482,7 @@ namespace ConsoleApplication1
                     }
                     int cost;
 
-                    AStarBoardState bestMove = firstMove.GetBestMove(out cost);
+                    AStarBoardState bestMove = firstMove.GetBestMove();
 
                     if (bestMove != null)
                     {
@@ -1494,7 +1493,7 @@ namespace ConsoleApplication1
                         chosenAction = "";
                     }
 
-                    Console.WriteLine("ChosenAction:" + chosenAction + " cost:" + cost);
+                    Console.WriteLine("ChosenAction:" + chosenAction);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
