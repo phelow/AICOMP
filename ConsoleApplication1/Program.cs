@@ -337,7 +337,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick >= 0)
+                if (tick > 0)
                 {
 
                     return true;
