@@ -225,31 +225,23 @@ namespace ConsoleApplication1
                     return (float)cachedStateScore;
                 }
 
-                if (m_coinsAvailable > 0)
-                {
-                    //Console.WriteLine(m_coinsAvailable);
-                }
-                if (m_moveToGetHere == "")
-                {
-                    return -10;
-                }
-
 
                 int bombableTiles = 0;
 
-                if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y))) {
+                if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)))
+                {
                     bombableTiles = GetBombedSquares(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
 
                 }
 
 
 
-                foreach(KeyValuePair<KeyValuePair<int,int>,int> kvp in m_bombMap)
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 {
                     bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
                 }
 
-                cachedStateScore =  m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + portals.Count * 10 + bombableTiles;
+                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + portals.Count * 10 + bombableTiles;
                 return (float)cachedStateScore;
             }
 
@@ -299,10 +291,8 @@ namespace ConsoleApplication1
                     }
 
                 }
-                if (m_safeMoves.Count > 0)
-                {
-                    score += scoreAdd;
-                }
+                score += scoreAdd;
+
 
                 calculatedScore = score;
 
@@ -1338,7 +1328,7 @@ namespace ConsoleApplication1
 
                     float m_minScore = 0.0f;
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 14000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
@@ -1356,7 +1346,7 @@ namespace ConsoleApplication1
                             m_minScore = current.StateScore();
                         }
 
-                        if (current.StateScore() < m_minScore * .9f && current.m_cost > 4)
+                        if (current.StateScore() < m_minScore * .8f && current.m_cost > 4)
                         {
                             continue;
                         }
