@@ -238,7 +238,7 @@ namespace ConsoleApplication1
 
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 {
-                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 1.1f;
+                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 1.4f;
                 }
 
                 cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + portals.Count * 10 + bombableTiles;
@@ -270,20 +270,18 @@ namespace ConsoleApplication1
                 }
 
                 float score = 0;
-
-                if (m_cost >= 1)
-                {
-                    score = StateScore();// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
-                }
+                
+                score = StateScore();
+               
 
                 float scoreAdd = 0;
                 float scoreAve = 0;
-                Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
+                //Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
                 cost = this.m_cost;
                 cc = cost;
                 foreach (AStarBoardState child in m_safeMoves)
                 {
-                    float tr = child.GetScore(out cost, tabs + 1);
+                    float tr = .99f * child.GetScore(out cost, tabs + 1);
                     scoreAve += .5f * tr;
                     if (tr > scoreAdd)
                     {
@@ -331,12 +329,15 @@ namespace ConsoleApplication1
                 int tick = 999;
                 foreach (KeyValuePair<int, int> key in m_bombMap.Keys)
                 {
-                    List<Tile> bombedTile = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);//TODO: account for owner range not just player range
-                    foreach (Tile t in bombedTile)
+                    if (m_bombMap[key] < tick)
                     {
-                        if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y && m_bombMap[key] < tick)
+                        List<Tile> bombedTile = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);//TODO: account for owner range not just player range
+                        foreach (Tile t in bombedTile)
                         {
-                            tick = m_bombMap[key];
+                            if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
+                            {
+                                tick = m_bombMap[key];
+                            }
                         }
                     }
                 }
@@ -518,7 +519,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 7))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 6))
                 {
                     return null;
                 }
@@ -1016,11 +1017,11 @@ namespace ConsoleApplication1
 
         static void Main(string[] args)
         {
-            // Attempt to open output file.
-            StreamWriter writer = new StreamWriter("out.txt");
-            // Redirect standard output from the console to the output file.
-            Console.SetOut(writer);
-            // Redirect standard input from the console to the input file.
+            //// Attempt to open output file.
+            //StreamWriter writer = new StreamWriter("out.txt");
+            //// Redirect standard output from the console to the output file.
+            //Console.SetOut(writer);
+            //// Redirect standard input from the console to the input file.
 
             Thread player = new Thread(PlayPlayerThread);
             //Thread opponent = new Thread(PlayOpponentThread);
@@ -1336,17 +1337,18 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        current.TickBombs();
                         if (current.Safe() == false || current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
                         {
-                            continue;
+                            
+                            //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
+                            continue; 
                         }
                         if (current.StateScore() > m_minScore)
                         {
                             m_minScore = current.StateScore();
                         }
 
-                        if (current.StateScore() < m_minScore * .8f && current.m_cost > 4)
+                        if (current.StateScore() < m_minScore * .7f && current.m_cost > 4 && nextTiles.Count > 5)
                         {
                             continue;
                         }
@@ -1423,6 +1425,7 @@ namespace ConsoleApplication1
                             current.m_cameFrom.AddSafeMove(current);
                         }
 
+                        current.TickBombs();
 
 
                         //TODO:this is a little bit tricky, try to solve it I guess
