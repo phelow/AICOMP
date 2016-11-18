@@ -216,26 +216,50 @@ namespace ConsoleApplication1
 
             public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
 
+            public float? cachedStateScore = null;
+
             public float StateScore()
             {
+                if (cachedStateScore != null)
+                {
+                    return (float)cachedStateScore;
+                }
+
                 if (m_coinsAvailable > 0)
                 {
                     //Console.WriteLine(m_coinsAvailable);
                 }
-                if(m_moveToGetHere == "")
+                if (m_moveToGetHere == "")
                 {
                     return -10;
                 }
 
-                return m_cost + 5000 * (m_pierce + m_count - 1 + m_bombMap.Count + m_range - 3) + 500 * m_coinsAvailable;
+
+                int bombableTiles = 0;
+
+                if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y))) {
+                    bombableTiles = GetBombedSquares(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
+
+                }
+
+
+
+                foreach(KeyValuePair<KeyValuePair<int,int>,int> kvp in m_bombMap)
+                {
+                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
+                }
+
+                cachedStateScore =  m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + portals.Count * 10 + bombableTiles;
+                return (float)cachedStateScore;
             }
 
             float? calculatedScore = null;
-
-            public float GetScore(float tabs = 0)
+            int cc;
+            public float GetScore(out int cost, float tabs = 0)
             {//TODO: cache sco                    
-                if(calculatedScore != null)
+                if (calculatedScore != null)
                 {
+                    cost = cc;
                     return (float)calculatedScore;
                 }
 
@@ -245,66 +269,62 @@ namespace ConsoleApplication1
                 {
                     t += " ";
                 }
-                if ( m_safeMoves.Count == 0)
+                if (m_safeMoves.Count == 0)
                 {
-                    //////Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
-                    return -100;
+                    cost = this.m_cost;
+                    cc = cost;
+                    //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
+                    return -1000;
                 }
 
                 float score = 0;
 
-                if (m_count >= 1)
+                if (m_cost >= 1)
                 {
-                    score = StateScore() / m_count;// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
+                    score = StateScore();// + 10 * (m_pierce + m_count - 1 + m_range - 3) + 5 * m_coinsAvailable;
                 }
-                if (score > 0)
-                {
-                    //     ////Console.WriteLine(score);
-                }
-
-
-                //                ////Console.WriteLine("\t\t-" + score);
-
-                score = score;// / m_cost;
 
                 float scoreAdd = 0;
                 float scoreAve = 0;
-                //Console.WriteLine(t + "StateScore():" + score+ " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost +" isSafe:" + this.Safe());
-
+                Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
+                cost = this.m_cost;
+                cc = cost;
                 foreach (AStarBoardState child in m_safeMoves)
                 {
-                    float tr = .6f * child.GetScore(tabs + 1);
+                    float tr = child.GetScore(out cost, tabs + 1);
+                    scoreAve += .5f * tr;
                     if (tr > scoreAdd)
                     {
                         scoreAdd = tr;
                     }
 
-                    scoreAve = .5f * tr;
-                   
                 }
                 if (m_safeMoves.Count > 0)
                 {
-                    score += .9f*scoreAdd + .1f*scoreAve/m_safeMoves.Count;
+                    score += scoreAdd;
                 }
 
                 calculatedScore = score;
+
                 return score;
 
             }
 
-            public AStarBoardState GetBestMove()
+            public AStarBoardState GetBestMove(out int cost)
             {
                 //TODO: bake victory into best move selection
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
-                    //Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
+                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore(out cost) + " cost:" + move.m_cost);
 
-                    if (bestMove == null || bestMove.GetScore() < move.GetScore())
+                    if (bestMove == null || bestMove.GetScore(out cost) < move.GetScore(out cost))
                     {
                         bestMove = move;
                     }
                 }
+
+                bestMove.GetScore(out cost);
 
                 return bestMove;
 
@@ -331,7 +351,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick > -1)
+                if (tick > 0)
                 {
 
                     return true;
@@ -381,7 +401,7 @@ namespace ConsoleApplication1
                         BombSearchState portalState = p.GetBombOutlet(current);
                         if (portalState != null)
                         {
-                            ////////Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
+                            //Console.Write("\n bomb projection has entered a portal " + current.X + " " + current.Y + " " + portalState.X + " " + portalState.Y + " left:" + portalState.ChargesLeft);
                             explosionFrontier.Enqueue(portalState);
                         }
                     }
@@ -508,7 +528,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 5))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 7))
                 {
                     return null;
                 }
@@ -578,7 +598,7 @@ namespace ConsoleApplication1
                     KeyValuePair<int, int> key = m_bombMap.Keys.ElementAt(i);
                     m_bombMap[key] = m_bombMap[key] - 2;
 
-                    if (m_bombMap[key] < 0 && m_bombMap[key] > -6) //TODO: not accounting for trail
+                    if (m_bombMap[key] < -1 && m_bombMap[key] > -6) //TODO: not accounting for trail
                     {
                         List<Tile> bombedSquares = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
 
@@ -591,7 +611,7 @@ namespace ConsoleApplication1
                             }
                         }
                     }
-                    else if (m_bombMap[key] < -6)
+                    if (m_bombMap[key] <= -2)
                     {
                         toRemove.Add(key);
                     }
@@ -1006,6 +1026,12 @@ namespace ConsoleApplication1
 
         static void Main(string[] args)
         {
+            // Attempt to open output file.
+            StreamWriter writer = new StreamWriter("out.txt");
+            // Redirect standard output from the console to the output file.
+            Console.SetOut(writer);
+            // Redirect standard input from the console to the input file.
+
             Thread player = new Thread(PlayPlayerThread);
             //Thread opponent = new Thread(PlayOpponentThread);
 
@@ -1310,6 +1336,7 @@ namespace ConsoleApplication1
 
 
 
+                    float m_minScore = 0.0f;
                     //BFS search to find all safe tiles
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 14000)
                     {
@@ -1320,76 +1347,84 @@ namespace ConsoleApplication1
                             continue;
                         }
                         current.TickBombs();
-                        if ( current.Safe() == false|| (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                        if (current.Safe() == false || current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable || (current.m_projectedPlayerTile.X == m_opponentTile.X && current.m_projectedPlayerTile.Y == m_opponentTile.Y))
+                        {
+                            continue;
+                        }
+                        if (current.StateScore() > m_minScore)
+                        {
+                            m_minScore = current.StateScore();
+                        }
+
+                        if (current.StateScore() < m_minScore * .9f && current.m_cost > 4)
                         {
                             continue;
                         }
 
                         ////Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " current.m_cost:" + current.m_cost);
 
-                        bool shouldContinue = false;
-
-                        foreach (AStarBoardState it in visited)
-                        {
-                            bool different = false;
-
-
-                            if (it.m_bombMap.Count == current.m_bombMap.Count)
-                            {
-                                for (int i = 0; i < current.m_bombMap.Keys.Count; i++)
-                                {
-                                    if (current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap[it.m_bombMap.ElementAt(i).Key] == it.m_bombMap[it.m_bombMap.ElementAt(i).Key] && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
-                                    {
-
-                                    }
-                                    else
-                                    {
-                                        different = true;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                different = true;
-                            }
-
-                            if (it.m_portals.Count == current.m_portals.Count)
-                            {
-                                for (int i = 0; i < it.m_portals.Count; i++)
-                                {
-                                    if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
-                                    {
-                                    }
-                                    else
-                                    {
-                                        different = true;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                different = true;
-                            }
-
-                            if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation) && it.m_cost == current.m_cost)
-                            {
-                                shouldContinue = true;
-                            }
-                        }
-
-                        if (current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable)
-                        {
-                            continue;
-                        }
+                        //bool shouldContinue = false;
+                        //foreach (AStarBoardState it in visited)
+                        //{
+                        //    bool different = false;
 
 
-                            if (shouldContinue || current.m_cost > 50) //TODO: This will no longer work fix this
-                        {
-                            continue;
-                        }
-                        //////Console.WriteLine("Visiting " + current.m_moveToGetHere + " " + current.m_cost + " " + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " " + current.m_projectedPlayerOrientation);
+                        //    if (it.m_bombMap.Count == current.m_bombMap.Count)
+                        //    {
+                        //        for (int i = 0; i < current.m_bombMap.Keys.Count; i++)
+                        //        {
+                        //            if (current.m_bombMap.ElementAt(i).Key.Key == it.m_bombMap.ElementAt(i).Key.Key && current.m_bombMap.ElementAt(i).Key.Value == it.m_bombMap.ElementAt(i).Key.Value && current.m_bombMap[it.m_bombMap.ElementAt(i).Key] == it.m_bombMap[it.m_bombMap.ElementAt(i).Key] && current.m_bombMap.ElementAt(i).Value == it.m_bombMap.ElementAt(i).Value)
+                        //            {
 
-                        visited.Add(current);
+                        //            }
+                        //            else
+                        //            {
+                        //                different = true;
+                        //            }
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        different = true;
+                        //    }
+
+                        //    if (it.m_portals.Count == current.m_portals.Count)
+                        //    {
+                        //        for (int i = 0; i < it.m_portals.Count; i++)
+                        //        {
+                        //            if (it.m_portals[i].m_x == current.m_portals[i].m_x && it.m_portals[i].m_y == current.m_portals[i].m_y && it.m_portals[i].m_isOrange == current.m_portals[i].m_isOrange)
+                        //            {
+                        //            }
+                        //            else
+                        //            {
+                        //                different = true;
+                        //            }
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        different = true;
+                        //    }
+
+                        //    if (!different && (it.m_projectedPlayerTile.X == current.m_projectedPlayerTile.X && it.m_projectedPlayerTile.Y == current.m_projectedPlayerTile.Y && it.m_projectedPlayerOrientation == current.m_projectedPlayerOrientation) && it.m_cost == current.m_cost)
+                        //    {
+                        //        shouldContinue = true;
+                        //    }
+                        //}
+
+                        //if (current.m_projectedPlayerTile.GetBlockType() != Tile.blockType.Passable)
+                        //{
+                        //    continue;
+                        //}
+
+
+                        //if (shouldContinue || current.m_cost > 50) //TODO: This will no longer work fix this
+                        //{
+                        //    continue;
+                        //}
+                        ////////Console.WriteLine("Visiting " + current.m_moveToGetHere + " " + current.m_cost + " " + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " " + current.m_projectedPlayerOrientation);
+
+                        //visited.Add(current);
 
 
                         //TODO: calculate safe on step in individual tiles
@@ -1409,49 +1444,52 @@ namespace ConsoleApplication1
                                 nextTiles.Enqueue(neighbor);
                             }
                         }
-
-                        if (current.m_projectedPlayerTile.GetBlockType() == Tile.blockType.Passable)
+                        if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                         {
 
+                            nextTiles.Enqueue(current.MoveLeft(current));
+                        }
 
-                            nextTiles.Enqueue(current.TurnDown(current));
-                            nextTiles.Enqueue(current.TurnLeft(current));
-                            nextTiles.Enqueue(current.TurnRight(current));
-                            nextTiles.Enqueue(current.TurnUp(current));
+                        if (current.m_projectedPlayerTile.Y - 1 > 0)
+                        {
+                            nextTiles.Enqueue(current.MoveUp(current));
+                        }
+                        if (current.m_projectedPlayerTile.Y + 1 < m_parsed.boardSize)
+                        {
+                            nextTiles.Enqueue(current.MoveDown(current));
+                        }
 
-                            nextTiles.Enqueue(current.ShootBluePortal(current));
-                            nextTiles.Enqueue(current.ShootOrangePortal(current));
-                            nextTiles.Enqueue(current.DropBomb(current));
+                        if (current.m_projectedPlayerTile.X - 1 > 0)
+                        {
+                            nextTiles.Enqueue(current.MoveRight(current));
+                        }
+
+                        if (current.m_projectedPlayerTile.Y - 1 > 0)
+                        {
+                            nextTiles.Enqueue(current.MoveUp(current));
+                        }
+                        //nextTiles.Enqueue(current.TurnDown(current));
+                        //nextTiles.Enqueue(current.TurnLeft(current));
+                        //nextTiles.Enqueue(current.TurnRight(current));
+                        //nextTiles.Enqueue(current.TurnUp(current));
+
+                        if (current.m_coinsAvailable >= 5)
+                        {
                             nextTiles.Enqueue(current.BuyPierce(current));
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
-                            nextTiles.Enqueue(current.DoNothing(current));
-
-                            if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
-                            {
-
-                                nextTiles.Enqueue(current.MoveLeft(current));
-                            }
-
-                            if (current.m_projectedPlayerTile.Y + 1 < m_parsed.boardSize)
-                            {
-                                nextTiles.Enqueue(current.MoveDown(current));
-                            }
-
-                            if (current.m_projectedPlayerTile.X - 1 > 0)
-                            {
-                                nextTiles.Enqueue(current.MoveRight(current));
-                            }
-
-                            if (current.m_projectedPlayerTile.Y - 1 > 0)
-                            {
-                                nextTiles.Enqueue(current.MoveUp(current));
-                            }
                         }
+                        nextTiles.Enqueue(current.ShootBluePortal(current));
+                        nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        nextTiles.Enqueue(current.DropBomb(current));
+                        nextTiles.Enqueue(current.DoNothing(current));
+
 
 
                     }
-                    AStarBoardState bestMove = firstMove.GetBestMove();
+                    int cost;
+
+                    AStarBoardState bestMove = firstMove.GetBestMove(out cost);
 
                     if (bestMove != null)
                     {
@@ -1462,7 +1500,7 @@ namespace ConsoleApplication1
                         chosenAction = "";
                     }
 
-                    //Console.WriteLine("ChosenAction:" + chosenAction + " ");
+                    Console.WriteLine("ChosenAction:" + chosenAction + " cost:" + cost);
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
@@ -1476,14 +1514,13 @@ namespace ConsoleApplication1
                     ////Console.WriteLine("Time:" + watch.ElapsedMilliseconds);
 
 
-                    ////////Console.Write("\nAction is:" + chosenAction + "\n");
-
+                    Console.Write("\nAction is:" + chosenAction + "\n");
+                    Console.WriteLine();
                     using (var stream = request.GetRequestStream())
                     {
                         stream.Write(data, 0, data.Length);
                     }
                     locked = false;
-                    //Thread.Sleep(9999999);
                     Thread.Sleep(100);
                     response = (HttpWebResponse)request.GetResponse();
                     Thread.Sleep(100);
