@@ -226,7 +226,7 @@ namespace ConsoleApplication1
                 }
 
 
-                int bombableTiles = 0;
+                float bombableTiles = 0;
 
                 if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)))
                 {
@@ -238,7 +238,7 @@ namespace ConsoleApplication1
 
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 {
-                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
+                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 1.1f;
                 }
 
                 cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + portals.Count * 10 + bombableTiles;
@@ -1511,9 +1511,9 @@ namespace ConsoleApplication1
                         stream.Write(data, 0, data.Length);
                     }
                     locked = false;
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                     response = (HttpWebResponse)request.GetResponse();
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                 }
                 //////////Console.Write("Start Iteration");
             } while (gameNotCompleted);
