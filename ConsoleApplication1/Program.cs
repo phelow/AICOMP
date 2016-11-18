@@ -155,11 +155,11 @@ namespace ConsoleApplication1
         public Tile(int x, int y, ServerResponse server)
         {
             m_blockType = blockType.Passable;
-            if (1 == server.hardBlockBoard[x + y * server.boardSize])
+            if (1 == server.hardBlockBoard[x * server.boardSize + y ])
             {
                 m_blockType = blockType.HardBlock;
             }
-            if (1 == server.softBlockBoard[x + y * server.boardSize])
+            if (1 == server.softBlockBoard[x * server.boardSize + y ])
             {
                 m_blockType = blockType.SoftBlock;
             }
@@ -1343,6 +1343,7 @@ namespace ConsoleApplication1
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe");
                             continue; 
                         }
+                        
                         if (current.StateScore() > m_minScore)
                         {
                             m_minScore = current.StateScore();
