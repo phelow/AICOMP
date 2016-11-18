@@ -220,6 +220,12 @@ namespace ConsoleApplication1
 
             public float StateScore()
             {
+                if (m_safeMoves.Count == 0)
+                {
+                    return 0;
+                }
+
+
                 if (cachedStateScore != null)
                 {
                     return (float)cachedStateScore;
@@ -228,20 +234,34 @@ namespace ConsoleApplication1
 
                 float bombableTiles = 0;
 
-                if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)))
+                if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)) && m_bombMap.Count == 0 /*TODO: remove this hack*/)
                 {
                     bombableTiles = GetBombedSquares(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
 
+                }
+
+                float danger = 0;
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
+                {
+                    List<Tile> bombedTiles = GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range);
+                    foreach (Tile t in bombedTiles)
+                    {
+                        if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
+                        {
+                            danger = -100;
+                        }
+
+                    }
                 }
 
 
 
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 {
-                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 1.4f;
+                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 2.0f;
                 }
 
-                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + portals.Count * 10 + bombableTiles;
+                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + bombableTiles * 101 + danger;
                 return (float)cachedStateScore;
             }
 
@@ -277,7 +297,7 @@ namespace ConsoleApplication1
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
-                    float tr = .99f * child.GetScore(tabs + 1);
+                    float tr = child.GetScore(tabs + 1);
                     scoreAve += .5f * tr;
                     if (tr > scoreAdd)
                     {
@@ -322,22 +342,35 @@ namespace ConsoleApplication1
             public bool Safe() //TODO: account for transitive exploding
             {
                 int tick = 999;
+                bool debug_flag = false;
                 foreach (KeyValuePair<int, int> key in m_bombMap.Keys)
                 {
                     if (m_bombMap[key] < tick)
                     {
+                        //if(m_projectedPlayerTile.X == 2 && m_projectedPlayerTile.Y == 1 && (key.Key == 1 && key.Value == 2))
+                        //{
+                        //    Console.WriteLine("break");
+                        //    debug_flag = true;
+                        //}
+
                         List<Tile> bombedTile = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);//TODO: account for owner range not just player range
                         foreach (Tile t in bombedTile)
                         {
                             if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
                             {
                                 tick = m_bombMap[key];
+                                //Console.WriteLine("Danger found: " + key.Key + " " + key.Value + " " + tick);
                             }
                         }
                     }
                 }
 
-                if (tick > 0)
+                //if (debug_flag)
+                //{
+                //    Console.WriteLine(tick);
+                //}
+
+                if (tick >= 0)
                 {
 
                     return true;
@@ -514,7 +547,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 7))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 9))
                 {
                     return null;
                 }
@@ -597,7 +630,7 @@ namespace ConsoleApplication1
                             }
                         }
                     }
-                    if (m_bombMap[key] <= -2)
+                    if (m_bombMap[key] <= -3)
                     {
                         toRemove.Add(key);
                     }
@@ -1322,7 +1355,7 @@ namespace ConsoleApplication1
 
 
 
-                    float m_minScore = 0.0f;
+                    AStarBoardState leadingState = firstMove;
                     //BFS search to find all safe tiles
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
                     {
@@ -1339,16 +1372,20 @@ namespace ConsoleApplication1
                         }
                         if (!current.Safe())
                         {
-                            Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
+                            //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
-
-                        if (current.StateScore() > m_minScore)
+                        else
                         {
-                            m_minScore = current.StateScore();
+                            //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is safe " + current.m_cost);
+
+                        }
+                        if (current.StateScore() > leadingState.StateScore())
+                        {
+                            leadingState = current;
                         }
 
-                        if (current.StateScore() < m_minScore * .7f && current.m_cost > 4 && nextTiles.Count > 5)
+                        if (current.StateScore() < leadingState.StateScore() && current.m_cost >20 + leadingState.m_cost)
                         {
                             continue;
                         }
@@ -1472,8 +1509,8 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
-                        nextTiles.Enqueue(current.ShootBluePortal(current));
-                        nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        //nextTiles.Enqueue(current.ShootBluePortal(current));
+                        //nextTiles.Enqueue(current.ShootOrangePortal(current));
                         nextTiles.Enqueue(current.DropBomb(current));
                         nextTiles.Enqueue(current.DoNothing(current));
 
