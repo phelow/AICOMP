@@ -283,7 +283,7 @@ namespace ConsoleApplication1
                 }
 
 
-                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + bombableTiles * 101 + danger + portalProximity * 10;
+                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + bombableTiles * 101 + danger + portalProximity;
                 return (float)cachedStateScore;
             }
 
