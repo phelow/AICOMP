@@ -394,7 +394,7 @@ namespace ConsoleApplication1
                 //    Console.WriteLine(tick);
                 //}
 
-                if (tick > 0)
+                if (tick >= 0)
                 {
 
                     return true;
