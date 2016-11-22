@@ -1631,7 +1631,7 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.TurnUp(current));
 
                         }
-                        else if (choice == 7)
+                        else
                         {
                             nextTiles.Enqueue(current.DoNothing(current));
                         }
