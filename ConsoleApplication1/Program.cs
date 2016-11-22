@@ -1288,6 +1288,7 @@ namespace ConsoleApplication1
 
                     if (int_px == -1)
                     {
+                        Console.ReadLine();
                         return false;
                     }
 
@@ -1302,6 +1303,7 @@ namespace ConsoleApplication1
 
                     if (int_ox == -1)
                     {
+                        Console.ReadLine();
                         return true;
                     }
 
@@ -1611,7 +1613,7 @@ namespace ConsoleApplication1
                 }
                 //////////Console.Write("Start Iteration");
             } while (gameNotCompleted);
-            Thread.Sleep(999999999);
+            Console.ReadLine();
             return false;
         }
 
