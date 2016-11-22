@@ -1597,7 +1597,8 @@ namespace ConsoleApplication1
                         if (current.m_coinsAvailable >= 5)
                         {
                             nextTiles.Enqueue(current.BuyPierce(current));
-                            nextTiles.Enqueue(current.BuyBombs(current));
+                            //TODO: reintroduce this with bomb recursive BFS searching
+                            //nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
 
