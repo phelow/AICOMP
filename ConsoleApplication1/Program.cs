@@ -579,7 +579,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 6))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 4))
                 {
                     return null;
                 }
@@ -649,7 +649,7 @@ namespace ConsoleApplication1
                     KeyValuePair<int, int> key = m_bombMap.Keys.ElementAt(i);
                     m_bombMap[key] = m_bombMap[key] - 2;
 
-                    if (m_bombMap[key] < -1 && m_bombMap[key] > -6) //TODO: not accounting for trail
+                    if (m_bombMap[key] < 1 && m_bombMap[key] > -6) //TODO: not accounting for trail
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
 
