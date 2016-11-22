@@ -236,14 +236,6 @@ namespace ConsoleApplication1
 
             public float StateScore(bool finalTally = false)
             {
-                if (finalTally)
-                {
-                    if (m_safeMoves.Count == 0)
-                    {
-                        return -100;
-                    }
-                }
-
                 if (cachedStateScore != null)
                 {
                     return (float)cachedStateScore;
