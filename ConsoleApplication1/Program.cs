@@ -49,6 +49,7 @@ namespace ConsoleApplication1
         public int m_y;
         public int m_orientation;
         public float m_stateScore;
+        public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
     }
 
     public class BombSearchState
@@ -233,11 +234,19 @@ namespace ConsoleApplication1
                 newState.m_y = m_playerTile.Y;
                 newState.m_orientation = this.m_projectedPlayerOrientation;
                 newState.m_stateScore = this.StateScore();
+                newState.m_bombMap = this.m_bombMap;
                 return newState;
             }
 
-            public float StateScore()
+            public float StateScore(bool finalTally = false)
             {
+                if (finalTally)
+                {
+                    if(m_safeMoves.Count == 0)
+                    {
+                        return -100;
+                    }
+                }
 
                 if (cachedStateScore != null)
                 {
@@ -245,13 +254,13 @@ namespace ConsoleApplication1
                 }
 
 
-                float bombableTiles = 0;
+                //float bombableTiles = 0;
 
-                if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)) && m_bombMap.Count == 0 /*TODO: remove this hack*/)
-                {
-                    bombableTiles = GetBombedSquares(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
+                //if (!m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)) && m_bombMap.Count == 0 /*TODO: remove this hack*/)
+                //{
+                //    bombableTiles = GetBombedSquares(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count;
 
-                }
+                //}
 
                 float danger = 0;
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
@@ -261,7 +270,7 @@ namespace ConsoleApplication1
                     {
                         if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
                         {
-                            danger = -100;
+                            danger = -10000;
                         }
 
                     }
@@ -269,21 +278,13 @@ namespace ConsoleApplication1
 
 
 
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
-                {
-                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 4.0f;
-                }
+                //foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
+                //{
+                //    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 4.0f;
+                //}
+                
 
-                float portalProximity = 1000;
-
-                //TODO: include distance to portals.
-                foreach(Portal p in m_portals)
-                {
-                    portalProximity -= Math.Abs(p.m_x - m_playerTile.X) +  Math.Abs(p.m_y - m_playerTile.Y);
-                }
-
-
-                cachedStateScore = m_cost + 50000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 5000 * m_coinsAvailable + bombableTiles * 101 + danger + portalProximity;
+                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable/* + bombableTiles * 101 */+ danger + m_bombMap.Count * 5.0f - m_cost/100.0f;
                 return (float)cachedStateScore;
             }
 
@@ -310,7 +311,7 @@ namespace ConsoleApplication1
 
                 float score = 0;
 
-                score = StateScore();
+                score = StateScore(true);
 
 
                 float scoreAdd = 0;
@@ -327,7 +328,7 @@ namespace ConsoleApplication1
                     }
 
                 }
-                score += scoreAdd;
+                score +=  .99f*scoreAdd/m_safeMoves.Count;
 
 
                 calculatedScore = score;
@@ -1404,15 +1405,15 @@ namespace ConsoleApplication1
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is safe " + current.m_cost);
 
                         }
-                        if (current.StateScore() > leadingState.StateScore())
-                        {
-                            leadingState = current;
-                        }
+                        //if (current.StateScore() > leadingState.StateScore())
+                        //{
+                        //    leadingState = current;
+                        //}
 
-                        if (current.StateScore() < leadingState.StateScore() && current.m_cost >20 + leadingState.m_cost)
-                        {
-                            continue;
-                        }
+                        //if (current.StateScore() < leadingState.StateScore() && current.m_cost > 20 + leadingState.m_cost)
+                        //{
+                        //    continue;
+                        //}
 
                         ////Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " current.m_cost:" + current.m_cost);
 
@@ -1485,7 +1486,7 @@ namespace ConsoleApplication1
                         {
                             visited.Add(shortState, current.m_cost);
                         }
-                        else if(visited[shortState] < current.m_cost)
+                        else if(visited[shortState] <= current.m_cost)
                         {
                             continue;
                         }
@@ -1596,6 +1597,7 @@ namespace ConsoleApplication1
                 }
                 //////////Console.Write("Start Iteration");
             } while (gameNotCompleted);
+            Thread.Sleep(500000);
             return false;
         }
 
