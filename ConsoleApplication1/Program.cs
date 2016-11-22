@@ -328,7 +328,7 @@ namespace ConsoleApplication1
                     }
 
                 }
-                score += .99f * scoreAdd / m_safeMoves.Count;
+                score += .99f * scoreAdd;
 
 
                 calculatedScore = score;
