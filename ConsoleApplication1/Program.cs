@@ -684,7 +684,15 @@ namespace ConsoleApplication1
             //TODO: this is all wiggity wack you
             public AStarBoardState MoveLeft(AStarBoardState last)
             {
+
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                {
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    {
+                        return null;
+                    }
+                }
                 state.m_moveToGetHere = "mr";
                 state.m_cameFrom = last;
                 return state;
@@ -694,6 +702,13 @@ namespace ConsoleApplication1
             public AStarBoardState MoveRight(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                {
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    {
+                        return null;
+                    }
+                }
                 state.m_moveToGetHere = "ml";
                 state.m_cameFrom = last;
                 return state;
@@ -704,6 +719,13 @@ namespace ConsoleApplication1
             public AStarBoardState MoveUp(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                {
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    {
+                        return null;
+                    }
+                }
                 state.m_moveToGetHere = "mu";
                 state.m_cameFrom = last;
                 return state;
@@ -713,6 +735,13 @@ namespace ConsoleApplication1
             public AStarBoardState MoveDown(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                {
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    {
+                        return null;
+                    }
+                }
                 state.m_moveToGetHere = "md";
                 state.m_cameFrom = last;
                 return state;
@@ -724,6 +753,13 @@ namespace ConsoleApplication1
             public AStarBoardState TurnLeft(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                {
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    {
+                        return null;
+                    }
+                }
                 state.m_moveToGetHere = "tl";
                 state.m_cameFrom = last;
                 return state;
@@ -1543,7 +1579,6 @@ namespace ConsoleApplication1
                         }
                         if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                         {
-
                             nextTiles.Enqueue(current.MoveLeft(current));
                         }
 
