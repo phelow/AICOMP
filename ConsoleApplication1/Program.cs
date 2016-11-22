@@ -184,7 +184,6 @@ namespace ConsoleApplication1
     class Program
     {
 
-
         public struct ShortenedBoardState
         {
             public int m_x;
@@ -273,7 +272,7 @@ namespace ConsoleApplication1
                 int targeted = 0;
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 {
-                    if(kvp.Key.Key == m_opponentTile.X || kvp.Key.Value == m_opponentTile.Y)
+                    if (kvp.Key.Key == m_opponentTile.X || kvp.Key.Value == m_opponentTile.Y)
                     {
                         targeted = 100;
                     }
@@ -292,7 +291,7 @@ namespace ConsoleApplication1
                 //}
 
 
-                cachedStateScore = 600 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted ;
+                cachedStateScore = 600 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted;
                 return (float)cachedStateScore;
             }
 
@@ -311,7 +310,7 @@ namespace ConsoleApplication1
                 {
                     t += " ";
                 }
-                if ( this.Safe() == false || m_dead)
+                if (this.Safe() == false || m_dead)
                 {
                     //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return -1000000;
@@ -325,7 +324,7 @@ namespace ConsoleApplication1
                 float scoreAdd = -9000000;
                 float scoreAve = 0;
 
-                if(m_safeMoves.Count == 0)
+                if (m_safeMoves.Count == 0)
                 {
                     scoreAdd = 0;
                 }
@@ -345,7 +344,7 @@ namespace ConsoleApplication1
 
                 calculatedScore = score;
 
-               // Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
+                // Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
                 return score;
 
             }
@@ -577,7 +576,7 @@ namespace ConsoleApplication1
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
 
 
-                if(state.m_count < m_bombMap.Count) //TODO: calculate how many bombs are owned by the player
+                if (state.m_count < m_bombMap.Count) //TODO: calculate how many bombs are owned by the player
                 {
                     return null;
                 }
@@ -759,7 +758,7 @@ namespace ConsoleApplication1
                 {
                     if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
                     {
-                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X,last.m_projectedPlayerTile.Y];
+                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
                 }
                 state.m_moveToGetHere = "tl";
@@ -1118,6 +1117,7 @@ namespace ConsoleApplication1
         static bool locked = false;
 
         static ServerResponse m_parsed;
+        static Random m_random;
 
         static void Main(string[] args)
         {
@@ -1127,6 +1127,7 @@ namespace ConsoleApplication1
             //Console.SetOut(writer);
             //// Redirect standard input from the console to the input file.
 
+            m_random = new Random(0);
             Thread player = new Thread(PlayPlayerThread);
             //Thread opponent = new Thread(PlayOpponentThread);
 
@@ -1453,9 +1454,9 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        if (!current.m_cameFrom.Safe() || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
+                        if ((current.m_cameFrom != null && !current.m_cameFrom.Safe()) || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
                         {
-                            current.Kilt al();
+                            current.Kill();
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
@@ -1599,18 +1600,44 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
-                        
-                        nextTiles.Enqueue(current.ShootBluePortal(current));
-                        nextTiles.Enqueue(current.ShootOrangePortal(current));
-                        nextTiles.Enqueue(current.TurnDown(current));
-                        nextTiles.Enqueue(current.TurnLeft(current));
-                        nextTiles.Enqueue(current.TurnRight(current));
-                        nextTiles.Enqueue(current.TurnUp(current));
-                        nextTiles.Enqueue(current.DoNothing(current));
 
+                        int choice = m_random.Next(0, 9);
 
+                        if (choice == 1)
+                        {
+                            nextTiles.Enqueue(current.ShootBluePortal(current));
+                        }
+                        else if (choice == 2)
+                        {
+                            nextTiles.Enqueue(current.ShootOrangePortal(current));
 
+                        }
+                        else if (choice == 3)
+                        {
+                            nextTiles.Enqueue(current.TurnDown(current));
+                        }
+                        else if (choice == 4)
+                        {
+                            nextTiles.Enqueue(current.TurnLeft(current));
+
+                        }
+                        else if (choice == 5)
+                        {
+                            nextTiles.Enqueue(current.TurnRight(current));
+                        }
+                        else if (choice == 6)
+                        {
+                            nextTiles.Enqueue(current.TurnUp(current));
+
+                        }
+                        else if (choice == 7)
+                        {
+                            nextTiles.Enqueue(current.DoNothing(current));
+                        }
                     }
+
+
+
                     int cost;
 
                     AStarBoardState bestMove = firstMove.GetBestMove();
@@ -1653,6 +1680,7 @@ namespace ConsoleApplication1
             } while (gameNotCompleted);
             Console.ReadLine();
             return false;
+
         }
 
     }
