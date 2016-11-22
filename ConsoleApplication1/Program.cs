@@ -271,7 +271,7 @@ namespace ConsoleApplication1
 
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 {
-                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 2.0f;
+                    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 4.0f;
                 }
 
                 float portalProximity = 1000;
@@ -283,7 +283,7 @@ namespace ConsoleApplication1
                 }
 
 
-                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + bombableTiles * 101 + danger + portalProximity;
+                cachedStateScore = m_cost + 50000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 5000 * m_coinsAvailable + bombableTiles * 101 + danger + portalProximity;
                 return (float)cachedStateScore;
             }
 
