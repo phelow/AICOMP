@@ -43,6 +43,14 @@ namespace ConsoleApplication1
 
     }
 
+    public struct ShortenedBoardState
+    {
+        public int m_x;
+        public int m_y;
+        public int m_orientation;
+        public float m_stateScore;
+    }
+
     public class BombSearchState
     {
         private int m_movementLeft;
@@ -218,13 +226,18 @@ namespace ConsoleApplication1
 
             public float? cachedStateScore = null;
 
+            public ShortenedBoardState GetShortenedState()
+            {
+                ShortenedBoardState newState = new ShortenedBoardState();
+                newState.m_x = m_playerTile.X;
+                newState.m_y = m_playerTile.Y;
+                newState.m_orientation = this.m_projectedPlayerOrientation;
+                newState.m_stateScore = this.StateScore();
+                return newState;
+            }
+
             public float StateScore()
             {
-                if (m_safeMoves.Count == 0)
-                {
-                    return 0;
-                }
-
 
                 if (cachedStateScore != null)
                 {
@@ -1299,8 +1312,7 @@ namespace ConsoleApplication1
                         endingTile = m_opponentTile;
                     }
 
-
-                    HashSet<AStarBoardState> visited = new HashSet<AStarBoardState>();
+                    
                     Queue<AStarBoardState> nextTiles = new Queue<AStarBoardState>();
 
 
@@ -1353,6 +1365,9 @@ namespace ConsoleApplication1
                     AStarBoardState firstMove = new AStarBoardState(m_playerTile, int_orientation, portals, m_worldRepresentation, 1, newBombMap, int_bombRange, int_bombCount, int_bombPierce, int_coins);
                     nextTiles.Enqueue(firstMove);
 
+
+                    Dictionary<ShortenedBoardState,int> visited = new Dictionary<ShortenedBoardState,int>();
+     
 
 
                     AStarBoardState leadingState = firstMove;
@@ -1454,6 +1469,21 @@ namespace ConsoleApplication1
                         ////////Console.WriteLine("Visiting " + current.m_moveToGetHere + " " + current.m_cost + " " + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " " + current.m_projectedPlayerOrientation);
 
                         //visited.Add(current);
+
+                        ShortenedBoardState shortState = current.GetShortenedState();
+
+                        if (!visited.ContainsKey(shortState))
+                        {
+                            visited.Add(shortState, current.m_cost);
+                        }
+                        else if(visited[shortState] < current.m_cost)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            visited[shortState] = current.m_cost;
+                        }
 
 
                         //TODO: calculate safe on step in individual tiles
