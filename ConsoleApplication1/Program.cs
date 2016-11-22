@@ -274,7 +274,16 @@ namespace ConsoleApplication1
                     bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 2.0f;
                 }
 
-                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + bombableTiles * 101 + danger;
+                float portalProximity = 1000;
+
+                //TODO: include distance to portals.
+                foreach(Portal p in m_portals)
+                {
+                    portalProximity -= Math.Abs(p.m_x - m_playerTile.X) +  Math.Abs(p.m_y - m_playerTile.Y);
+                }
+
+
+                cachedStateScore = m_cost + 5000 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + bombableTiles * 101 + danger + portalProximity * 10;
                 return (float)cachedStateScore;
             }
 
@@ -1528,10 +1537,10 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.MoveUp(current));
                         }
-                        //nextTiles.Enqueue(current.TurnDown(current));
-                        //nextTiles.Enqueue(current.TurnLeft(current));
-                        //nextTiles.Enqueue(current.TurnRight(current));
-                        //nextTiles.Enqueue(current.TurnUp(current));
+                        nextTiles.Enqueue(current.TurnDown(current));
+                        nextTiles.Enqueue(current.TurnLeft(current));
+                        nextTiles.Enqueue(current.TurnRight(current));
+                        nextTiles.Enqueue(current.TurnUp(current));
 
                         if (current.m_coinsAvailable >= 5)
                         {
@@ -1539,8 +1548,8 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
-                        //nextTiles.Enqueue(current.ShootBluePortal(current));
-                        //nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        nextTiles.Enqueue(current.ShootBluePortal(current));
+                        nextTiles.Enqueue(current.ShootOrangePortal(current));
                         nextTiles.Enqueue(current.DropBomb(current));
                         nextTiles.Enqueue(current.DoNothing(current));
 
