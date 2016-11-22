@@ -579,7 +579,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 5))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 6))
                 {
                     return null;
                 }
@@ -1409,7 +1409,7 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        if (!current.Safe())
+                        if (current.m_cameFrom != null && !current.m_cameFrom.Safe())
                         {
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
