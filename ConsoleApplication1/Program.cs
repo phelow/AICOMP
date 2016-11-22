@@ -284,7 +284,7 @@ namespace ConsoleApplication1
                 //}
 
 
-                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable/* + bombableTiles * 101 */+ /*danger +*/ m_bombMap.Count * 5.0f - m_cost / 100.0f /*+ portalProximity*m_portals.Count*/;
+                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable;
                 return (float)cachedStateScore;
             }
 
@@ -316,7 +316,6 @@ namespace ConsoleApplication1
 
                 float scoreAdd = -9000000;
                 float scoreAve = 0;
-                //Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
 
                 if(m_safeMoves.Count == 0)
                 {
@@ -338,6 +337,7 @@ namespace ConsoleApplication1
 
                 calculatedScore = score;
 
+               // Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
                 return score;
 
             }
@@ -1523,6 +1523,7 @@ namespace ConsoleApplication1
                         }
 
                         current.TickBombs();
+                        nextTiles.Enqueue(current.DropBomb(current));
 
 
                         //TODO:this is a little bit tricky, try to solve it I guess
@@ -1566,7 +1567,6 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
                         
-                        nextTiles.Enqueue(current.DropBomb(current));
                         nextTiles.Enqueue(current.ShootBluePortal(current));
                         nextTiles.Enqueue(current.ShootOrangePortal(current));
                         nextTiles.Enqueue(current.TurnDown(current));
