@@ -1556,13 +1556,13 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
                         nextTiles.Enqueue(current.DropBomb(current));
-                        nextTiles.Enqueue(current.DoNothing(current));
                         nextTiles.Enqueue(current.ShootBluePortal(current));
                         nextTiles.Enqueue(current.ShootOrangePortal(current));
                         nextTiles.Enqueue(current.TurnDown(current));
                         nextTiles.Enqueue(current.TurnLeft(current));
                         nextTiles.Enqueue(current.TurnRight(current));
                         nextTiles.Enqueue(current.TurnUp(current));
+                        nextTiles.Enqueue(current.DoNothing(current));
 
 
 
