@@ -268,8 +268,14 @@ namespace ConsoleApplication1
                 //        danger = -100000;
                 //    }
                 //}
-
-
+                int targeted = 0;
+                foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
+                {
+                    if(kvp.Key.Key == m_opponentTile.X || kvp.Key.Value == m_opponentTile.Y)
+                    {
+                        targeted = 100;
+                    }
+                }
 
                 //foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 //{
@@ -284,7 +290,7 @@ namespace ConsoleApplication1
                 //}
 
 
-                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable;
+                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable + targeted ;
                 return (float)cachedStateScore;
             }
 
