@@ -306,7 +306,7 @@ namespace ConsoleApplication1
                 if ( this.Safe() == false)
                 {
                     //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
-                    return -1000;
+                    return -1000000;
                 }
 
                 float score = 0;
