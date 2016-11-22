@@ -218,11 +218,18 @@ namespace ConsoleApplication1
             public int m_count;
             public int m_pierce;
 
+            public bool m_dead = false;
+
             public List<AStarBoardState> m_safeMoves;
 
             public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
 
             public float? cachedStateScore = null;
+
+            public void Kill()
+            {
+                m_dead = true;
+            }
 
             public ShortenedBoardState GetShortenedState()
             {
@@ -304,7 +311,7 @@ namespace ConsoleApplication1
                 {
                     t += " ";
                 }
-                if ( this.Safe() == false)
+                if ( this.Safe() == false || m_dead)
                 {
                     //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return -1000000;
@@ -1446,21 +1453,11 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        if (current.m_cameFrom != null && !current.m_cameFrom.Safe())
+                        if (!current.m_cameFrom.Safe() || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
                         {
+                            current.Kill();
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
-                        }
-                        else
-                        {
-
-
-                            if (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y)))
-                            {
-                                continue;
-                            }
-                            //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is safe " + current.m_cost);
-
                         }
                         //if (current.StateScore() > leadingState.StateScore())
                         //{
