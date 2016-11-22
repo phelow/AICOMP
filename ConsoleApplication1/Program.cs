@@ -690,7 +690,7 @@ namespace ConsoleApplication1
                 {
                     if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
                     {
-                        return null;
+                        state.m_projectedPlayerTile = last.m_projectedPlayerTile;
                     }
                 }
                 state.m_moveToGetHere = "mr";
@@ -706,7 +706,7 @@ namespace ConsoleApplication1
                 {
                     if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
                     {
-                        return null;
+                        state.m_projectedPlayerTile = last.m_projectedPlayerTile;
                     }
                 }
                 state.m_moveToGetHere = "ml";
@@ -723,7 +723,7 @@ namespace ConsoleApplication1
                 {
                     if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
                     {
-                        return null;
+                        state.m_projectedPlayerTile = last.m_projectedPlayerTile;
                     }
                 }
                 state.m_moveToGetHere = "mu";
@@ -739,7 +739,7 @@ namespace ConsoleApplication1
                 {
                     if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
                     {
-                        return null;
+                        state.m_projectedPlayerTile = last.m_projectedPlayerTile;
                     }
                 }
                 state.m_moveToGetHere = "md";
@@ -757,7 +757,7 @@ namespace ConsoleApplication1
                 {
                     if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
                     {
-                        return null;
+                        state.m_projectedPlayerTile = last.m_projectedPlayerTile;
                     }
                 }
                 state.m_moveToGetHere = "tl";
