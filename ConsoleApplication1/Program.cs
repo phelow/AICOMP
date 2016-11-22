@@ -314,9 +314,14 @@ namespace ConsoleApplication1
                 score = StateScore(true);
 
 
-                float scoreAdd = 0;
+                float scoreAdd = -9000000;
                 float scoreAve = 0;
                 //Console.WriteLine(t + "StateScore():" + score + " child.m_moveToGetHere:" + this.m_moveToGetHere + " bombs:" + this.m_bombMap.Count + " cost:" + this.m_cost + " isSafe:" + this.Safe());
+
+                if(m_safeMoves.Count == 0)
+                {
+                    scoreAdd = 0;
+                }
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
