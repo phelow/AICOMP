@@ -43,16 +43,6 @@ namespace ConsoleApplication1
 
     }
 
-    public struct ShortenedBoardState
-    {
-        public int m_x;
-        public int m_y;
-        public int m_cost;
-        public int m_orientation;
-        public float m_stateScore;
-        public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
-    }
-
     public class BombSearchState
     {
         private int m_movementLeft;
@@ -195,6 +185,18 @@ namespace ConsoleApplication1
     {
 
 
+        public struct ShortenedBoardState
+        {
+            public int m_x;
+            public int m_y;
+            public int m_cost;
+            public int m_orientation;
+            public float m_stateScore;
+
+            public List<Portal> m_portals;
+            public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
+        }
+
 
         public class AStarBoardState
         {
@@ -230,6 +232,7 @@ namespace ConsoleApplication1
                 newState.m_orientation = this.m_projectedPlayerOrientation;
                 newState.m_stateScore = this.StateScore();
                 newState.m_bombMap = this.m_bombMap;
+                newState.m_portals = this.m_portals;
                 newState.m_cost = this.m_cost;
                 return newState;
             }
