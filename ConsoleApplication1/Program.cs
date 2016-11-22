@@ -1455,7 +1455,7 @@ namespace ConsoleApplication1
                         }
                         if (!current.m_cameFrom.Safe() || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
                         {
-                            current.Kill();
+                            current.Kilt al();
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
