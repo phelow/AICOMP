@@ -154,12 +154,6 @@ namespace ConsoleApplication1
 
         public Tile CameFrom;
 
-        public void AddBomb(int tick)
-        {
-            m_bombTick = -1;
-
-        }
-
 
         public Tile(int x, int y, ServerResponse server)
         {
@@ -242,7 +236,7 @@ namespace ConsoleApplication1
             {
                 if (finalTally)
                 {
-                    if(m_safeMoves.Count == 0)
+                    if (m_safeMoves.Count == 0)
                     {
                         return -100;
                     }
@@ -270,7 +264,7 @@ namespace ConsoleApplication1
                     {
                         if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
                         {
-                            danger = -10000;
+                            danger = -100;
                         }
 
                     }
@@ -281,10 +275,17 @@ namespace ConsoleApplication1
                 //foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
                 //{
                 //    bombableTiles += GetBombedSquares(kvp.Key.Key, kvp.Key.Value, m_pierce, m_range).Where(item => item.GetBlockType() == Tile.blockType.SoftBlock).ToList().Count * 4.0f;
-                //}
-                
+                ////}
+                //float portalProximity = 100;
 
-                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable/* + bombableTiles * 101 */+ danger + m_bombMap.Count * 5.0f - m_cost/100.0f;
+                ////TODO: include distance to portals.
+                //foreach (Portal p in m_portals)
+                //{
+                //    portalProximity -= Math.Abs(p.m_x - m_playerTile.X) + Math.Abs(p.m_y - m_playerTile.Y);
+                //}
+
+
+                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable/* + bombableTiles * 101 */+ danger + m_bombMap.Count * 5.0f - m_cost / 100.0f /*+ portalProximity*m_portals.Count*/;
                 return (float)cachedStateScore;
             }
 
@@ -303,7 +304,7 @@ namespace ConsoleApplication1
                 {
                     t += " ";
                 }
-                if (m_safeMoves.Count == 0)
+                if ( this.Safe() == false)
                 {
                     //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return -1000;
@@ -328,7 +329,7 @@ namespace ConsoleApplication1
                     }
 
                 }
-                score +=  .99f*scoreAdd/m_safeMoves.Count;
+                score += .99f * scoreAdd / m_safeMoves.Count;
 
 
                 calculatedScore = score;
@@ -393,7 +394,7 @@ namespace ConsoleApplication1
                 //    Console.WriteLine(tick);
                 //}
 
-                if (tick >= 0)
+                if (tick > 0)
                 {
 
                     return true;
@@ -528,7 +529,7 @@ namespace ConsoleApplication1
 
                 foreach (KeyValuePair<int, int> key in bombMap.Keys)
                 {
-                    AddBombToMap(key.Key, key.Value, bombMap[key]);
+                    AddBombToMap(key.Key, key.Value, bombMap[key] + 2);
 
                 }
 
@@ -1266,15 +1267,6 @@ namespace ConsoleApplication1
 
                     }
 
-                    if (m_parsed.trailmap.Count > 0)
-                    {
-                        foreach (KeyValuePair<string, object> kvp in m_parsed.trailmap)
-                        {
-                            int[] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
-                            m_worldRepresentation[bombCoords[0], bombCoords[1]].AddBomb(0);
-                        }
-                    }
-
 
 
                     gameNotCompleted = m_parsed.state != "complete";
@@ -1322,7 +1314,7 @@ namespace ConsoleApplication1
                         endingTile = m_opponentTile;
                     }
 
-                    
+
                     Queue<AStarBoardState> nextTiles = new Queue<AStarBoardState>();
 
 
@@ -1373,11 +1365,23 @@ namespace ConsoleApplication1
 
 
                     AStarBoardState firstMove = new AStarBoardState(m_playerTile, int_orientation, portals, m_worldRepresentation, 1, newBombMap, int_bombRange, int_bombCount, int_bombPierce, int_coins);
+
+                    HashSet<KeyValuePair<int, int>> m_trails = new HashSet<KeyValuePair<int, int>>();
+
+                    if (m_parsed.trailmap.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, object> kvp in m_parsed.trailmap)
+                        {
+                            int[] bombCoords = kvp.Key.Split(',').Select(num => int.Parse(num)).ToArray();
+                            m_trails.Add(new KeyValuePair<int, int>(bombCoords[0], bombCoords[1]));
+                        }
+                    }
+
                     nextTiles.Enqueue(firstMove);
 
 
-                    Dictionary<ShortenedBoardState,int> visited = new Dictionary<ShortenedBoardState,int>();
-     
+                    Dictionary<ShortenedBoardState, int> visited = new Dictionary<ShortenedBoardState, int>();
+
 
 
                     AStarBoardState leadingState = firstMove;
@@ -1402,6 +1406,12 @@ namespace ConsoleApplication1
                         }
                         else
                         {
+
+
+                            if (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y)))
+                            {
+                                continue;
+                            }
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is safe " + current.m_cost);
 
                         }
@@ -1486,7 +1496,7 @@ namespace ConsoleApplication1
                         {
                             visited.Add(shortState, current.m_cost);
                         }
-                        else if(visited[shortState] <= current.m_cost)
+                        else if (visited[shortState] <= current.m_cost)
                         {
                             continue;
                         }
@@ -1538,10 +1548,6 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.MoveUp(current));
                         }
-                        //nextTiles.Enqueue(current.TurnDown(current));
-                        //nextTiles.Enqueue(current.TurnLeft(current));
-                        //nextTiles.Enqueue(current.TurnRight(current));
-                        //nextTiles.Enqueue(current.TurnUp(current));
 
                         if (current.m_coinsAvailable >= 5)
                         {
@@ -1549,10 +1555,14 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                         }
-                        nextTiles.Enqueue(current.ShootBluePortal(current));
-                        nextTiles.Enqueue(current.ShootOrangePortal(current));
                         nextTiles.Enqueue(current.DropBomb(current));
                         nextTiles.Enqueue(current.DoNothing(current));
+                        nextTiles.Enqueue(current.ShootBluePortal(current));
+                        nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        nextTiles.Enqueue(current.TurnDown(current));
+                        nextTiles.Enqueue(current.TurnLeft(current));
+                        nextTiles.Enqueue(current.TurnRight(current));
+                        nextTiles.Enqueue(current.TurnUp(current));
 
 
 
@@ -1597,7 +1607,7 @@ namespace ConsoleApplication1
                 }
                 //////////Console.Write("Start Iteration");
             } while (gameNotCompleted);
-            Thread.Sleep(500000);
+            Thread.Sleep(999999999);
             return false;
         }
 
