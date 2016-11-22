@@ -1537,10 +1537,10 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.MoveUp(current));
                         }
-                        nextTiles.Enqueue(current.TurnDown(current));
-                        nextTiles.Enqueue(current.TurnLeft(current));
-                        nextTiles.Enqueue(current.TurnRight(current));
-                        nextTiles.Enqueue(current.TurnUp(current));
+                        //nextTiles.Enqueue(current.TurnDown(current));
+                        //nextTiles.Enqueue(current.TurnLeft(current));
+                        //nextTiles.Enqueue(current.TurnRight(current));
+                        //nextTiles.Enqueue(current.TurnUp(current));
 
                         if (current.m_coinsAvailable >= 5)
                         {
