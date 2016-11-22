@@ -282,7 +282,7 @@ namespace ConsoleApplication1
                 //}
 
 
-                cachedStateScore = 600000 * (m_pierce + m_count + m_range - 3) + 500000 * m_coinsAvailable + targeted ;
+                cachedStateScore = 600 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted ;
                 return (float)cachedStateScore;
             }
 
