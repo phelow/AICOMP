@@ -571,7 +571,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 9))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 6))
                 {
                     return null;
                 }
