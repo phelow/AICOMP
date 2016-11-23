@@ -1454,47 +1454,24 @@ namespace ConsoleApplication1
                                 nextTiles.Enqueue(neighbor);
                             }
                         }
-                        if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
-                        {
-                            nextTiles.Enqueue(current.MoveLeft(current));
-                        }
-
-                        if (current.m_projectedPlayerTile.Y - 1 > 0)
-                        {
-                            nextTiles.Enqueue(current.MoveUp(current));
-                        }
-                        if (current.m_projectedPlayerTile.Y + 1 < m_parsed.boardSize)
-                        {
-                            nextTiles.Enqueue(current.MoveDown(current));
-                        }
-
-                        if (current.m_projectedPlayerTile.X - 1 > 0)
-                        {
-                            nextTiles.Enqueue(current.MoveRight(current));
-                        }
-
-                        if (current.m_projectedPlayerTile.Y - 1 > 0)
-                        {
-                            nextTiles.Enqueue(current.MoveUp(current));
-                        }
 
 
-                        if(current.m_cost < 8)
+                        if (current.m_cost < 8)
                         {
+                            nextTiles.Enqueue(current.DropBomb(current));
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
                             nextTiles.Enqueue(current.BuyPierce(current));
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                             nextTiles.Enqueue(current.DoNothing(current));
-                            nextTiles.Enqueue(current.DropBomb(current));
 
                         }
                         else
                         {
 
                             int choice = m_random.Next(0, 10);
-                            if(choice < 2)
+                            if (choice < 2)
                             {
                                 nextTiles.Enqueue(current.DropBomb(current));
                             }
@@ -1535,6 +1512,32 @@ namespace ConsoleApplication1
                             {
                                 nextTiles.Enqueue(current.DoNothing(current));
                             }
+
+                            if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
+                        {
+                            nextTiles.Enqueue(current.MoveLeft(current));
+                        }
+
+                        if (current.m_projectedPlayerTile.Y - 1 > 0)
+                        {
+                            nextTiles.Enqueue(current.MoveUp(current));
+                        }
+                        if (current.m_projectedPlayerTile.Y + 1 < m_parsed.boardSize)
+                        {
+                            nextTiles.Enqueue(current.MoveDown(current));
+                        }
+
+                        if (current.m_projectedPlayerTile.X - 1 > 0)
+                        {
+                            nextTiles.Enqueue(current.MoveRight(current));
+                        }
+
+                        if (current.m_projectedPlayerTile.Y - 1 > 0)
+                        {
+                            nextTiles.Enqueue(current.MoveUp(current));
+                        }
+
+
 
                         }
                     }
