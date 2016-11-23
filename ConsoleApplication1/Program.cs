@@ -250,6 +250,12 @@ namespace ConsoleApplication1
                     return (float)cachedStateScore;
                 }
 
+                if(Safe() == false)
+                {
+                    cachedStateScore = -1000;
+                    return (float)cachedStateScore;
+                }
+
 
                 //float bombableTiles = 0;
 
