@@ -397,7 +397,7 @@ namespace ConsoleApplication1
                     BombSearchState current = explosionFrontier.Dequeue();
 
                     bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
-                    if (current.ChargesLeft == 1)
+                    if (current.ChargesLeft == 0)
                     {
                         continue;
                     }
