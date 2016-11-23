@@ -1458,10 +1458,6 @@ namespace ConsoleApplication1
 
 
                         int choice = m_random.Next(0, 10);
-                        if (choice < 2)
-                        {
-                            nextTiles.Enqueue(current.DropBomb(current));
-                        }
                         if (choice < 3)
                         {
                             nextTiles.Enqueue(current.ShootBluePortal(current));
@@ -1523,6 +1519,7 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.MoveUp(current));
                         }
+                        nextTiles.Enqueue(current.DropBomb(current));
 
                         nextTiles.Enqueue(current.DoNothing(current));
                     }
