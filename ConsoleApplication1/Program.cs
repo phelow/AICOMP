@@ -243,7 +243,7 @@ namespace ConsoleApplication1
                     return (float)cachedStateScore;
                 }
 
-                if (Safe() == false)
+                if (Safe() == false || m_dead)
                 {
                     cachedStateScore = -1000;
                     return (float)cachedStateScore;
@@ -277,9 +277,10 @@ namespace ConsoleApplication1
                 {
                     t += " ";
                 }
+                //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere);
+
                 if (this.Safe() == false || m_dead)
                 {
-                    //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere + " is unsafe");
                     return -1000000;
                 }
 
@@ -1456,64 +1457,50 @@ namespace ConsoleApplication1
                         }
 
 
-                        if (current.m_cost < 8)
+
+                        int choice = m_random.Next(0, 10);
+                        if (choice < 2)
                         {
                             nextTiles.Enqueue(current.DropBomb(current));
+                        }
+                        if (choice < 3)
+                        {
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
-                            nextTiles.Enqueue(current.BuyPierce(current));
-                            nextTiles.Enqueue(current.BuyBombs(current));
-                            nextTiles.Enqueue(current.BuyRange(current));
-                            nextTiles.Enqueue(current.DoNothing(current));
+                        }
+                        else if (choice == 3)
+                        {
+                            nextTiles.Enqueue(current.TurnDown(current));
+                        }
+                        else if (choice == 4)
+                        {
+                            nextTiles.Enqueue(current.TurnLeft(current));
 
+                        }
+                        else if (choice == 5)
+                        {
+                            nextTiles.Enqueue(current.TurnRight(current));
+                        }
+                        else if (choice == 6)
+                        {
+                            nextTiles.Enqueue(current.TurnUp(current));
+
+                        }
+                        else if (choice == 7)
+                        {
+
+                            if (current.m_coinsAvailable >= 5)
+                            {
+                                nextTiles.Enqueue(current.BuyPierce(current));
+                                nextTiles.Enqueue(current.BuyBombs(current));
+                                nextTiles.Enqueue(current.BuyRange(current));
+                            }
                         }
                         else
                         {
-
-                            int choice = m_random.Next(0, 10);
-                            if (choice < 2)
-                            {
-                                nextTiles.Enqueue(current.DropBomb(current));
-                            }
-                            if (choice < 3)
-                            {
-                                nextTiles.Enqueue(current.ShootBluePortal(current));
-                                nextTiles.Enqueue(current.ShootOrangePortal(current));
-                            }
-                            else if (choice == 3)
-                            {
-                                nextTiles.Enqueue(current.TurnDown(current));
-                            }
-                            else if (choice == 4)
-                            {
-                                nextTiles.Enqueue(current.TurnLeft(current));
-
-                            }
-                            else if (choice == 5)
-                            {
-                                nextTiles.Enqueue(current.TurnRight(current));
-                            }
-                            else if (choice == 6)
-                            {
-                                nextTiles.Enqueue(current.TurnUp(current));
-
-                            }
-                            else if (choice == 7)
-                            {
-
-                                if (current.m_coinsAvailable >= 5)
-                                {
-                                    nextTiles.Enqueue(current.BuyPierce(current));
-                                    nextTiles.Enqueue(current.BuyBombs(current));
-                                    nextTiles.Enqueue(current.BuyRange(current));
-                                }
-                            }
-                            else
-                            {
-                                nextTiles.Enqueue(current.DoNothing(current));
-                            }
-                            
+                            nextTiles.Enqueue(current.DoNothing(current));
                         }
+
                         if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                         {
                             nextTiles.Enqueue(current.MoveLeft(current));
