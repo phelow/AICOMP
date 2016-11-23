@@ -1460,15 +1460,15 @@ namespace ConsoleApplication1
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
-                        //if (current.StateScore() > leadingState.StateScore())
-                        //{
-                        //    leadingState = current;
-                        //}
+                        if (current.StateScore() > leadingState.StateScore())
+                        {
+                            leadingState = current;
+                        }
 
-                        //if (current.StateScore() < leadingState.StateScore() && current.m_cost > 20 + leadingState.m_cost)
-                        //{
-                        //    continue;
-                        //}
+                        if (current.StateScore() < leadingState.StateScore() && current.m_cost > 20 + leadingState.m_cost)
+                        {
+                            continue;
+                        }
 
                         ////Console.WriteLine(nextTiles.Count + " " + visited.Count + " Visiting:" + current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " current.m_cost:" + current.m_cost);
 
@@ -1594,22 +1594,12 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.MoveUp(current));
                         }
 
-                        if (current.m_coinsAvailable >= 5)
-                        {
-                            nextTiles.Enqueue(current.BuyPierce(current));
-                            //TODO: reintroduce this with bomb recursive BFS searching
-                            //nextTiles.Enqueue(current.BuyBombs(current));
-                            nextTiles.Enqueue(current.BuyRange(current));
-                        }
 
                         int choice = m_random.Next(0, 9);
 
                         if (choice == 1)
                         {
                             nextTiles.Enqueue(current.ShootBluePortal(current));
-                        }
-                        else if (choice == 2)
-                        {
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
 
                         }
@@ -1630,6 +1620,17 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.TurnUp(current));
 
+                        }
+                        else if (choice == 7)
+                        {
+
+                            if (current.m_coinsAvailable >= 5)
+                            {
+                                nextTiles.Enqueue(current.BuyPierce(current));
+                                //TODO: reintroduce this with bomb recursive BFS searching
+                                //nextTiles.Enqueue(current.BuyBombs(current));
+                                nextTiles.Enqueue(current.BuyRange(current));
+                            }
                         }
                         else
                         {
