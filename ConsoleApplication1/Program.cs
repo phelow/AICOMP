@@ -336,15 +336,9 @@ namespace ConsoleApplication1
             {
                 m_safeMoves.Add(move);
             }
-
-            public bool? m_safe = null;
-
+            
             public bool Safe()
             {
-                if (m_safe != null)
-                {
-                    return (bool)m_safe;
-                }
 
                 int tick = 999;
                 bool debug_flag = false;
@@ -375,14 +369,12 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick > 0)
+                if (tick >= 0)
                 {
-                    m_safe = true;
                     return true;
                 }
                 else
                 {
-                    m_safe = false;
                     return false;
                 }
             }
