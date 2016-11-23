@@ -1480,44 +1480,58 @@ namespace ConsoleApplication1
                         }
 
 
-                        int choice = m_random.Next(0, 10);
-
-                        if (choice < 3)
+                        if(current.m_cost < 8)
                         {
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
-                        }
-                        else if (choice == 3)
-                        {
-                            nextTiles.Enqueue(current.TurnDown(current));
-                        }
-                        else if (choice == 4)
-                        {
-                            nextTiles.Enqueue(current.TurnLeft(current));
+                            nextTiles.Enqueue(current.BuyPierce(current));
+                            nextTiles.Enqueue(current.BuyBombs(current));
+                            nextTiles.Enqueue(current.BuyRange(current));
+                            nextTiles.Enqueue(current.DoNothing(current));
 
-                        }
-                        else if (choice == 5)
-                        {
-                            nextTiles.Enqueue(current.TurnRight(current));
-                        }
-                        else if (choice == 6)
-                        {
-                            nextTiles.Enqueue(current.TurnUp(current));
-
-                        }
-                        else if (choice == 7)
-                        {
-
-                            if (current.m_coinsAvailable >= 5)
-                            {
-                                nextTiles.Enqueue(current.BuyPierce(current));
-                                nextTiles.Enqueue(current.BuyBombs(current));
-                                nextTiles.Enqueue(current.BuyRange(current));
-                            }
                         }
                         else
                         {
-                            nextTiles.Enqueue(current.DoNothing(current));
+
+                            int choice = m_random.Next(0, 10);
+                            if (choice < 3)
+                            {
+                                nextTiles.Enqueue(current.ShootBluePortal(current));
+                                nextTiles.Enqueue(current.ShootOrangePortal(current));
+                            }
+                            else if (choice == 3)
+                            {
+                                nextTiles.Enqueue(current.TurnDown(current));
+                            }
+                            else if (choice == 4)
+                            {
+                                nextTiles.Enqueue(current.TurnLeft(current));
+
+                            }
+                            else if (choice == 5)
+                            {
+                                nextTiles.Enqueue(current.TurnRight(current));
+                            }
+                            else if (choice == 6)
+                            {
+                                nextTiles.Enqueue(current.TurnUp(current));
+
+                            }
+                            else if (choice == 7)
+                            {
+
+                                if (current.m_coinsAvailable >= 5)
+                                {
+                                    nextTiles.Enqueue(current.BuyPierce(current));
+                                    nextTiles.Enqueue(current.BuyBombs(current));
+                                    nextTiles.Enqueue(current.BuyRange(current));
+                                }
+                            }
+                            else
+                            {
+                                nextTiles.Enqueue(current.DoNothing(current));
+                            }
+
                         }
                     }
 
