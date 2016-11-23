@@ -1013,12 +1013,12 @@ namespace ConsoleApplication1
 
                 if (this.m_orientation == 2)
                 {
-                    retu.m_moveToGetHere = "mr";
+                    retu.m_moveToGetHere = "ml";
 
                 }
                 else if (this.m_orientation == 0)
                 {
-                    retu.m_moveToGetHere = "ml";
+                    retu.m_moveToGetHere = "mr";
                 }
                 else if (this.m_orientation == 3)
                 {
