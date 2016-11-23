@@ -1467,6 +1467,7 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
+                            nextTiles.Enqueue(current.DoNothing(current));
                         }
                         else if (choice == 3)
                         {
