@@ -375,7 +375,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                if (tick >= 0)
+                if (tick > 0)
                 {
                     m_safe = true;
                     return true;
