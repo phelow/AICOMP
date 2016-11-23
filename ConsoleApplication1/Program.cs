@@ -265,7 +265,7 @@ namespace ConsoleApplication1
             float? calculatedScore = null;
             int cc;
             public float GetScore(float tabs = 0)
-            {                  
+            {
                 if (calculatedScore != null)
                 {
                     return (float)calculatedScore;
@@ -341,7 +341,7 @@ namespace ConsoleApplication1
 
             public bool Safe()
             {
-                if(m_safe != null)
+                if (m_safe != null)
                 {
                     return (bool)m_safe;
                 }
@@ -393,7 +393,7 @@ namespace ConsoleApplication1
                 HashSet<Tile> bombedTiles = new HashSet<Tile>();
 
                 Queue<BombSearchState> explosionFrontier = new Queue<BombSearchState>();
-               
+
 
                 explosionFrontier.Enqueue(new BombSearchState(ownerRange, ownerPiercing, 0, bombX, bombY));
                 explosionFrontier.Enqueue(new BombSearchState(ownerRange, ownerPiercing, 1, bombX, bombY));
@@ -405,7 +405,7 @@ namespace ConsoleApplication1
                     BombSearchState current = explosionFrontier.Dequeue();
 
                     bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
-                    if (current.ChargesLeft == 0) 
+                    if (current.ChargesLeft == 0)
                     {
                         continue;
                     }
@@ -525,7 +525,7 @@ namespace ConsoleApplication1
                 {
                     return false;
                 }
-                
+
                 m_bombMap.Add(new KeyValuePair<int, int>(x, y), tick);
 
                 return true;
@@ -534,7 +534,7 @@ namespace ConsoleApplication1
             public AStarBoardState DropBomb(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                
+
                 if (state.m_count < m_bombMap.Count - enemyBombs)
                 {
                     return null;
@@ -615,7 +615,7 @@ namespace ConsoleApplication1
                     KeyValuePair<int, int> key = m_bombMap.Keys.ElementAt(i);
                     m_bombMap[key] = m_bombMap[key] - 2;
 
-                    if (m_bombMap[key] < 1 && m_bombMap[key] > -6) 
+                    if (m_bombMap[key] < 1 && m_bombMap[key] > -6)
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
 
@@ -640,7 +640,7 @@ namespace ConsoleApplication1
                 }
 
             }
-            
+
             public AStarBoardState MoveLeft(AStarBoardState last)
             {
 
@@ -1228,14 +1228,14 @@ namespace ConsoleApplication1
                     }
 
                     int playerBombs = 0;
-                    
+
                     foreach (KeyValuePair<string, Dictionary<string, int>> bomb in m_parsed.bombMap)
                     {
                         int bombX = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[0]);
                         int bombY = Int32.Parse(bomb.Key.Split(new Char[] { ',' })[1]);
                         int owner;
                         bomb.Value.TryGetValue("owner", out owner);
-                        
+
                         if (owner == m_parsed.playerIndex)
                         {
                             playerBombs++;
@@ -1443,7 +1443,7 @@ namespace ConsoleApplication1
                             visited[shortState] = current.m_cost;
                         }
 
-                        
+
                         if (current.m_cameFrom != null)
                         {
                             current.m_cameFrom.AddSafeMove(current);
@@ -1452,7 +1452,7 @@ namespace ConsoleApplication1
                         current.TickBombs();
                         nextTiles.Enqueue(current.DropBomb(current));
 
-                        
+
                         foreach (Portal p in portals)
                         {
                             AStarBoardState neighbor = p.GetTileOutlet(current);
@@ -1486,11 +1486,14 @@ namespace ConsoleApplication1
                         }
 
 
-                        int choice = m_random.Next(0, 9);
-                        nextTiles.Enqueue(current.ShootBluePortal(current));
-                        nextTiles.Enqueue(current.ShootOrangePortal(current));
-                        
-                        if (choice == 3)
+                        int choice = m_random.Next(0, 10);
+
+                        if (choice < 3)
+                        {
+                            nextTiles.Enqueue(current.ShootBluePortal(current));
+                            nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        }
+                        else if (choice == 3)
                         {
                             nextTiles.Enqueue(current.TurnDown(current));
                         }
