@@ -336,7 +336,7 @@ namespace ConsoleApplication1
             {
                 m_safeMoves.Add(move);
             }
-            
+
             public bool Safe()
             {
 
@@ -1512,8 +1512,9 @@ namespace ConsoleApplication1
                             {
                                 nextTiles.Enqueue(current.DoNothing(current));
                             }
-
-                            if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
+                            
+                        }
+                        if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
                         {
                             nextTiles.Enqueue(current.MoveLeft(current));
                         }
@@ -1536,10 +1537,6 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.MoveUp(current));
                         }
-
-
-
-                        }
                     }
 
 
@@ -1556,7 +1553,7 @@ namespace ConsoleApplication1
                     {
                         chosenAction = "";
                     }
-                    
+
                     Console.WriteLine("ChosenAction:" + chosenAction);
                     Console.WriteLine("Current Tile: " + firstMove.m_projectedPlayerTile.X + " " + firstMove.m_projectedPlayerTile.Y + " " + firstMove.m_projectedPlayerTile.GetBlockType());
                     Console.WriteLine("Next Tile: " + bestMove.m_projectedPlayerTile.X + " " + bestMove.m_projectedPlayerTile.Y + " " + bestMove.m_projectedPlayerTile.GetBlockType());
