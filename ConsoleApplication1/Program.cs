@@ -647,7 +647,7 @@ namespace ConsoleApplication1
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -663,7 +663,7 @@ namespace ConsoleApplication1
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -680,7 +680,7 @@ namespace ConsoleApplication1
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -696,7 +696,7 @@ namespace ConsoleApplication1
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -714,7 +714,7 @@ namespace ConsoleApplication1
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Key == state.m_projectedPlayerTile.Y)
+                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -1399,7 +1399,7 @@ namespace ConsoleApplication1
 
                     AStarBoardState leadingState = firstMove;
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 14000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
@@ -1541,8 +1541,10 @@ namespace ConsoleApplication1
                     {
                         chosenAction = "";
                     }
-
+                    
                     Console.WriteLine("ChosenAction:" + chosenAction);
+                    Console.WriteLine("Current Tile: " + firstMove.m_projectedPlayerTile.X + " " + firstMove.m_projectedPlayerTile.Y + " " + firstMove.m_projectedPlayerTile.GetBlockType());
+                    Console.WriteLine("Next Tile: " + bestMove.m_projectedPlayerTile.X + " " + bestMove.m_projectedPlayerTile.Y + " " + bestMove.m_projectedPlayerTile.GetBlockType());
                     request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/submit/" + m_parsed.gameID);
                     postData = "{\"devkey\": \"" + key + "\", \"playerID\": \"" + m_parsed.playerID + "\", \"move\": \"" + chosenAction/*m_actions[m_random.Next(0, m_actions.Length)]*/ + "\" }";
                     data = Encoding.ASCII.GetBytes(postData);
