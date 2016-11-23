@@ -1391,7 +1391,7 @@ namespace ConsoleApplication1
 
                     AStarBoardState leadingState = firstMove;
                     //BFS search to find all safe tiles
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 14000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 12000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
