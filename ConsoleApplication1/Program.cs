@@ -1391,6 +1391,8 @@ namespace ConsoleApplication1
 
                     AStarBoardState leadingState = firstMove;
                     //BFS search to find all safe tiles
+
+
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 12000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
@@ -1410,15 +1412,15 @@ namespace ConsoleApplication1
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
-                        if (current.StateScore() > leadingState.StateScore())
-                        {
-                            leadingState = current;
-                        }
+                        //if (current.StateScore() > leadingState.StateScore())
+                        //{
+                        //    leadingState = current;
+                        //}
 
-                        if (current.StateScore() < leadingState.StateScore() && current.m_cost > 20 + leadingState.m_cost)
-                        {
-                            continue;
-                        }
+                        //if (current.StateScore() < leadingState.StateScore() && current.m_cost > 20 + leadingState.m_cost)
+                        //{
+                        //    continue;
+                        //}
 
                         ShortenedBoardState shortState = current.GetShortenedState();
 
