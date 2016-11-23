@@ -1444,7 +1444,6 @@ namespace ConsoleApplication1
                         }
 
                         current.TickBombs();
-                        nextTiles.Enqueue(current.DropBomb(current));
 
 
                         foreach (Portal p in portals)
@@ -1488,12 +1487,17 @@ namespace ConsoleApplication1
                             nextTiles.Enqueue(current.BuyBombs(current));
                             nextTiles.Enqueue(current.BuyRange(current));
                             nextTiles.Enqueue(current.DoNothing(current));
+                            nextTiles.Enqueue(current.DropBomb(current));
 
                         }
                         else
                         {
 
                             int choice = m_random.Next(0, 10);
+                            if(choice < 2)
+                            {
+                                nextTiles.Enqueue(current.DropBomb(current));
+                            }
                             if (choice < 3)
                             {
                                 nextTiles.Enqueue(current.ShootBluePortal(current));
