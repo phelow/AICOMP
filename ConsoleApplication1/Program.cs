@@ -1456,6 +1456,7 @@ namespace ConsoleApplication1
                             }
                         }
 
+                        nextTiles.Enqueue(current.DoNothing(current));
 
 
                         int choice = m_random.Next(0, 10);
@@ -1467,7 +1468,6 @@ namespace ConsoleApplication1
                         {
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
-                            nextTiles.Enqueue(current.DoNothing(current));
                         }
                         else if (choice == 3)
                         {
@@ -1496,10 +1496,6 @@ namespace ConsoleApplication1
                                 nextTiles.Enqueue(current.BuyBombs(current));
                                 nextTiles.Enqueue(current.BuyRange(current));
                             }
-                        }
-                        else
-                        {
-                            nextTiles.Enqueue(current.DoNothing(current));
                         }
 
                         if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
