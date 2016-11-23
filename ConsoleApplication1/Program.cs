@@ -936,32 +936,38 @@ namespace ConsoleApplication1
 
                 int yMod = 0;
 
+                int newOrientation = 0;
+
                 if (m_linkedPortal.m_orientation == 2)
                 {
                     xMod = 1;
+                    newOrientation = 0;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 0)
                 {
+                    newOrientation = 2;
                     xMod = -1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 1)
                 {
+                    newOrientation = 3;
                     yMod = -1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 3)
                 {
+                    newOrientation = 1;
                     yMod = +1;
                 }
 
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, this.m_orientation, m_linkedPortal.m_x + xMod, m_linkedPortal.m_y + yMod);
+                return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x + xMod, m_linkedPortal.m_y + yMod);
 
             }
 
