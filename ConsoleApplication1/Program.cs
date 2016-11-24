@@ -1462,73 +1462,27 @@ namespace ConsoleApplication1
                                 nextTiles.Enqueue(neighbor);
                             }
                         }
+                        nextTiles.Enqueue(current.MoveLeft(current));
+                        nextTiles.Enqueue(current.MoveUp(current));
+                        nextTiles.Enqueue(current.MoveDown(current));
+                        nextTiles.Enqueue(current.MoveRight(current));
 
-
-                        int choice = m_random.Next(0, 10);
-                        if (choice < 3)
+                        nextTiles.Enqueue(current.DropBomb(current));
+                        if (current.m_coinsAvailable >= 5)
                         {
+                            nextTiles.Enqueue(current.BuyPierce(current));
+                            nextTiles.Enqueue(current.BuyBombs(current));
+                            nextTiles.Enqueue(current.BuyRange(current));
+                        }
+                        else {
+
+                            int choice = m_random.Next(0, 10);
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
-                        }
-                        else if (choice == 3)
-                        {
-                            nextTiles.Enqueue(current.TurnDown(current));
-                        }
-                        else if (choice == 4)
-                        {
-                            nextTiles.Enqueue(current.TurnLeft(current));
+                            
 
-                        }
-                        else if (choice == 5)
-                        {
-                            nextTiles.Enqueue(current.TurnRight(current));
-                        }
-                        else if (choice == 6)
-                        {
-                            nextTiles.Enqueue(current.TurnUp(current));
-
-                        }
-                        else if (choice == 7)
-                        {
-
-                            if (current.m_coinsAvailable >= 5)
-                            {
-                                nextTiles.Enqueue(current.BuyPierce(current));
-                                nextTiles.Enqueue(current.BuyBombs(current));
-                                nextTiles.Enqueue(current.BuyRange(current));
-                            }
-                        }
-                        else
-                        {
                             nextTiles.Enqueue(current.DoNothing(current));
                         }
-
-                        if (current.m_projectedPlayerTile.X + 1 < m_parsed.boardSize)
-                        {
-                            nextTiles.Enqueue(current.MoveLeft(current));
-                        }
-
-                        if (current.m_projectedPlayerTile.Y - 1 > 0)
-                        {
-                            nextTiles.Enqueue(current.MoveUp(current));
-                        }
-                        if (current.m_projectedPlayerTile.Y + 1 < m_parsed.boardSize)
-                        {
-                            nextTiles.Enqueue(current.MoveDown(current));
-                        }
-
-                        if (current.m_projectedPlayerTile.X - 1 > 0)
-                        {
-                            nextTiles.Enqueue(current.MoveRight(current));
-                        }
-
-                        if (current.m_projectedPlayerTile.Y - 1 > 0)
-                        {
-                            nextTiles.Enqueue(current.MoveUp(current));
-                        }
-                        nextTiles.Enqueue(current.DropBomb(current));
-
-                        nextTiles.Enqueue(current.DoNothing(current));
                     }
 
 
