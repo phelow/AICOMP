@@ -537,7 +537,7 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-
+                
                 if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 4))
                 {
                     return null;
@@ -1419,15 +1419,16 @@ namespace ConsoleApplication1
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
-                        //if (current.StateScore() > leadingState.StateScore())
-                        //{
-                        //    leadingState = current;
-                        //}
+                        if (current.StateScore() > leadingState.StateScore())
+                        {
+                            leadingState = current;
+                        }
 
-                        //if (current.StateScore() < leadingState.StateScore() && current.m_cost > 20 + leadingState.m_cost)
-                        //{
-                        //    continue;
-                        //}
+                        if (current.StateScore() < leadingState.StateScore() * .7f && current.m_cost > 10 + leadingState.m_cost)
+                        {
+                            nextTiles.Enqueue(current);
+                            continue;
+                        }
 
                         ShortenedBoardState shortState = current.GetShortenedState();
 
