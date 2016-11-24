@@ -1398,7 +1398,8 @@ namespace ConsoleApplication1
 
                     AStarBoardState leadingState = firstMove;
                     //BFS search to find all safe tiles
-
+                    int turnsWithoutProgress = 0;
+                    
 
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 12000)
                     {
@@ -1424,9 +1425,16 @@ namespace ConsoleApplication1
                             leadingState = current;
                         }
 
+                        if(turnsWithoutProgress > 10)
+                        {
+                            turnsWithoutProgress = 0;
+                            leadingState = current;
+                        }
+
                         if (current.StateScore() < leadingState.StateScore() * .7f && current.m_cost > 10 + leadingState.m_cost)
                         {
                             nextTiles.Enqueue(current);
+                            turnsWithoutProgress++;
                             continue;
                         }
 
