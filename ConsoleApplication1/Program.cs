@@ -315,7 +315,7 @@ namespace ConsoleApplication1
 
                 if (m_safeMoves.Count == 0)
                 {
-                    scoreAdd = 0;
+                    scoreAdd = -100000;
                 }
 
                 foreach (AStarBoardState child in m_safeMoves)
