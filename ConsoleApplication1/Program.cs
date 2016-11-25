@@ -1487,7 +1487,7 @@ namespace ConsoleApplication1
                             leadingState = current;
                         }
 
-                        if (current.StateScore() < leadingState.StateScore() * .7f && current.m_cost > 4 + leadingState.m_cost)
+                        if (current.StateScore() + 200 < leadingState.StateScore() * .8f && current.m_cost > 4 + leadingState.m_cost)
                         {
                             nextTiles.Enqueue(current);
                             turnsWithoutProgress++;
