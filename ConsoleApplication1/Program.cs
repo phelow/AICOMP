@@ -648,7 +648,7 @@ namespace ConsoleApplication1
                                     if (!shouldNotAddBomb)
                                     {
                                         bombedSquares = GetBombedSquares(cb.m_x, cb.m_y, cb.m_piercing, cb.m_range);
-
+                                        toRemove.Add(cb);
                                         foreach (Tile tile in bombedSquares)
                                         {
                                             BombFrontier.Enqueue(tile);
