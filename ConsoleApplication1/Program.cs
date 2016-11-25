@@ -614,7 +614,7 @@ namespace ConsoleApplication1
                     Bomb key = m_bombMap.ElementAt(i);
                     key.m_ticksLeft -= 2;
 
-                    if (key.m_ticksLeft < 1 && key.m_ticksLeft > -6)
+                    if (key.m_ticksLeft == 0)
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.m_x, key.m_y, key.m_piercing, key.m_range);
 
