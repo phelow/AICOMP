@@ -338,6 +338,9 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach ( AStarBoardState move in m_safeMoves)
                 {
+
+                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
+
                     if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
                         bestMove = move;
