@@ -942,7 +942,6 @@ namespace ConsoleApplication1
 
                     ))
                 {
-                    Console.Write("BOmb Portaling error 951");
                     return null;
                 }
 
