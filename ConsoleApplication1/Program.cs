@@ -519,7 +519,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_range, m_pierce, 6))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_range, m_pierce, 5))
                 {
                     return null;
                 }
@@ -863,6 +863,10 @@ namespace ConsoleApplication1
                     state.m_portals.Remove(r);
                 }
 
+                if(m_portals.ContainsKey(new KeyValuePair<int, int>(tileIt.X, tileIt.Y)))
+                {
+                    return null;
+                }
 
                 state.m_portals.Add(new KeyValuePair<int, int>(tileIt.X, tileIt.Y) ,new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
                 List<Portal> playerPortals = new List<Portal>();
