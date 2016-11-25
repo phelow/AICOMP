@@ -182,9 +182,9 @@ namespace ConsoleApplication1
             public int m_x;
             public int m_y;
             public int m_orientation;
-
-            public Dictionary<KeyValuePair<int, int>, Portal> m_portals;
-            public Dictionary<KeyValuePair<int, int>, Bomb> m_bombMap;
+            public int m_cost;
+            public float m_stateScore;
+            public int m_bombCount;
         }
 
 
@@ -227,8 +227,10 @@ namespace ConsoleApplication1
                 newState.m_x = m_playerTile.X;
                 newState.m_y = m_playerTile.Y;
                 newState.m_orientation = this.m_projectedPlayerOrientation;
-                newState.m_bombMap = this.m_bombMap;
-                newState.m_portals = this.m_portals;
+                newState.m_cost = m_cost;
+                newState.m_stateScore = this.StateScore();
+                newState.m_bombCount = m_bombMap.Count;
+
                 return newState;
             }
 
@@ -1448,6 +1450,7 @@ namespace ConsoleApplication1
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
+
                         if (current == null)
                         {
                             continue;
@@ -1459,9 +1462,14 @@ namespace ConsoleApplication1
                         }
                         if ((current.m_cameFrom != null && current.m_cameFrom.m_dead) || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
                         {
-                            //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
+
+                        if (current.m_cost > 1000)
+                        {
+                            continue;
+                        }
+
                         if (current.StateScore() > leadingState.StateScore())
                         {
                             leadingState = current;
@@ -1479,7 +1487,6 @@ namespace ConsoleApplication1
                             turnsWithoutProgress++;
                             continue;
                         }
-                        
 
 
                         ShortenedBoardState shortState = current.GetShortenedState();
@@ -1488,15 +1495,11 @@ namespace ConsoleApplication1
                         {
                             visited.Add(shortState, current);
                         }
-                        else if (visited[shortState].m_cost <= current.m_cost && visited[shortState].StateScore() <= current.StateScore())
+                        else
                         {
                             continue;
                         }
-                        else
-                        {
-                            visited[shortState] = current;
-                        }
-
+                        
 
                         if (current.m_cameFrom != null)
                         {
@@ -1519,12 +1522,18 @@ namespace ConsoleApplication1
                         //        nextTiles.Enqueue(neighbor);
                         //    }
                         //}
+                        nextTiles.Enqueue(current.DropBomb(current));
                         nextTiles.Enqueue(current.MoveLeft(current));
                         nextTiles.Enqueue(current.MoveUp(current));
                         nextTiles.Enqueue(current.MoveDown(current));
                         nextTiles.Enqueue(current.MoveRight(current));
 
-                        nextTiles.Enqueue(current.DropBomb(current));
+
+                        nextTiles.Enqueue(current.ShootBluePortal(current));
+                        nextTiles.Enqueue(current.ShootOrangePortal(current));
+
+
+                        nextTiles.Enqueue(current.DoNothing(current));
                         if (current.m_coinsAvailable >= 5)
                         {
 
@@ -1541,14 +1550,6 @@ namespace ConsoleApplication1
                             {
                                 nextTiles.Enqueue(current.BuyRange(current));
                             }
-                        }
-                        else {
-
-                            nextTiles.Enqueue(current.ShootBluePortal(current));
-                            nextTiles.Enqueue(current.ShootOrangePortal(current));
-
-
-                            nextTiles.Enqueue(current.DoNothing(current));
                         }
                     }
 
