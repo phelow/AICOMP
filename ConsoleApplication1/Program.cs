@@ -618,8 +618,46 @@ namespace ConsoleApplication1
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.m_x, key.m_y, key.m_piercing, key.m_range);
 
+                        Queue<Tile> BombFrontier = new Queue<Tile>();
+                        
+                        toRemove.Add(key);
+                        
                         foreach (Tile t in bombedSquares)
                         {
+                            BombFrontier.Enqueue(t);
+                        }
+
+                        while(BombFrontier.Count > 0)
+                        {
+                            Tile t = BombFrontier.Dequeue();
+                            
+                            foreach(Bomb cb in m_bombMap)
+                            {
+                                if(cb.m_x == t.X && cb.m_y == t.Y)
+                                {
+                                    bool shouldNotAddBomb = false;
+
+                                    foreach(Bomb ccb in toRemove)
+                                    {
+                                        if(ccb == cb)
+                                        {
+                                            shouldNotAddBomb = true;
+                                        }
+                                    }
+
+                                    if (!shouldNotAddBomb)
+                                    {
+                                        bombedSquares = GetBombedSquares(cb.m_x, cb.m_y, cb.m_piercing, cb.m_range);
+
+                                        foreach (Tile tile in bombedSquares)
+                                        {
+                                            BombFrontier.Enqueue(tile);
+                                        }
+                                    }
+                                }
+                            }
+                            
+
                             if (t.GetBlockType() == Tile.blockType.SoftBlock)
                             {
                                 m_worldRepresentation[t.X, t.Y] = new Tile(t.X, t.Y, Tile.blockType.Passable, 999);
@@ -630,10 +668,6 @@ namespace ConsoleApplication1
                                 this.Kill();
                             }
                         }
-                    }
-                    if (key.m_ticksLeft <= -3)
-                    {
-                        toRemove.Add(key);
                     }
                 }
 
