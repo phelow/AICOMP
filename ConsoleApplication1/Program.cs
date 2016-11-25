@@ -369,6 +369,11 @@ namespace ConsoleApplication1
                 {
                     BombSearchState current = explosionFrontier.Dequeue();
 
+                    if(current == null)
+                    {
+                        continue;
+                    }
+
                     if (bombedTiles.Contains(m_worldRepresentation[current.X, current.Y]) == false)
                     {
 
