@@ -519,7 +519,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_range, m_pierce, 5))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_range, m_pierce,6) )
                 {
                     return null;
                 }
@@ -1543,7 +1543,7 @@ namespace ConsoleApplication1
 
 
                         nextTiles.Enqueue(current.DoNothing(current));
-                        if (current.m_coinsAvailable >= 6)
+                        if (current.m_coinsAvailable >= 5)
                         {
 
                             int choice = m_random.Next(0, 3);
