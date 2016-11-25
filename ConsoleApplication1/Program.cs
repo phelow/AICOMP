@@ -315,7 +315,7 @@ namespace ConsoleApplication1
 
                 if (m_safeMoves.Count == 0)
                 {
-                    scoreAdd = -100000;
+                    scoreAdd = -1000;
                 }
 
                 foreach (AStarBoardState child in m_safeMoves)
@@ -589,7 +589,7 @@ namespace ConsoleApplication1
                     Bomb key = m_bombMap.Values.ElementAt(i);
                     key.m_ticksLeft -= 2;
 
-                    if (key.m_ticksLeft <= 0)
+                    if (key.m_ticksLeft < 0)
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.m_x, key.m_y, key.m_piercing, key.m_range);
 
