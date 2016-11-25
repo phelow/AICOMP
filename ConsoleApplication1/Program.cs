@@ -185,8 +185,8 @@ namespace ConsoleApplication1
             public int m_orientation;
             public float m_stateScore;
 
-            public List<Portal> m_portals;
-            public List<Bomb> m_bombMap;
+            public Dictionary<KeyValuePair<int, int>, Portal> m_portals;
+            public Dictionary<KeyValuePair<int, int>, Bomb> m_bombMap;
         }
 
 
@@ -202,7 +202,7 @@ namespace ConsoleApplication1
             public string m_moveToGetHere;
 
 
-            public List<Portal> m_portals;
+            public Dictionary<KeyValuePair<int, int>, Portal> m_portals;
             public Tile[,] m_boardState;
             public AStarBoardState m_cameFrom;
 
@@ -212,9 +212,9 @@ namespace ConsoleApplication1
 
             public bool m_dead = false;
 
-            public List<AStarBoardState> m_safeMoves;
+            public Dictionary<KeyValuePair<int, int>, AStarBoardState> m_safeMoves; //TODO: check cost and score of other points, replace it the same way you do in regular astar
 
-            public List<Bomb> m_bombMap;
+            public Dictionary<KeyValuePair<int, int>, Bomb> m_bombMap;
 
             public float? cachedStateScore = null;
 
@@ -250,32 +250,31 @@ namespace ConsoleApplication1
                 }
 
                 int targeted = 0;
-                foreach (Bomb b in m_bombMap)
+
+
+                if (m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_opponentTile.X, m_opponentTile.Y)))
                 {
-                    if (b.m_x == m_opponentTile.X || b.m_y == m_opponentTile.Y)
-                    {
-                        targeted = 100;
-                    }
+                    targeted = 100;
                 }
 
                 //TODO: add portal utility
-                float portalUtility = m_portals.Count;
-                
-                foreach(Portal p in m_portals)
-                {
-                    foreach(Portal p2 in m_portals)
-                    {
-                        if(p == p2)
-                        {
-                            continue;
-                        }
+                float portalUtility = 0;//m_portals.Count;
 
-                        if(p.m_owner == p2.m_owner)
-                        {
-                            portalUtility += Math.Abs(p.m_x - p2.m_x) + Math.Abs(p.m_y - p2.m_y);
-                        }
-                    }
-                }
+                //foreach(Portal p in m_portals)
+                //{
+                //    foreach(Portal p2 in m_portals)
+                //    {
+                //        if(p == p2)
+                //        {
+                //            continue;
+                //        }
+
+                //        if(p.m_owner == p2.m_owner)
+                //        {
+                //            portalUtility += Math.Abs(p.m_x - p2.m_x) + Math.Abs(p.m_y - p2.m_y);
+                //        }
+                //    }
+                //}
 
                 cachedStateScore = 600 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted + portalUtility;
                 return (float)cachedStateScore;
@@ -316,9 +315,9 @@ namespace ConsoleApplication1
                     scoreAdd = 0;
                 }
 
-                foreach (AStarBoardState child in m_safeMoves)
+                foreach (KeyValuePair<KeyValuePair<int, int>, AStarBoardState> child in m_safeMoves)
                 {
-                    float tr = child.GetScore(tabs + 1);
+                    float tr = child.Value.GetScore(tabs + 1);
                     scoreAve += .5f * tr;
                     if (tr > scoreAdd)
                     {
@@ -326,7 +325,7 @@ namespace ConsoleApplication1
                     }
 
                 }
-                score += .99f * scoreAdd;
+                score += .99f * scoreAdd; //TODO: use scoreAve as well
 
 
                 calculatedScore = score;
@@ -337,13 +336,11 @@ namespace ConsoleApplication1
             public AStarBoardState GetBestMove()
             {
                 AStarBoardState bestMove = null;
-                foreach (AStarBoardState move in m_safeMoves)
+                foreach (KeyValuePair<KeyValuePair<int, int>, AStarBoardState> move in m_safeMoves)
                 {
-                    Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
-
-                    if (bestMove == null || bestMove.GetScore() < move.GetScore())
+                    if (bestMove == null || bestMove.GetScore() < move.Value.GetScore())
                     {
-                        bestMove = move;
+                        bestMove = move.Value;
                     }
                 }
 
@@ -354,9 +351,9 @@ namespace ConsoleApplication1
 
             public void AddSafeMove(AStarBoardState move)
             {
-                m_safeMoves.Add(move);
+                m_safeMoves.Add(new KeyValuePair<int, int>(move.m_projectedPlayerTile.X, move.m_projectedPlayerTile.Y), move);
             }
-            
+
             public HashSet<Tile> GetBombedSquares(int bombX, int bombY, int ownerPiercing, int ownerRange)
             {
                 HashSet<Tile> bombedTiles = new HashSet<Tile>();
@@ -381,13 +378,10 @@ namespace ConsoleApplication1
 
 
                     bool shouldContinue = false;
-                    foreach (Portal p in portals)
+
+                    if (portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
-                        BombSearchState portalState = p.GetBombOutlet(current);
-                        if (portalState != null)
-                        {
-                            explosionFrontier.Enqueue(portalState);
-                        }
+                        explosionFrontier.Enqueue(portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current));
                     }
 
 
@@ -445,17 +439,17 @@ namespace ConsoleApplication1
                 return bombedTiles;
             }
 
-            public AStarBoardState(Tile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, Tile[,] boardState, int cost, List<Bomb> bombMap, int range, int count, int pierce, int coinsAvailable)
+            public AStarBoardState(Tile projectedPlayerTile, int projectedPlayerOrientation, Dictionary<KeyValuePair<int, int>, Portal> portals, Tile[,] boardState, int cost, Dictionary<KeyValuePair<int, int>, Bomb> bombMap, int range, int count, int pierce, int coinsAvailable)
             {
-                m_bombMap = new List<Bomb>();
+                m_bombMap = new Dictionary<KeyValuePair<int, int>, Bomb>();
                 m_coinsAvailable = coinsAvailable;
                 m_range = range;
                 m_count = count;
                 m_pierce = pierce;
 
-                m_safeMoves = new List<AStarBoardState>();
+                m_safeMoves = new Dictionary<KeyValuePair<int, int>, AStarBoardState>();
 
-                m_portals = new List<Portal>();
+                m_portals = new Dictionary<KeyValuePair<int, int>, Portal>();
                 m_boardState = new Tile[m_parsed.boardSize, m_parsed.boardSize];
                 //Deep copy all of the elements
                 for (int x = 0; x < m_parsed.boardSize; x++)
@@ -468,9 +462,9 @@ namespace ConsoleApplication1
                 }
 
 
-                foreach (Bomb b in bombMap)
+                foreach (KeyValuePair<KeyValuePair< int,int>,Bomb > b in bombMap)
                 {
-                    AddBombToMap(b.m_x, b.m_y, b.m_range, b.m_piercing, b.m_ticksLeft);
+                    AddBombToMap(b.Value.m_x, b.Value.m_y, b.Value.m_range, b.Value.m_piercing, b.Value.m_ticksLeft);
 
                 }
 
@@ -479,9 +473,9 @@ namespace ConsoleApplication1
 
                 m_projectedPlayerOrientation = projectedPlayerOrientation;
 
-                foreach (Portal p in portals)
+                foreach (KeyValuePair<KeyValuePair<int, int>, Portal> p in portals)
                 {
-                    m_portals.Add(p.CopyConstructor());
+                    m_portals.Add(p.Key,p.Value.CopyConstructor());
                 }
 
                 m_cost = cost;
@@ -490,23 +484,13 @@ namespace ConsoleApplication1
 
             public bool AddBombToMap(int x, int y, int range, int piercing, int tick)
             {
-                bool bombAtSpot = false;
-
-                foreach (Bomb b in m_bombMap)
-                {
-                    if (b.m_x == x && b.m_y == y)
-                    {
-                        bombAtSpot = true;
-                    }
-                }
-
-
-                if (bombAtSpot)
+                if(this.m_bombMap.ContainsKey(new KeyValuePair<int, int>(x, y)))
                 {
                     return false;
                 }
+                
 
-                m_bombMap.Add(new Bomb(x, y, range, piercing, tick));
+                m_bombMap.Add(new KeyValuePair<int, int>(x,y),new Bomb(x, y, range, piercing, tick));
 
                 return true;
             }
@@ -584,10 +568,10 @@ namespace ConsoleApplication1
 
             public void TickBombs()
             {
-                List<Bomb> toRemove = new List<Bomb>();
+                Dictionary<KeyValuePair<int, int>, Bomb> toRemove = new Dictionary<KeyValuePair<int, int>, Bomb>();
                 for (int i = 0; i < m_bombMap.Count; i++)
                 {
-                    Bomb key = m_bombMap.ElementAt(i);
+                    Bomb key = m_bombMap.Values.ElementAt(i);
                     key.m_ticksLeft -= 2;
 
                     if (key.m_ticksLeft < 0)
@@ -596,7 +580,7 @@ namespace ConsoleApplication1
 
                         Queue<Tile> BombFrontier = new Queue<Tile>();
 
-                        toRemove.Add(key);
+                        toRemove.Add(new KeyValuePair<int, int>(key.m_x,key.m_y),key);
 
                         foreach (Tile t in bombedSquares)
                         {
@@ -607,20 +591,17 @@ namespace ConsoleApplication1
                         {
                             Tile t = BombFrontier.Dequeue();
 
-                            foreach (Bomb cb in m_bombMap)
+                            if(m_bombMap.ContainsKey(new KeyValuePair<int, int>(t.X, t.Y)) && !toRemove.ContainsKey(new KeyValuePair<int, int>(t.X, t.Y)))
                             {
-                                if (cb.m_x == t.X && cb.m_y == t.Y)
+                                Bomb b = m_bombMap[new KeyValuePair<int, int>(t.X, t.Y)];
+                                
+                                bombedSquares = GetBombedSquares(b.m_x, b.m_y, b.m_piercing, b.m_range);
+                                toRemove.Add(new KeyValuePair<int, int>(t.X, t.Y),b);
+                                foreach (Tile tile in bombedSquares)
                                 {
-                                    if (!toRemove.Contains(cb))
-                                    {
-                                        bombedSquares = GetBombedSquares(cb.m_x, cb.m_y, cb.m_piercing, cb.m_range);
-                                        toRemove.Add(cb);
-                                        foreach (Tile tile in bombedSquares)
-                                        {
-                                            BombFrontier.Enqueue(tile);
-                                        }
-                                    }
+                                    BombFrontier.Enqueue(tile);
                                 }
+
                             }
                             if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
                             {
@@ -638,7 +619,7 @@ namespace ConsoleApplication1
                     }
                 }
 
-                foreach (Bomb b in toRemove)
+                foreach (KeyValuePair<int,int> b in toRemove.Keys)
                 {
                     m_bombMap.Remove(b);
                 }
@@ -648,14 +629,19 @@ namespace ConsoleApplication1
             public AStarBoardState MoveLeft(AStarBoardState last)
             {
 
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (Bomb t in last.m_bombMap)
+                if (last.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y)))
                 {
-                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
-                    {
-                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
-                    }
+                    return null;
                 }
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                //foreach (Bomb t in last.m_bombMap)
+                //{
+                //    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
+                //    {
+                //        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
+                //    }
+                //}
+
                 state.m_moveToGetHere = "mr";
                 state.m_cameFrom = last;
                 return state;
@@ -664,14 +650,13 @@ namespace ConsoleApplication1
 
             public AStarBoardState MoveRight(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (Bomb t in last.m_bombMap)
+
+                if (last.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y)))
                 {
-                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
-                    {
-                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
-                    }
+                    return null;
                 }
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                
                 state.m_moveToGetHere = "ml";
                 state.m_cameFrom = last;
                 return state;
@@ -681,14 +666,13 @@ namespace ConsoleApplication1
 
             public AStarBoardState MoveUp(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (Bomb t in last.m_bombMap)
+
+                if (last.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y-1)))
                 {
-                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
-                    {
-                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
-                    }
+                    return null;
                 }
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                
                 state.m_moveToGetHere = "mu";
                 state.m_cameFrom = last;
                 return state;
@@ -697,14 +681,13 @@ namespace ConsoleApplication1
 
             public AStarBoardState MoveDown(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (Bomb t in last.m_bombMap)
+
+                if (last.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1)))
                 {
-                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
-                    {
-                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
-                    }
+                    return null;
                 }
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+               
                 state.m_moveToGetHere = "md";
                 state.m_cameFrom = last;
                 return state;
@@ -716,13 +699,7 @@ namespace ConsoleApplication1
             public AStarBoardState TurnLeft(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (Bomb t in last.m_bombMap)
-                {
-                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
-                    {
-                        state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
-                    }
-                }
+                
                 state.m_moveToGetHere = "tl";
                 state.m_cameFrom = last;
                 return state;
@@ -845,34 +822,37 @@ namespace ConsoleApplication1
                 {
                     newOrientation = 1;
                 }
-                Portal toRemove = null;
-                foreach (Portal p in state.m_portals)
+
+                List<KeyValuePair<int,int> >toRemove = new List<KeyValuePair<int, int>>();
+
+                foreach (KeyValuePair<int, int> pKey in state.m_portals.Keys)
                 {
+                    Portal p = state.m_portals[pKey];
+
                     if (p.m_isOrange == isOrange && p.m_owner == m_parsed.playerIndex)
                     {
                         if (p.m_orientation == newOrientation)
                         {
                             return null;
                         }
-                        toRemove = p;
+                        toRemove.Add(pKey);
                     }
 
                     if ((p.m_x == tileIt.X && p.m_y == tileIt.Y && p.m_orientation == newOrientation))
                     {
-                        toRemove = p;
+                        toRemove.Add(pKey);
                     }
                 }
-
-                if (toRemove != null)
+                foreach(KeyValuePair<int,int> r in toRemove)
                 {
-                    state.m_portals.Remove(toRemove);
+                    state.m_portals.Remove(r);
                 }
 
 
-                state.m_portals.Add(new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
+                state.m_portals.Add(new KeyValuePair<int, int>(tileIt.X, tileIt.Y) ,new Portal(tileIt.X, tileIt.Y, newOrientation, m_parsed.playerIndex, isOrange));
                 List<Portal> playerPortals = new List<Portal>();
                 List<Portal> opponentPortals = new List<Portal>();
-                foreach (Portal p in state.m_portals)
+                foreach (Portal p in state.m_portals.Values)
                 {
                     if (p.m_owner == m_parsed.playerIndex)
                     {
@@ -954,6 +934,7 @@ namespace ConsoleApplication1
 
                     ))
                 {
+                    Console.Write("BOmb Portaling error 951");
                     return null;
                 }
 
@@ -1101,7 +1082,7 @@ namespace ConsoleApplication1
         static Tile m_playerTile;
         static Tile m_opponentTile;
         static Tile[,] m_worldRepresentation;
-        static List<Portal> portals;
+        static Dictionary<KeyValuePair<int, int>, Portal> portals;
         static bool locked = false;
 
         static ServerResponse m_parsed;
@@ -1184,10 +1165,8 @@ namespace ConsoleApplication1
                     m_worldRepresentation = new Tile[m_parsed.boardSize, m_parsed.boardSize];
 
                     //make the portals
-                    portals = new List<Portal>();
-
+                    portals = new Dictionary<KeyValuePair<int, int>, Portal>();
                     List<Portal> playerOnePortals = new List<Portal>();
-
                     List<Portal> playerTwoPortals = new List<Portal>();
 
                     foreach (KeyValuePair<string, Dictionary<string, Dictionary<string, object>>> p in m_parsed.portalMap)
@@ -1220,13 +1199,17 @@ namespace ConsoleApplication1
                                 //////Console.WriteLine("Color error");
                             }
 
+                            Portal portal = new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner, bool_color);
+
+                            portals.Add(new KeyValuePair<int, int>(coords[0], coords[1]), portal);
+
                             if (int_owner == 0)
                             {
-                                playerOnePortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner, bool_color));
+                                playerOnePortals.Add(portal);
                             }
                             else
                             {
-                                playerTwoPortals.Add(new Portal(coords[0], coords[1], Convert.ToInt32(kvp.Key), int_owner, bool_color));
+                                playerTwoPortals.Add(portal);
 
                             }
                         }
@@ -1244,10 +1227,6 @@ namespace ConsoleApplication1
                     {
                         Portal.LinkPortals(playerTwoPortals[0], playerTwoPortals[1]);
                     }
-
-                    portals.AddRange(playerOnePortals);
-
-                    portals.AddRange(playerTwoPortals);
 
                     for (int x = 0; x < m_parsed.boardSize; x++)
                     {
@@ -1410,7 +1389,7 @@ namespace ConsoleApplication1
                     m_parsed.player.TryGetValue("coins", out object_coins);
                     int_coins = Convert.ToInt32(object_coins);
 
-                    List<Bomb> newBombMap = new List<Bomb>();
+                    Dictionary<KeyValuePair<int, int>, Bomb> newBombMap = new Dictionary<KeyValuePair<int, int>, Bomb>();
                     foreach (string k in m_parsed.bombMap.Keys)
                     {
                         int v = m_parsed.bombMap[k]["tick"];
@@ -1420,13 +1399,13 @@ namespace ConsoleApplication1
 
                         if (owner == m_parsed.playerIndex)
                         {
-                            newBombMap.Add(new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), int_bombRange, int_bombPierce, v));
+                            newBombMap.Add(new KeyValuePair<int, int>(Convert.ToInt32(s[0]), Convert.ToInt32(s[1])), new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), int_bombRange, int_bombPierce, v));
 
                         }
                         else
                         {
 
-                            newBombMap.Add(new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), int_opponent_bombRange, int_opponent_bombPierce, v));
+                            newBombMap.Add(new KeyValuePair<int, int>(Convert.ToInt32(s[0]), Convert.ToInt32(s[1])),new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), int_opponent_bombRange, int_opponent_bombPierce, v));
                         }
 
 
@@ -1517,15 +1496,20 @@ namespace ConsoleApplication1
 
                         current.TickBombs();
 
-
-                        foreach (Portal p in portals)
+                        KeyValuePair<int, int> k = new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y);
+                        if (portals.ContainsKey(k))
                         {
-                            AStarBoardState neighbor = p.GetTileOutlet(current);
-                            if (neighbor != null)
-                            {
-                                nextTiles.Enqueue(neighbor);
-                            }
+                            AStarBoardState neighbor = portals[new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y)].GetTileOutlet(current);
                         }
+
+                        //foreach (Portal p in portals)
+                        //{
+                        //    AStarBoardState neighbor = p.GetTileOutlet(current);
+                        //    if (neighbor != null)
+                        //    {
+                        //        nextTiles.Enqueue(neighbor);
+                        //    }
+                        //}
                         nextTiles.Enqueue(current.MoveLeft(current));
                         nextTiles.Enqueue(current.MoveUp(current));
                         nextTiles.Enqueue(current.MoveDown(current));
@@ -1542,7 +1526,6 @@ namespace ConsoleApplication1
                             }
                             else if (choice == 1)
                             {
-
                                 nextTiles.Enqueue(current.BuyBombs(current));
                             }
                             else if (choice == 2)
