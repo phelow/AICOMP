@@ -258,7 +258,26 @@ namespace ConsoleApplication1
                     }
                 }
 
-                cachedStateScore = 600 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted;
+                //TODO: add portal utility
+                float portalUtility = m_portals.Count;
+                
+                foreach(Portal p in m_portals)
+                {
+                    foreach(Portal p2 in m_portals)
+                    {
+                        if(p == p2)
+                        {
+                            continue;
+                        }
+
+                        if(p.m_owner == p2.m_owner)
+                        {
+                            portalUtility += Math.Abs(p.m_x - p2.m_x) + Math.Abs(p.m_y - p2.m_y);
+                        }
+                    }
+                }
+
+                cachedStateScore = 600 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted + portalUtility;
                 return (float)cachedStateScore;
             }
 
@@ -1468,7 +1487,7 @@ namespace ConsoleApplication1
                             leadingState = current;
                         }
 
-                        if (current.StateScore() < leadingState.StateScore() * .7f && current.m_cost > 10 + leadingState.m_cost)
+                        if (current.StateScore() < leadingState.StateScore() * .7f && current.m_cost > 4 + leadingState.m_cost)
                         {
                             nextTiles.Enqueue(current);
                             turnsWithoutProgress++;
