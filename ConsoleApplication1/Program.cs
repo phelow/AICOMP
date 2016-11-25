@@ -386,7 +386,7 @@ namespace ConsoleApplication1
 
                         bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
                     }
-                    if (current.ChargesLeft == 0)
+                    if (current.ChargesLeft == 1)
                     {
                         continue;
                     }
@@ -1410,7 +1410,7 @@ namespace ConsoleApplication1
                     Dictionary<KeyValuePair<int, int>, Bomb> newBombMap = new Dictionary<KeyValuePair<int, int>, Bomb>();
                     foreach (string k in m_parsed.bombMap.Keys)
                     {
-                        int v = m_parsed.bombMap[k]["tick"];
+                        int v = m_parsed.bombMap[k]["tick"] + 2;
                         string[] s = k.Split(',');
 
                         int owner = m_parsed.bombMap[k]["owner"];
