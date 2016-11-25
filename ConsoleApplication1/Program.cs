@@ -184,7 +184,7 @@ namespace ConsoleApplication1
             public int m_orientation;
             public int m_cost;
             public float m_stateScore;
-            public int m_bombCount;
+            public float m_bombCount;
         }
 
 
@@ -229,7 +229,12 @@ namespace ConsoleApplication1
                 newState.m_orientation = this.m_projectedPlayerOrientation;
                 newState.m_cost = m_cost;
                 newState.m_stateScore = this.StateScore();
-                newState.m_bombCount = m_bombMap.Count;
+                newState.m_bombCount = 0;
+
+                foreach(Bomb b in m_bombMap.Values)
+                {
+                    newState.m_bombCount += b.m_ticksLeft*(100 * b.m_x  + 10000*b.m_y); //TODO: this is pretty crude
+                }
 
                 return newState;
             }
