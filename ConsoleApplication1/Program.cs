@@ -1534,13 +1534,24 @@ namespace ConsoleApplication1
                         nextTiles.Enqueue(current.DropBomb(current));
                         if (current.m_coinsAvailable >= 5)
                         {
-                            nextTiles.Enqueue(current.BuyPierce(current));
-                            nextTiles.Enqueue(current.BuyBombs(current));
-                            nextTiles.Enqueue(current.BuyRange(current));
+
+                            int choice = m_random.Next(0, 3);
+                            if (choice == 0)
+                            {
+                                nextTiles.Enqueue(current.BuyPierce(current));
+                            }
+                            else if (choice == 1)
+                            {
+
+                                nextTiles.Enqueue(current.BuyBombs(current));
+                            }
+                            else if (choice == 2)
+                            {
+                                nextTiles.Enqueue(current.BuyRange(current));
+                            }
                         }
                         else {
 
-                            int choice = m_random.Next(0, 10);
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
 
