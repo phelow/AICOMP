@@ -212,7 +212,7 @@ namespace ConsoleApplication1
 
             public bool m_dead = false;
 
-            public Dictionary<KeyValuePair<int, int>, AStarBoardState> m_safeMoves; //TODO: check cost and score of other points, replace it the same way you do in regular astar
+            public List< AStarBoardState> m_safeMoves; //TODO: check cost and score of other points, replace it the same way you do in regular astar
 
             public Dictionary<KeyValuePair<int, int>, Bomb> m_bombMap;
 
@@ -315,9 +315,9 @@ namespace ConsoleApplication1
                     scoreAdd = 0;
                 }
 
-                foreach (KeyValuePair<KeyValuePair<int, int>, AStarBoardState> child in m_safeMoves)
+                foreach (AStarBoardState child in m_safeMoves)
                 {
-                    float tr = child.Value.GetScore(tabs + 1);
+                    float tr = child.GetScore(tabs + 1);
                     scoreAve += .5f * tr;
                     if (tr > scoreAdd)
                     {
@@ -336,11 +336,11 @@ namespace ConsoleApplication1
             public AStarBoardState GetBestMove()
             {
                 AStarBoardState bestMove = null;
-                foreach (KeyValuePair<KeyValuePair<int, int>, AStarBoardState> move in m_safeMoves)
+                foreach ( AStarBoardState move in m_safeMoves)
                 {
-                    if (bestMove == null || bestMove.GetScore() < move.Value.GetScore())
+                    if (bestMove == null || bestMove.GetScore() < move.GetScore())
                     {
-                        bestMove = move.Value;
+                        bestMove = move;
                     }
                 }
 
@@ -351,7 +351,7 @@ namespace ConsoleApplication1
 
             public void AddSafeMove(AStarBoardState move)
             {
-                m_safeMoves.Add(new KeyValuePair<int, int>(move.m_projectedPlayerTile.X, move.m_projectedPlayerTile.Y), move);
+                m_safeMoves.Add( move);
             }
 
             public HashSet<Tile> GetBombedSquares(int bombX, int bombY, int ownerPiercing, int ownerRange)
@@ -447,7 +447,7 @@ namespace ConsoleApplication1
                 m_count = count;
                 m_pierce = pierce;
 
-                m_safeMoves = new Dictionary<KeyValuePair<int, int>, AStarBoardState>();
+                m_safeMoves = new List<AStarBoardState>();
 
                 m_portals = new Dictionary<KeyValuePair<int, int>, Portal>();
                 m_boardState = new Tile[m_parsed.boardSize, m_parsed.boardSize];
