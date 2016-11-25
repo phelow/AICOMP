@@ -181,9 +181,7 @@ namespace ConsoleApplication1
         {
             public int m_x;
             public int m_y;
-            public int m_cost;
             public int m_orientation;
-            public float m_stateScore;
 
             public Dictionary<KeyValuePair<int, int>, Portal> m_portals;
             public Dictionary<KeyValuePair<int, int>, Bomb> m_bombMap;
@@ -229,10 +227,8 @@ namespace ConsoleApplication1
                 newState.m_x = m_playerTile.X;
                 newState.m_y = m_playerTile.Y;
                 newState.m_orientation = this.m_projectedPlayerOrientation;
-                newState.m_stateScore = this.StateScore();
                 newState.m_bombMap = this.m_bombMap;
                 newState.m_portals = this.m_portals;
-                newState.m_cost = this.m_cost;
                 return newState;
             }
 
@@ -373,7 +369,11 @@ namespace ConsoleApplication1
                 {
                     BombSearchState current = explosionFrontier.Dequeue();
 
-                    bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
+                    if (bombedTiles.Contains(m_worldRepresentation[current.X, current.Y]) == false)
+                    {
+
+                        bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
+                    }
                     if (current.ChargesLeft == 0)
                     {
                         continue;
@@ -1431,7 +1431,7 @@ namespace ConsoleApplication1
                     nextTiles.Enqueue(firstMove);
 
 
-                    Dictionary<ShortenedBoardState, int> visited = new Dictionary<ShortenedBoardState, int>();
+                    Dictionary<ShortenedBoardState, AStarBoardState> visited = new Dictionary<ShortenedBoardState, AStarBoardState>();
 
 
 
@@ -1469,26 +1469,28 @@ namespace ConsoleApplication1
                             leadingState = current;
                         }
 
-                        if (current.StateScore() + 200 < leadingState.StateScore() * .8f && current.m_cost > 4 + leadingState.m_cost)
+                        if ((current.StateScore() + 200 < leadingState.StateScore() * .8f && current.m_cost > 4 + leadingState.m_cost))
                         {
                             nextTiles.Enqueue(current);
                             turnsWithoutProgress++;
                             continue;
                         }
+                        
+
 
                         ShortenedBoardState shortState = current.GetShortenedState();
 
                         if (!visited.ContainsKey(shortState))
                         {
-                            visited.Add(shortState, current.m_cost);
+                            visited.Add(shortState, current);
                         }
-                        else if (visited[shortState] <= current.m_cost)
+                        else if (visited[shortState].m_cost <= current.m_cost && visited[shortState].StateScore() <= current.StateScore())
                         {
                             continue;
                         }
                         else
                         {
-                            visited[shortState] = current.m_cost;
+                            visited[shortState] = current;
                         }
 
 
