@@ -1543,7 +1543,7 @@ namespace ConsoleApplication1
 
 
                         nextTiles.Enqueue(current.DoNothing(current));
-                        if (current.m_coinsAvailable >= 5)
+                        if (current.m_coinsAvailable >= 6)
                         {
 
                             int choice = m_random.Next(0, 3);
