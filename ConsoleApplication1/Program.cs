@@ -625,6 +625,10 @@ namespace ConsoleApplication1
                                 m_worldRepresentation[t.X, t.Y] = new Tile(t.X, t.Y, Tile.blockType.Passable, 999);
                                 m_coinsAvailable += (int)Math.Floor((double)(m_parsed.boardSize - 1 - t.X) * t.X * (m_parsed.boardSize - 1 - t.Y) * t.Y * 10 / ((m_parsed.boardSize - 1) ^ 4 / 16));
                             }
+                            if(t.X == m_playerTile.X && t.Y == m_playerTile.Y)
+                            {
+                                this.Kill();
+                            }
                         }
                     }
                     if (key.m_ticksLeft <= -3)
