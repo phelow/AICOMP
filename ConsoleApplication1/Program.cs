@@ -186,7 +186,7 @@ namespace ConsoleApplication1
             public float m_stateScore;
 
             public List<Portal> m_portals;
-            public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
+            public List<Bomb> m_bombMap;
         }
 
 
@@ -214,7 +214,7 @@ namespace ConsoleApplication1
 
             public List<AStarBoardState> m_safeMoves;
 
-            public Dictionary<KeyValuePair<int, int>, int> m_bombMap;
+            public List<Bomb> m_bombMap;
 
             public float? cachedStateScore = null;
 
@@ -250,9 +250,9 @@ namespace ConsoleApplication1
                 }
 
                 int targeted = 0;
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> kvp in m_bombMap)
+                foreach (Bomb b in m_bombMap)
                 {
-                    if (kvp.Key.Key == m_opponentTile.X || kvp.Key.Value == m_opponentTile.Y)
+                    if (b.m_x == m_opponentTile.X || b.m_y == m_opponentTile.Y)
                     {
                         targeted = 100;
                     }
@@ -345,17 +345,17 @@ namespace ConsoleApplication1
                 bool debug_flag = false;
 
 
-                foreach (KeyValuePair<int, int> key in m_bombMap.Keys)
+                foreach (Bomb b in m_bombMap)
                 {
-                    if (m_bombMap[key] < tick)
+                    if (b.m_ticksLeft < tick)
                     {
-                        HashSet<Tile> bombedTile = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
+                        HashSet<Tile> bombedTile = GetBombedSquares(b.m_x, b.m_y, b.m_piercing, b.m_range);
 
-                        foreach (KeyValuePair<int, int> key2 in m_bombMap.Keys)
+                        foreach (Bomb b2 in m_bombMap)
                         {
-                            if (bombedTile.Contains(m_boardState[key2.Key, key2.Value]))
+                            if (bombedTile.Contains(m_boardState[b2.m_x, b2.m_y]))
                             {
-                                bombedTile.UnionWith(GetBombedSquares(key.Key, key.Value, m_pierce, m_range));
+                                bombedTile.UnionWith(GetBombedSquares(b2.m_x, b2.m_y, b2.m_piercing, b2.m_range));
                             }
                         }
 
@@ -364,7 +364,7 @@ namespace ConsoleApplication1
                         {
                             if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
                             {
-                                tick = m_bombMap[key];
+                                tick = b.m_ticksLeft;
                             }
                         }
                     }
@@ -469,9 +469,9 @@ namespace ConsoleApplication1
                 return bombedTiles;
             }
 
-            public AStarBoardState(Tile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, Tile[,] boardState, int cost, Dictionary<KeyValuePair<int, int>, int> bombMap, int range, int count, int pierce, int coinsAvailable)
+            public AStarBoardState(Tile projectedPlayerTile, int projectedPlayerOrientation, List<Portal> portals, Tile[,] boardState, int cost, List<Bomb> bombMap, int range, int count, int pierce, int coinsAvailable)
             {
-                m_bombMap = new Dictionary<KeyValuePair<int, int>, int>();
+                m_bombMap = new List<Bomb>();
                 m_coinsAvailable = coinsAvailable;
                 m_range = range;
                 m_count = count;
@@ -492,9 +492,9 @@ namespace ConsoleApplication1
                 }
 
 
-                foreach (KeyValuePair<int, int> key in bombMap.Keys)
+                foreach (Bomb b in bombMap)
                 {
-                    AddBombToMap(key.Key, key.Value, bombMap[key] + 1);
+                    AddBombToMap(b.m_x,b.m_y,b.m_range,b.m_piercing,b.m_ticksLeft);
 
                 }
 
@@ -512,14 +512,25 @@ namespace ConsoleApplication1
 
             }
 
-            public bool AddBombToMap(int x, int y, int tick)
+            public bool AddBombToMap(int x, int y, int range, int piercing, int tick)
             {
-                if (m_bombMap.ContainsKey(new KeyValuePair<int, int>(x, y)))
+                bool bombAtSpot = false;
+
+                foreach(Bomb b in m_bombMap)
+                {
+                    if(b.m_x == x && b.m_y == y)
+                    {
+                        bombAtSpot = true;
+                    }
+                }
+
+
+                if (bombAtSpot)
                 {
                     return false;
                 }
 
-                m_bombMap.Add(new KeyValuePair<int, int>(x, y), tick);
+                m_bombMap.Add(new Bomb(x,y,range,piercing,tick));
 
                 return true;
             }
@@ -532,13 +543,8 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-
-                if (state.m_bombMap.ContainsKey(new KeyValuePair<int, int>(m_projectedPlayerTile.X, m_projectedPlayerTile.Y)))
-                {
-                    return null;
-                }
                 
-                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, 4))
+                if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_range, m_pierce, 4))
                 {
                     return null;
                 }
@@ -602,15 +608,15 @@ namespace ConsoleApplication1
 
             public void TickBombs()
             {
-                List<KeyValuePair<int, int>> toRemove = new List<KeyValuePair<int, int>>();
-                for (int i = 0; i < m_bombMap.Keys.Count; i++)
+                List<Bomb> toRemove = new List<Bomb>();
+                for (int i = 0; i < m_bombMap.Count; i++)
                 {
-                    KeyValuePair<int, int> key = m_bombMap.Keys.ElementAt(i);
-                    m_bombMap[key] = m_bombMap[key] - 2;
+                    Bomb key = m_bombMap.ElementAt(i);
+                    key.m_ticksLeft -= 2;
 
-                    if (m_bombMap[key] < 1 && m_bombMap[key] > -6)
+                    if (key.m_ticksLeft < 1 && key.m_ticksLeft > -6)
                     {
-                        HashSet<Tile> bombedSquares = GetBombedSquares(key.Key, key.Value, m_pierce, m_range);
+                        HashSet<Tile> bombedSquares = GetBombedSquares(key.m_x, key.m_y, key.m_piercing, key.m_range);
 
                         foreach (Tile t in bombedSquares)
                         {
@@ -621,15 +627,15 @@ namespace ConsoleApplication1
                             }
                         }
                     }
-                    if (m_bombMap[key] <= -3)
+                    if (key.m_ticksLeft <= -3)
                     {
                         toRemove.Add(key);
                     }
                 }
 
-                foreach (KeyValuePair<int, int> kvp in toRemove)
+                foreach (Bomb b in toRemove)
                 {
-                    m_bombMap.Remove(kvp);
+                    m_bombMap.Remove(b);
                 }
 
             }
@@ -638,9 +644,9 @@ namespace ConsoleApplication1
             {
 
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                foreach (Bomb t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
+                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -654,9 +660,9 @@ namespace ConsoleApplication1
             public AStarBoardState MoveRight(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                foreach (Bomb t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
+                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -671,9 +677,9 @@ namespace ConsoleApplication1
             public AStarBoardState MoveUp(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                foreach (Bomb t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
+                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -687,9 +693,9 @@ namespace ConsoleApplication1
             public AStarBoardState MoveDown(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                foreach (Bomb t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
+                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -705,9 +711,9 @@ namespace ConsoleApplication1
             public AStarBoardState TurnLeft(AStarBoardState last)
             {
                 AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
-                foreach (KeyValuePair<KeyValuePair<int, int>, int> t in last.m_bombMap)
+                foreach (Bomb t in last.m_bombMap)
                 {
-                    if (t.Key.Key == state.m_projectedPlayerTile.X && t.Key.Value == state.m_projectedPlayerTile.Y)
+                    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
                     {
                         state.m_projectedPlayerTile = state.m_boardState[last.m_projectedPlayerTile.X, last.m_projectedPlayerTile.Y];
                     }
@@ -902,6 +908,25 @@ namespace ConsoleApplication1
             }
 
         }
+
+        public class Bomb
+        {
+            public int m_x;
+            public int m_y;
+            public int m_range;
+            public int m_piercing;
+            public int m_ticksLeft;
+
+            public Bomb(int x, int y, int range, int piercing, int ticksLeft)
+            {
+                m_x = x;
+                m_y = y;
+                m_range = range;
+                m_piercing = piercing;
+                m_ticksLeft = ticksLeft;
+            }
+        }
+
         public class Portal
         {
             private Portal m_linkedPortal;
@@ -970,6 +995,7 @@ namespace ConsoleApplication1
                 return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x + xMod, m_linkedPortal.m_y + yMod);
 
             }
+
 
             public Tile OutletAStarTile()
             {
@@ -1355,6 +1381,20 @@ namespace ConsoleApplication1
                     int_bombCount = Convert.ToInt32(object_bombCount);
                     int_bombPierce = Convert.ToInt32(object_bombPierce);
 
+
+                    int int_opponent_bombRange;
+                    int int_opponent_bombCount;
+                    int int_opponent_bombPierce;
+
+                    m_parsed.opponent.TryGetValue("bombRange", out object_bombRange);
+                    m_parsed.opponent.TryGetValue("bombCount", out object_bombCount);
+                    m_parsed.opponent.TryGetValue("bombPierce", out object_bombPierce);
+
+                    int_opponent_bombRange = Convert.ToInt32(object_bombRange);
+                    int_opponent_bombCount = Convert.ToInt32(object_bombCount);
+                    int_opponent_bombPierce = Convert.ToInt32(object_bombPierce);
+
+
                     int m_maxBombCount = 2;
                     int m_maxBombPierce = 8;
                     int m_maxBombRange = 8;
@@ -1365,13 +1405,25 @@ namespace ConsoleApplication1
                     m_parsed.player.TryGetValue("coins", out object_coins);
                     int_coins = Convert.ToInt32(object_coins);
 
-                    Dictionary<KeyValuePair<int, int>, int> newBombMap = new Dictionary<KeyValuePair<int, int>, int>();
+                    List<Bomb>newBombMap = new List<Bomb>();
                     foreach (string k in m_parsed.bombMap.Keys)
                     {
                         int v = m_parsed.bombMap[k]["tick"];
                         string[] s = k.Split(',');
 
-                        newBombMap.Add(new KeyValuePair<int, int>(Convert.ToInt32(s[0]), Convert.ToInt32(s[1])), v);
+                        int owner = m_parsed.bombMap[k]["owner"];
+                        
+                        if(owner == m_parsed.playerIndex)
+                        {
+                            newBombMap.Add(new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]),int_bombRange,int_bombPierce, v));
+
+                        }
+                        else
+                        {
+
+                            newBombMap.Add(new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), int_opponent_bombRange, int_opponent_bombPierce, v));
+                        }
+
 
                     }
 
@@ -1401,7 +1453,7 @@ namespace ConsoleApplication1
                     int turnsWithoutProgress = 0;
                     
 
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 12000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 13000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
