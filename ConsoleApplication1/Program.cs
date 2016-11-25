@@ -1446,7 +1446,7 @@ namespace ConsoleApplication1
                     int turnsWithoutProgress = 0;
 
 
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 8000)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
