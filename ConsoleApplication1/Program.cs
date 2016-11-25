@@ -386,7 +386,7 @@ namespace ConsoleApplication1
 
                         bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
                     }
-                    if (current.ChargesLeft == 1)
+                    if (current.ChargesLeft == 0)
                     {
                         continue;
                     }
