@@ -243,7 +243,7 @@ namespace ConsoleApplication1
                     return (float)cachedStateScore;
                 }
 
-                if (Safe() == false || m_dead)
+                if (m_dead)
                 {
                     cachedStateScore = -1000;
                     return (float)cachedStateScore;
@@ -279,7 +279,7 @@ namespace ConsoleApplication1
                 }
                 //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere);
 
-                if (this.Safe() == false || m_dead)
+                if (m_dead)
                 {
                     return -1000000;
                 }
@@ -337,50 +337,7 @@ namespace ConsoleApplication1
             {
                 m_safeMoves.Add(move);
             }
-
-            public bool Safe()
-            {
-
-                int tick = 999;
-                bool debug_flag = false;
-
-
-                foreach (Bomb b in m_bombMap)
-                {
-                    if (b.m_ticksLeft < tick)
-                    {
-                        HashSet<Tile> bombedTile = GetBombedSquares(b.m_x, b.m_y, b.m_piercing, b.m_range);
-
-                        foreach (Bomb b2 in m_bombMap)
-                        {
-                            if (bombedTile.Contains(m_boardState[b2.m_x, b2.m_y]))
-                            {
-                                bombedTile.UnionWith(GetBombedSquares(b2.m_x, b2.m_y, b2.m_piercing, b2.m_range));
-                            }
-                        }
-
-
-                        foreach (Tile t in bombedTile)
-                        {
-                            if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
-                            {
-                                tick = b.m_ticksLeft;
-                            }
-                        }
-                    }
-                }
-
-                if (tick >= 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-
+            
             public HashSet<Tile> GetBombedSquares(int bombX, int bombY, int ownerPiercing, int ownerRange)
             {
                 HashSet<Tile> bombedTiles = new HashSet<Tile>();
@@ -494,7 +451,7 @@ namespace ConsoleApplication1
 
                 foreach (Bomb b in bombMap)
                 {
-                    AddBombToMap(b.m_x,b.m_y,b.m_range,b.m_piercing,b.m_ticksLeft);
+                    AddBombToMap(b.m_x, b.m_y, b.m_range, b.m_piercing, b.m_ticksLeft);
 
                 }
 
@@ -516,9 +473,9 @@ namespace ConsoleApplication1
             {
                 bool bombAtSpot = false;
 
-                foreach(Bomb b in m_bombMap)
+                foreach (Bomb b in m_bombMap)
                 {
-                    if(b.m_x == x && b.m_y == y)
+                    if (b.m_x == x && b.m_y == y)
                     {
                         bombAtSpot = true;
                     }
@@ -530,7 +487,7 @@ namespace ConsoleApplication1
                     return false;
                 }
 
-                m_bombMap.Add(new Bomb(x,y,range,piercing,tick));
+                m_bombMap.Add(new Bomb(x, y, range, piercing, tick));
 
                 return true;
             }
@@ -543,7 +500,7 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-                
+
                 if (!state.AddBombToMap(m_projectedPlayerTile.X, m_projectedPlayerTile.Y, m_range, m_pierce, 6))
                 {
                     return null;
@@ -614,38 +571,28 @@ namespace ConsoleApplication1
                     Bomb key = m_bombMap.ElementAt(i);
                     key.m_ticksLeft -= 2;
 
-                    if (key.m_ticksLeft <= 0)
+                    if (key.m_ticksLeft < 0)
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.m_x, key.m_y, key.m_piercing, key.m_range);
 
                         Queue<Tile> BombFrontier = new Queue<Tile>();
-                        
+
                         toRemove.Add(key);
-                        
+
                         foreach (Tile t in bombedSquares)
                         {
                             BombFrontier.Enqueue(t);
                         }
 
-                        while(BombFrontier.Count > 0)
+                        while (BombFrontier.Count > 0)
                         {
                             Tile t = BombFrontier.Dequeue();
-                            
-                            foreach(Bomb cb in m_bombMap)
+
+                            foreach (Bomb cb in m_bombMap)
                             {
-                                if(cb.m_x == t.X && cb.m_y == t.Y)
+                                if (cb.m_x == t.X && cb.m_y == t.Y)
                                 {
-                                    bool shouldNotAddBomb = false;
-
-                                    foreach(Bomb ccb in toRemove)
-                                    {
-                                        if(ccb == cb)
-                                        {
-                                            shouldNotAddBomb = true;
-                                        }
-                                    }
-
-                                    if (!shouldNotAddBomb)
+                                    if (!toRemove.Contains(cb))
                                     {
                                         bombedSquares = GetBombedSquares(cb.m_x, cb.m_y, cb.m_piercing, cb.m_range);
                                         toRemove.Add(cb);
@@ -656,17 +603,18 @@ namespace ConsoleApplication1
                                     }
                                 }
                             }
-                            
-
+                            if (t.X == m_projectedPlayerTile.X && t.Y == m_projectedPlayerTile.Y)
+                            {
+                                this.Kill();
+                            }
                             if (t.GetBlockType() == Tile.blockType.SoftBlock)
                             {
                                 m_worldRepresentation[t.X, t.Y] = new Tile(t.X, t.Y, Tile.blockType.Passable, 999);
                                 m_coinsAvailable += (int)Math.Floor((double)(m_parsed.boardSize - 1 - t.X) * t.X * (m_parsed.boardSize - 1 - t.Y) * t.Y * 10 / ((m_parsed.boardSize - 1) ^ 4 / 16));
                             }
-                            if(t.X == m_playerTile.X && t.Y == m_playerTile.Y)
-                            {
-                                this.Kill();
-                            }
+
+
+
                         }
                     }
                 }
@@ -1443,17 +1391,17 @@ namespace ConsoleApplication1
                     m_parsed.player.TryGetValue("coins", out object_coins);
                     int_coins = Convert.ToInt32(object_coins);
 
-                    List<Bomb>newBombMap = new List<Bomb>();
+                    List<Bomb> newBombMap = new List<Bomb>();
                     foreach (string k in m_parsed.bombMap.Keys)
                     {
                         int v = m_parsed.bombMap[k]["tick"];
                         string[] s = k.Split(',');
 
                         int owner = m_parsed.bombMap[k]["owner"];
-                        
-                        if(owner == m_parsed.playerIndex)
+
+                        if (owner == m_parsed.playerIndex)
                         {
-                            newBombMap.Add(new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]),int_bombRange,int_bombPierce, v));
+                            newBombMap.Add(new Bomb(Convert.ToInt32(s[0]), Convert.ToInt32(s[1]), int_bombRange, int_bombPierce, v));
 
                         }
                         else
@@ -1489,7 +1437,7 @@ namespace ConsoleApplication1
                     AStarBoardState leadingState = firstMove;
                     //BFS search to find all safe tiles
                     int turnsWithoutProgress = 0;
-                    
+
 
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 13000)
                     {
@@ -1504,9 +1452,8 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        if ((current.m_cameFrom != null && !current.m_cameFrom.Safe()) || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
+                        if ((current.m_cameFrom != null && current.m_cameFrom.m_dead) || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
                         {
-                            current.Kill();
                             //Console.WriteLine(current.m_projectedPlayerTile.X + " " + current.m_projectedPlayerTile.Y + " is not safe " + current.m_cost);
                             continue;
                         }
@@ -1515,7 +1462,7 @@ namespace ConsoleApplication1
                             leadingState = current;
                         }
 
-                        if(turnsWithoutProgress > 10)
+                        if (turnsWithoutProgress > 10)
                         {
                             turnsWithoutProgress = 0;
                             leadingState = current;
@@ -1577,7 +1524,7 @@ namespace ConsoleApplication1
                             int choice = m_random.Next(0, 10);
                             nextTiles.Enqueue(current.ShootBluePortal(current));
                             nextTiles.Enqueue(current.ShootOrangePortal(current));
-                            
+
 
                             nextTiles.Enqueue(current.DoNothing(current));
                         }
