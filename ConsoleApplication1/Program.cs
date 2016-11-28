@@ -967,17 +967,17 @@ namespace ConsoleApplication1
 
                 int newOrientation = 0;
 
-                if (m_linkedPortal.m_orientation == 2)
+                if (m_linkedPortal.m_orientation == 0)
                 {
-                    xMod = 1;
+                    xMod = -1;
                     newOrientation = 0;
                 }
 
 
-                if (m_linkedPortal.m_orientation == 0)
+                if (m_linkedPortal.m_orientation == 2)
                 {
                     newOrientation = 2;
-                    xMod = -1;
+                    xMod = 1;
                 }
 
 
