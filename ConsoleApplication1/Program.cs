@@ -1456,7 +1456,7 @@ namespace ConsoleApplication1
                     //BFS search to find all safe tiles
                     int turnsWithoutProgress = 0;
 
-                    float turnTime = 10000;
+                    float turnTime = 75000;
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < turnTime)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
