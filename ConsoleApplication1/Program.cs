@@ -413,7 +413,7 @@ namespace ConsoleApplication1
 
                     visited.Add(current);
                     bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
-                    if (current.ChargesLeft == 0)
+                    if (current.ChargesLeft == 1)
                     {
                         continue;
                     }
