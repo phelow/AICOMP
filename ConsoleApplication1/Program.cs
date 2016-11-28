@@ -231,7 +231,7 @@ namespace ConsoleApplication1
                 newState.m_stateScore = this.StateScore();
                 newState.m_bombCount = 0;
 
-                foreach(Bomb b in m_bombMap.Values)
+                foreach(Bomb b in this.m_bombMap.Values)
                 {
                     newState.m_bombCount += b.m_ticksLeft*(100 * b.m_x  + 10000*b.m_y); //TODO: this is pretty crude
                 }
@@ -261,7 +261,7 @@ namespace ConsoleApplication1
                 }
 
                 //TODO: add portal utility
-                float portalUtility = 0;//m_portals.Count;
+                float portalUtility = m_portals.Count ;//m_portals.Count;
 
                 //foreach(Portal p in m_portals)
                 //{
@@ -315,7 +315,7 @@ namespace ConsoleApplication1
 
                 if (m_safeMoves.Count == 0)
                 {
-                    scoreAdd = -1000;
+                    scoreAdd = -100000;
                 }
 
                 foreach (AStarBoardState child in m_safeMoves)
@@ -328,7 +328,7 @@ namespace ConsoleApplication1
                     }
 
                 }
-                score += .99f * scoreAdd; //TODO: use scoreAve as well
+                score += .9f * scoreAdd; //TODO: use scoreAve as well
 
 
                 calculatedScore = score;
@@ -394,9 +394,9 @@ namespace ConsoleApplication1
 
                     bool shouldContinue = false;
 
-                    if (portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
+                    if (m_portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
-                        explosionFrontier.Enqueue(portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current));
+                        explosionFrontier.Enqueue(m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current));
                     }
 
 
@@ -512,7 +512,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState DropBomb(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
 
                 if (state.m_count < m_bombMap.Count - enemyBombs)
                 {
@@ -537,7 +537,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce + 1, m_coinsAvailable - 5);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce + 1, m_coinsAvailable - 5);
                 state.m_moveToGetHere = "buy_pierce";
                 state.m_cameFrom = last;
                 return state;
@@ -546,7 +546,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState DoNothing(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 state.m_moveToGetHere = "";
                 state.m_cameFrom = last;
                 return state;
@@ -559,7 +559,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range + 1, m_count, m_pierce, m_coinsAvailable - 5);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range + 1, m_count, m_pierce, m_coinsAvailable - 5);
                 state.m_moveToGetHere = "buy_range";
                 state.m_cameFrom = last;
                 return state;
@@ -573,7 +573,7 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count + 1, m_pierce, m_coinsAvailable - 5);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count + 1, m_pierce, m_coinsAvailable - 5);
                 state.m_moveToGetHere = "buy_count";
                 state.m_cameFrom = last;
                 return state;
@@ -648,7 +648,7 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X + 1, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 //foreach (Bomb t in last.m_bombMap)
                 //{
                 //    if (t.m_x == state.m_projectedPlayerTile.X && t.m_y == state.m_projectedPlayerTile.Y)
@@ -670,7 +670,7 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X - 1, m_projectedPlayerTile.Y], 2, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 
                 state.m_moveToGetHere = "ml";
                 state.m_cameFrom = last;
@@ -686,7 +686,7 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y - 1], 1, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 
                 state.m_moveToGetHere = "mu";
                 state.m_cameFrom = last;
@@ -701,7 +701,7 @@ namespace ConsoleApplication1
                 {
                     return null;
                 }
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y + 1], 3, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                
                 state.m_moveToGetHere = "md";
                 state.m_cameFrom = last;
@@ -713,7 +713,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState TurnLeft(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 0, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 
                 state.m_moveToGetHere = "tl";
                 state.m_cameFrom = last;
@@ -724,7 +724,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState TurnRight(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 2, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 2, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 state.m_moveToGetHere = "tr";
                 state.m_cameFrom = last;
                 return state;
@@ -734,7 +734,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState TurnUp(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 1, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 1, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 state.m_moveToGetHere = "tu";
                 state.m_cameFrom = last;
                 return state;
@@ -744,7 +744,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState TurnDown(AStarBoardState last)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 3, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], 3, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
                 state.m_moveToGetHere = "td";
                 state.m_cameFrom = last;
                 return state;
@@ -769,7 +769,7 @@ namespace ConsoleApplication1
 
             public AStarBoardState ShoootPortal(bool isOrange)
             {
-                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
+                AStarBoardState state = new AStarBoardState(m_boardState[m_projectedPlayerTile.X, m_projectedPlayerTile.Y], m_projectedPlayerOrientation, m_portals, m_boardState, m_cost + 2, m_bombMap, m_range, m_count, m_pierce, m_coinsAvailable);
 
 
                 Tile tileIt = state.m_projectedPlayerTile;
@@ -1100,7 +1100,6 @@ namespace ConsoleApplication1
         static Tile m_playerTile;
         static Tile m_opponentTile;
         static Tile[,] m_worldRepresentation;
-        static Dictionary<KeyValuePair<int, int>, Portal> portals;
         static bool locked = false;
 
         static ServerResponse m_parsed;
@@ -1183,7 +1182,7 @@ namespace ConsoleApplication1
                     m_worldRepresentation = new Tile[m_parsed.boardSize, m_parsed.boardSize];
 
                     //make the portals
-                    portals = new Dictionary<KeyValuePair<int, int>, Portal>();
+                    Dictionary<KeyValuePair<int, int>, Portal> portals = new Dictionary<KeyValuePair<int, int>, Portal>();
                     List<Portal> playerOnePortals = new List<Portal>();
                     List<Portal> playerTwoPortals = new List<Portal>();
 
@@ -1300,9 +1299,7 @@ namespace ConsoleApplication1
                             m_parsed.opponent.TryGetValue("bombRange", out object_ownerRange);
 
                             ownerRange = Convert.ToInt32(object_ownerRange);
-
                         }
-
                     }
 
 
@@ -1430,6 +1427,7 @@ namespace ConsoleApplication1
                     }
 
 
+
                     AStarBoardState firstMove = new AStarBoardState(m_playerTile, int_orientation, portals, m_worldRepresentation, 1, newBombMap, int_bombRange, int_bombCount, int_bombPierce, int_coins);
 
                     HashSet<KeyValuePair<int, int>> m_trails = new HashSet<KeyValuePair<int, int>>();
@@ -1518,9 +1516,9 @@ namespace ConsoleApplication1
                         current.TickBombs();
 
                         KeyValuePair<int, int> k = new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y);
-                        if (portals.ContainsKey(k))
+                        if (current.m_portals.ContainsKey(k))
                         {
-                            AStarBoardState neighbor = portals[new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y)].GetTileOutlet(current);
+                            AStarBoardState neighbor = current.m_portals[new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y)].GetTileOutlet(current);
                         }
 
                         //foreach (Portal p in portals)
