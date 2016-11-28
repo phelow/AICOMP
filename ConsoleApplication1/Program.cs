@@ -1160,7 +1160,7 @@ namespace ConsoleApplication1
 
         static bool PlayGame(string postData, string key)
         {
-            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");
+            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//
 
             var data = Encoding.ASCII.GetBytes(postData);
 
@@ -1470,7 +1470,7 @@ namespace ConsoleApplication1
                     //BFS search to find all safe tiles
                     int turnsWithoutProgress = 0;
 
-                    float turnTime = 13000;
+                    float turnTime =13000;
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < turnTime)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
