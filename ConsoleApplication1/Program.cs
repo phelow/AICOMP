@@ -338,7 +338,7 @@ namespace ConsoleApplication1
                     }
 
                 }
-                score += .8f * scoreAdd; //TODO: use scoreAve as well
+                score += .99f * scoreAdd; //TODO: use scoreAve as well
 
 
                 calculatedScore = score;
