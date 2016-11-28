@@ -1598,7 +1598,7 @@ namespace ConsoleApplication1
                     {
                         chosenAction = "";
                     }
-
+                    Console.WriteLine("Time taken: " + watch.ElapsedMilliseconds);
                     Console.WriteLine("ChosenAction:" + chosenAction);
                     Console.WriteLine("Current Tile: " + firstMove.m_projectedPlayerTile.X + " " + firstMove.m_projectedPlayerTile.Y + " " + firstMove.m_projectedPlayerTile.GetBlockType());
                     Console.WriteLine("Next Tile: " + bestMove.m_projectedPlayerTile.X + " " + bestMove.m_projectedPlayerTile.Y + " " + bestMove.m_projectedPlayerTile.GetBlockType());
