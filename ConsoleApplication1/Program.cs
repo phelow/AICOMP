@@ -288,7 +288,7 @@ namespace ConsoleApplication1
                 //    }
                 //}
 
-                cachedStateScore = 600 * 5 * (m_pierce + m_count -1 + m_range - 3) + 500 * m_coinsAvailable + targeted + portalUtility;
+                cachedStateScore = 600 * 5 * (m_pierce + Math.Min(m_count - 1, 0) + m_range - 3) + 500 * m_coinsAvailable + targeted + portalUtility;
                 return (float)cachedStateScore;
             }
 
