@@ -1463,7 +1463,7 @@ namespace ConsoleApplication1
                         {
                             continue;
                         }
-                        if ((current.m_cameFrom != null && current.m_cameFrom.m_dead) || (current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
+                        if ((current.m_cost <= 3 && m_trails.Contains(new KeyValuePair<int, int>(current.m_projectedPlayerTile.X, current.m_projectedPlayerTile.Y))))
                         {
                             continue;
                         }
