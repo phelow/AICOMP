@@ -288,7 +288,7 @@ namespace ConsoleApplication1
                 //    }
                 //}
 
-                cachedStateScore = 600 * 5 * (m_pierce + m_count + m_range - 3) + 500 * m_coinsAvailable + targeted + portalUtility;
+                cachedStateScore = 600 * 5 * (m_pierce + m_count -1 + m_range - 3) + 500 * m_coinsAvailable + targeted + portalUtility;
                 return (float)cachedStateScore;
             }
 
@@ -296,6 +296,10 @@ namespace ConsoleApplication1
             int cc;
             public float GetScore(float tabs = 0)
             {
+                if (m_dead)
+                {
+                    return -100000000;
+                }
                 if (calculatedScore != null)
                 {
                     return (float)calculatedScore;
@@ -309,10 +313,6 @@ namespace ConsoleApplication1
                 }
                 //Console.WriteLine(t + " m_moveToGetHere:" + m_moveToGetHere);
 
-                if (m_dead)
-                {
-                    return -1000000;
-                }
 
                 float score = 0;
 
