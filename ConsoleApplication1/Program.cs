@@ -946,12 +946,12 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!(inlet.Orientation == 0 && this.m_orientation == 2) /*inlet is left and this is right*/
+                if (!((inlet.Orientation == 0 && this.m_orientation == 2) /*inlet is left and this is right*/
                     || (inlet.Orientation == 2 && this.m_orientation == 0 /*inlet is right and this is left*/
                     || (inlet.Orientation == 1 && this.m_orientation == 3) /*inlet is up and this is down*/
                     || (inlet.Orientation == 3 && this.m_orientation == 1) /*inlet is down and this is up*/
 
-                    ))
+                    )))
                 {
                     return null;
                 }
