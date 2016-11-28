@@ -394,8 +394,6 @@ namespace ConsoleApplication1
 
                     if (visited.Contains(current) == false)
                     {
-                        visited.Add(current);
-                        bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
                     }
                     else
                     {
@@ -410,10 +408,18 @@ namespace ConsoleApplication1
 
                     if (m_portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
-                        explosionFrontier.Enqueue(m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current));
+                        BombSearchState t = m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current);
+                        if(t != null)
+                        {
+                            explosionFrontier.Enqueue(t);
+                            continue;
+
+                        }
                     }
 
 
+                    visited.Add(current);
+                    bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
 
                     if ((m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.HardBlock) && !current.DestroyBlock())
                     {
