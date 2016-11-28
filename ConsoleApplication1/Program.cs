@@ -185,6 +185,7 @@ namespace ConsoleApplication1
             public int m_cost;
             public float m_stateScore;
             public float m_bombCount;
+            public float m_portalCount;
         }
 
 
@@ -236,6 +237,14 @@ namespace ConsoleApplication1
                     newState.m_bombCount += b.m_ticksLeft*(100 * b.m_x  + 10000*b.m_y); //TODO: this is pretty crude
                 }
 
+                newState.m_portalCount = 0;
+
+                foreach (Portal p in this.m_portals.Values)
+                {
+                    newState.m_bombCount +=  (100 * p.m_x + 10000 * p.m_y); //TODO: this is pretty crude
+                }
+
+
                 return newState;
             }
 
@@ -261,7 +270,7 @@ namespace ConsoleApplication1
                 }
 
                 //TODO: add portal utility
-                float portalUtility = m_portals.Count ;//m_portals.Count;
+                float portalUtility = 0;//m_portals.Count ;//m_portals.Count;
 
                 //foreach(Portal p in m_portals)
                 //{
@@ -310,7 +319,7 @@ namespace ConsoleApplication1
                 score = StateScore(true);
 
 
-                float scoreAdd = -9000000;
+                float scoreAdd = 0;
                 float scoreAve = 0;
 
                 if (m_safeMoves.Count == 0)
@@ -363,6 +372,7 @@ namespace ConsoleApplication1
             public HashSet<Tile> GetBombedSquares(int bombX, int bombY, int ownerPiercing, int ownerRange)
             {
                 HashSet<Tile> bombedTiles = new HashSet<Tile>();
+                HashSet<BombSearchState> visited = new HashSet<BombSearchState>();
 
                 Queue<BombSearchState> explosionFrontier = new Queue<BombSearchState>();
 
@@ -381,30 +391,27 @@ namespace ConsoleApplication1
                         continue;
                     }
 
-                    if (bombedTiles.Contains(m_worldRepresentation[current.X, current.Y]) == false)
+                    if (visited.Contains(current) == false)
                     {
-
+                        visited.Add(current);
                         bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
+                    }
+                    else
+                    {
+                        continue;
                     }
                     if (current.ChargesLeft == 0)
                     {
                         continue;
                     }
 
-
-                    bool shouldContinue = false;
+                    
 
                     if (m_portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
                         explosionFrontier.Enqueue(m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current));
                     }
-
-
-                    if (shouldContinue)
-                    {
-                        continue;
-                    }
-
+                    
 
 
                     if ((m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.HardBlock) && !current.DestroyBlock())
@@ -1007,12 +1014,12 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                if (!(inlet.Orientation == 0 && this.m_orientation == 2) /*inlet is left and this is right*/
+                if (!((inlet.Orientation == 0 && this.m_orientation == 2) /*inlet is left and this is right*/
                     || (inlet.Orientation == 2 && this.m_orientation == 0 /*inlet is right and this is left*/
                     || (inlet.Orientation == 1 && this.m_orientation == 3) /*inlet is up and this is down*/
                     || (inlet.Orientation == 3 && this.m_orientation == 1) /*inlet is down and this is up*/
 
-                    ))
+                    )))
                 {
                     return null;
                 }
@@ -1022,42 +1029,34 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                int xMod = 0;
-
-                int yMod = 0;
-
                 int newOrientation = 0;
 
-                if (m_linkedPortal.m_orientation == 2)
+                if (m_linkedPortal.m_orientation == 0)
                 {
-                    xMod = 1;
                     newOrientation = 0;
                 }
 
 
-                if (m_linkedPortal.m_orientation == 0)
+                if (m_linkedPortal.m_orientation == 2)
                 {
                     newOrientation = 2;
-                    xMod = -1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 1)
                 {
-                    newOrientation = 3;
-                    yMod = -1;
+                    newOrientation = 1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 3)
                 {
-                    newOrientation = 1;
-                    yMod = +1;
+                    newOrientation = 3;
                 }
 
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x + xMod, m_linkedPortal.m_y + yMod);
+                return new BombSearchState(inlet.ChargesLeft, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
 
             }
 
