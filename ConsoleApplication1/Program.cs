@@ -399,10 +399,6 @@ namespace ConsoleApplication1
                     {
                         continue;
                     }
-                    if (current.ChargesLeft == 0)
-                    {
-                        continue;
-                    }
 
 
 
@@ -420,6 +416,10 @@ namespace ConsoleApplication1
 
                     visited.Add(current);
                     bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
+                    if (current.ChargesLeft == 0)
+                    {
+                        continue;
+                    }
 
                     if ((m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.HardBlock) && !current.DestroyBlock())
                     {
