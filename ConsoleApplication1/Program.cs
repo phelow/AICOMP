@@ -185,6 +185,7 @@ namespace ConsoleApplication1
             public int m_cost;
             public float m_stateScore;
             public float m_bombCount;
+            public float m_portalCount;
         }
 
 
@@ -235,6 +236,14 @@ namespace ConsoleApplication1
                 {
                     newState.m_bombCount += b.m_ticksLeft*(100 * b.m_x  + 10000*b.m_y); //TODO: this is pretty crude
                 }
+
+                newState.m_portalCount = 0;
+
+                foreach (Portal p in this.m_portals.Values)
+                {
+                    newState.m_bombCount +=  (100 * p.m_x + 10000 * p.m_y); //TODO: this is pretty crude
+                }
+
 
                 return newState;
             }
@@ -961,15 +970,10 @@ namespace ConsoleApplication1
                     return null;
                 }
 
-                int xMod = 0;
-
-                int yMod = 0;
-
                 int newOrientation = 0;
 
                 if (m_linkedPortal.m_orientation == 0)
                 {
-                    xMod = -1;
                     newOrientation = 0;
                 }
 
@@ -977,26 +981,23 @@ namespace ConsoleApplication1
                 if (m_linkedPortal.m_orientation == 2)
                 {
                     newOrientation = 2;
-                    xMod = 1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 1)
                 {
-                    newOrientation = 3;
-                    yMod = -1;
+                    newOrientation = 1;
                 }
 
 
                 if (m_linkedPortal.m_orientation == 3)
                 {
-                    newOrientation = 1;
-                    yMod = +1;
+                    newOrientation = 3;
                 }
 
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft - 1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x + xMod, m_linkedPortal.m_y + yMod);
+                return new BombSearchState(inlet.ChargesLeft, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
 
             }
 
