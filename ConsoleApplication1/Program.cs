@@ -310,13 +310,13 @@ namespace ConsoleApplication1
                 score = StateScore(true);
 
 
-                float scoreAdd = -9000000;
+                float scoreAdd = 0;
                 float scoreAve = 0;
 
-                if (m_safeMoves.Count == 0)
-                {
-                    scoreAdd = -100000;
-                }
+                //if (m_safeMoves.Count == 0)
+                //{
+                //    scoreAdd = -100000;
+                //}
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
