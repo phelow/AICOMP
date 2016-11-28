@@ -305,10 +305,10 @@ namespace ConsoleApplication1
                     return (float)calculatedScore;
                 }
 
-                if(m_safeMoves.Count == 0)
-                {
-                    return -100.0f;
-                }
+                //if(m_safeMoves.Count == 0)
+                //{
+                //    return -100.0f;
+                //}
 
                 string t = "";
 
