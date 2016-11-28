@@ -298,11 +298,16 @@ namespace ConsoleApplication1
             {
                 if (m_dead)
                 {
-                    return -100000000;
+                    return -1000.0f;
                 }
                 if (calculatedScore != null)
                 {
                     return (float)calculatedScore;
+                }
+
+                if(m_safeMoves.Count == 0)
+                {
+                    return -100.0f;
                 }
 
                 string t = "";
@@ -319,7 +324,7 @@ namespace ConsoleApplication1
                 score = StateScore(true);
 
 
-                float scoreAdd = 0;
+                float scoreAdd = -9999999999;
                 float scoreAve = 0;
 
 
