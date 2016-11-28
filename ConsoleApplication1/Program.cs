@@ -307,7 +307,7 @@ namespace ConsoleApplication1
                 }
 
 
-                if (watch.ElapsedMilliseconds > 14500)
+                if (watch.ElapsedMilliseconds > 14000)
                 {
                     Console.WriteLine("Time UP");
                     return -500;
@@ -360,7 +360,7 @@ namespace ConsoleApplication1
                 foreach (AStarBoardState move in m_safeMoves)
                 {
 
-                    if (watch.ElapsedMilliseconds > 14500)
+                    if (watch.ElapsedMilliseconds > 14000)
                     {
                         Console.WriteLine("Time UP");
                         return bestMove;
@@ -1470,7 +1470,7 @@ namespace ConsoleApplication1
                     //BFS search to find all safe tiles
                     int turnsWithoutProgress = 0;
 
-                    float turnTime = 14000;
+                    float turnTime = 13000;
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < turnTime)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
