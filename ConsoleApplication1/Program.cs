@@ -392,10 +392,7 @@ namespace ConsoleApplication1
                         continue;
                     }
 
-                    if (visited.Contains(current) == false)
-                    {
-                    }
-                    else
+                    if (visited.Contains(current) != false)
                     {
                         continue;
                     }
@@ -1003,7 +1000,7 @@ namespace ConsoleApplication1
 
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
+                return new BombSearchState(inlet.ChargesLeft +1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
 
             }
 
