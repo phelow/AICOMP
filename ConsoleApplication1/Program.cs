@@ -322,10 +322,10 @@ namespace ConsoleApplication1
                 float scoreAdd = 0;
                 float scoreAve = 0;
 
-                //if (m_safeMoves.Count == 0)
-                //{
-                //    scoreAdd = -100000;
-                //}
+                if (m_safeMoves.Count == 0)
+                {
+                    scoreAdd = -100000;
+                }
 
                 foreach (AStarBoardState child in m_safeMoves)
                 {
@@ -394,6 +394,10 @@ namespace ConsoleApplication1
                     {
 
                         bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
+                    }
+                    else
+                    {
+                        continue;
                     }
                     if (current.ChargesLeft == 0)
                     {
