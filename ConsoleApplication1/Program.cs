@@ -372,6 +372,7 @@ namespace ConsoleApplication1
             public HashSet<Tile> GetBombedSquares(int bombX, int bombY, int ownerPiercing, int ownerRange)
             {
                 HashSet<Tile> bombedTiles = new HashSet<Tile>();
+                HashSet<BombSearchState> visited = new HashSet<BombSearchState>();
 
                 Queue<BombSearchState> explosionFrontier = new Queue<BombSearchState>();
 
@@ -390,9 +391,9 @@ namespace ConsoleApplication1
                         continue;
                     }
 
-                    if (bombedTiles.Contains(m_worldRepresentation[current.X, current.Y]) == false)
+                    if (visited.Contains(current) == false)
                     {
-
+                        visited.Add(current);
                         bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
                     }
                     else
@@ -404,20 +405,13 @@ namespace ConsoleApplication1
                         continue;
                     }
 
-
-                    bool shouldContinue = false;
+                    
 
                     if (m_portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
                         explosionFrontier.Enqueue(m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current));
                     }
-
-
-                    if (shouldContinue)
-                    {
-                        continue;
-                    }
-
+                    
 
 
                     if ((m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.SoftBlock || m_worldRepresentation[current.X, current.Y].GetBlockType() == Tile.blockType.HardBlock) && !current.DestroyBlock())
