@@ -261,7 +261,7 @@ namespace ConsoleApplication1
                 }
 
                 //TODO: add portal utility
-                float portalUtility = m_portals.Count ;//m_portals.Count;
+                float portalUtility = 0;//m_portals.Count ;//m_portals.Count;
 
                 //foreach(Portal p in m_portals)
                 //{
