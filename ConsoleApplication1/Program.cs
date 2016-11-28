@@ -176,6 +176,7 @@ namespace ConsoleApplication1
 
     class Program
     {
+        public static System.Diagnostics.Stopwatch watch;
         public static int enemyBombs = 0;
         public struct ShortenedBoardState
         {
@@ -305,6 +306,13 @@ namespace ConsoleApplication1
                     return (float)calculatedScore;
                 }
 
+
+                if (watch.ElapsedMilliseconds > 14000)
+                {
+                    Console.WriteLine("Time UP");
+                    return -500;
+                }
+
                 //if(m_safeMoves.Count == 0)
                 //{
                 //    return -100.0f;
@@ -351,6 +359,12 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
+
+                    if (watch.ElapsedMilliseconds > 14000)
+                    {
+                        Console.WriteLine("Time UP");
+                        return bestMove;
+                    }
 
                     Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
 
@@ -402,7 +416,7 @@ namespace ConsoleApplication1
                     if (m_portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
                         BombSearchState t = m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current);
-                        if(t != null)
+                        if (t != null)
                         {
                             explosionFrontier.Enqueue(t);
                             continue;
@@ -1000,7 +1014,7 @@ namespace ConsoleApplication1
 
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft +1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
+                return new BombSearchState(inlet.ChargesLeft + 1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
 
             }
 
@@ -1174,7 +1188,7 @@ namespace ConsoleApplication1
                 {
                     string chosenAction = "";
                     var responseString = reader.ReadToEnd();
-                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    watch = System.Diagnostics.Stopwatch.StartNew();
                     ////////////Console.Write(responseString);
                     if (responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
                     {
@@ -1456,7 +1470,7 @@ namespace ConsoleApplication1
                     //BFS search to find all safe tiles
                     int turnsWithoutProgress = 0;
 
-                    float turnTime = 75000;
+                    float turnTime = 13000;
                     while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < turnTime)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
