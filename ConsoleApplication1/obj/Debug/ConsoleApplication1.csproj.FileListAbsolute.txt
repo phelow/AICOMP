@@ -14,3 +14,11 @@ E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\b
 E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\Newtonsoft.Json.dll
 E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\bin\Debug\Newtonsoft.Json.xml
 E:\Game Development\BomberManC#\ConsoleApplication1\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.csprojResolveAssemblyReference.cache
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\bin\Debug\ConsoleApplication1.exe.config
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.exe
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.pdb
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\bin\Debug\ConsoleApplication1.exe
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\bin\Debug\ConsoleApplication1.pdb
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\bin\Debug\Newtonsoft.Json.dll
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\bin\Debug\Newtonsoft.Json.xml
+C:\Users\eldrer\Documents\Unity Projects\AICOMP\ConsoleApplication1\obj\Debug\ConsoleApplication1.csprojResolveAssemblyReference.cache

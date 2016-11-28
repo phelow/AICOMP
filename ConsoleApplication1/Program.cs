@@ -913,6 +913,67 @@ namespace ConsoleApplication1
 
         }
 
+
+        public class AStarPriorityQueue
+        {
+            private List<AStarBoardState> data;
+
+            public int Count;
+
+            public AStarPriorityQueue()
+            {
+                this.data = new List<AStarBoardState>();
+                Count = 0;
+            }
+
+            public void Enqueue(AStarBoardState newState)
+            {
+                if (newState == null) return;
+                data.Add(newState);
+                int ci = data.Count - 1; // child index; start at end
+                while (ci > 0)
+                {
+                    int pi = (ci - 1) / 2; // parent index
+                    if (Compare(data[ci], data[pi]) <= 0) break; // child item is smaller than (or equal) parent so we're done
+                    AStarBoardState tmp = data[ci]; data[ci] = data[pi]; data[pi] = tmp;
+                    ci = pi;
+                }
+                Count = data.Count;
+            }
+
+            public AStarBoardState Dequeue()
+            {
+                // assumes pq is not empty; up to calling code
+                int li = data.Count - 1; // last index (before removal)
+                AStarBoardState frontItem = data[0];   // fetch the front
+                data[0] = data[li];
+                data.RemoveAt(li);
+
+                --li; // last index (after removal)
+                int pi = 0; // parent index. start at front of pq
+                while (true)
+                {
+                    int ci = pi * 2 + 1; // left child index of parent
+                    if (ci > li) break;  // no children so done
+                    int rc = ci + 1;     // right child
+                    if (rc <= li && Compare(data[rc], data[ci]) > 0) // if there is a rc (ci + 1), and it is larger than left child, use the rc instead
+                        ci = rc;
+                    if (Compare(data[pi], data[ci]) >= 0) break; // parent is larger than (or equal to) largest child so done
+                    AStarBoardState tmp = data[pi]; data[pi] = data[ci]; data[ci] = tmp; // swap parent and child
+                    pi = ci;
+                }
+                Count = data.Count;
+                return frontItem;
+            }
+
+            private float Compare(AStarBoardState s1, AStarBoardState s2)
+            {
+                return s1.StateScore() - s2.StateScore();
+            }
+
+
+        }
+
         public class Bomb
         {
             public int m_x;
@@ -1352,7 +1413,7 @@ namespace ConsoleApplication1
                     }
 
 
-                    Queue<AStarBoardState> nextTiles = new Queue<AStarBoardState>();
+                    AStarPriorityQueue nextTiles = new AStarPriorityQueue();
 
 
 
