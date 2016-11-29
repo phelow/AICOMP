@@ -1431,8 +1431,8 @@ namespace ConsoleApplication1
                     }
 
 
-                    AStarPriorityQueue nextTiles = new AStarPriorityQueue();
-
+                    //AStarPriorityQueue nextTiles = new AStarPriorityQueue();
+                    Queue<AStarBoardState> nextTiles = new Queue<AStarBoardState>();
 
 
                     object object_coins;
