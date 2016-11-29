@@ -176,6 +176,7 @@ namespace ConsoleApplication1
 
     class Program
     {
+        public static System.Diagnostics.Stopwatch watch;
         public static int enemyBombs = 0;
         public struct ShortenedBoardState
         {
@@ -305,6 +306,13 @@ namespace ConsoleApplication1
                     return (float)calculatedScore;
                 }
 
+
+                if (watch.ElapsedMilliseconds > 13000)
+                {
+                    Console.WriteLine("Time UP");
+                    return -500;
+                }
+
                 //if(m_safeMoves.Count == 0)
                 //{
                 //    return -100.0f;
@@ -351,6 +359,12 @@ namespace ConsoleApplication1
                 AStarBoardState bestMove = null;
                 foreach (AStarBoardState move in m_safeMoves)
                 {
+
+                    if (watch.ElapsedMilliseconds > 13000)
+                    {
+                        Console.WriteLine("Time UP");
+                        return bestMove;
+                    }
 
                     Console.WriteLine("*move.m_moveToGetHere:" + move.m_moveToGetHere + "move.GetScore():" + move.GetScore() + " cost:" + move.m_cost);
 
@@ -402,7 +416,7 @@ namespace ConsoleApplication1
                     if (m_portals.ContainsKey(new KeyValuePair<int, int>(current.X, current.Y)))
                     {
                         BombSearchState t = m_portals[new KeyValuePair<int, int>(current.X, current.Y)].GetBombOutlet(current);
-                        if(t != null)
+                        if (t != null)
                         {
                             explosionFrontier.Enqueue(t);
                             continue;
@@ -413,7 +427,7 @@ namespace ConsoleApplication1
 
                     visited.Add(current);
                     bombedTiles.Add(m_worldRepresentation[current.X, current.Y]);
-                    if (current.ChargesLeft == 1)
+                    if (current.ChargesLeft == 0)
                     {
                         continue;
                     }
@@ -601,7 +615,7 @@ namespace ConsoleApplication1
                     Bomb key = m_bombMap.Values.ElementAt(i);
                     key.m_ticksLeft -= 2;
 
-                    if (key.m_ticksLeft <= 0)
+                    if (key.m_ticksLeft < 0)
                     {
                         HashSet<Tile> bombedSquares = GetBombedSquares(key.m_x, key.m_y, key.m_piercing, key.m_range);
 
@@ -1020,11 +1034,11 @@ namespace ConsoleApplication1
                 }
 
                 if (!((inlet.Orientation == 0 && this.m_orientation == 2) /*inlet is left and this is right*/
-                    || (inlet.Orientation == 2 && this.m_orientation == 0 /*inlet is right and this is left*/
+                    || (inlet.Orientation == 2 && this.m_orientation == 0) /*inlet is right and this is left*/
                     || (inlet.Orientation == 1 && this.m_orientation == 3) /*inlet is up and this is down*/
                     || (inlet.Orientation == 3 && this.m_orientation == 1) /*inlet is down and this is up*/
 
-                    )))
+                    ))
                 {
                     return null;
                 }
@@ -1061,7 +1075,7 @@ namespace ConsoleApplication1
 
 
                 //flip the orientation
-                return new BombSearchState(inlet.ChargesLeft +1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
+                return new BombSearchState(inlet.ChargesLeft + 1, inlet.PiercesLeft, newOrientation, m_linkedPortal.m_x, m_linkedPortal.m_y);
 
             }
 
@@ -1207,7 +1221,7 @@ namespace ConsoleApplication1
 
         static bool PlayGame(string postData, string key)
         {
-            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");
+            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");//
 
             var data = Encoding.ASCII.GetBytes(postData);
 
@@ -1235,7 +1249,7 @@ namespace ConsoleApplication1
                 {
                     string chosenAction = "";
                     var responseString = reader.ReadToEnd();
-                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    watch = System.Diagnostics.Stopwatch.StartNew();
                     ////////////Console.Write(responseString);
                     if (responseString == "\"Game ID is undefined, maybe the game ended or does not exist!\"")
                     {
@@ -1517,8 +1531,8 @@ namespace ConsoleApplication1
                     //BFS search to find all safe tiles
                     int turnsWithoutProgress = 0;
 
-
-                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < 10000)
+                    float turnTime =12000;
+                    while (nextTiles.Count > 0 && watch.ElapsedMilliseconds < turnTime)
                     {
                         AStarBoardState current = nextTiles.Dequeue();
 
@@ -1645,7 +1659,7 @@ namespace ConsoleApplication1
                     {
                         chosenAction = "";
                     }
-
+                    Console.WriteLine("Time taken: " + watch.ElapsedMilliseconds);
                     Console.WriteLine("ChosenAction:" + chosenAction);
                     Console.WriteLine("Current Tile: " + firstMove.m_projectedPlayerTile.X + " " + firstMove.m_projectedPlayerTile.Y + " " + firstMove.m_projectedPlayerTile.GetBlockType());
                     Console.WriteLine("Next Tile: " + bestMove.m_projectedPlayerTile.X + " " + bestMove.m_projectedPlayerTile.Y + " " + bestMove.m_projectedPlayerTile.GetBlockType());
