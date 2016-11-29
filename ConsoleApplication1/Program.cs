@@ -1160,7 +1160,7 @@ namespace ConsoleApplication1
 
         static bool PlayGame(string postData, string key)
         {
-            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//
+            var request = (HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/practice");//(HttpWebRequest)WebRequest.Create("http://aicomp.io/api/games/search");//
 
             var data = Encoding.ASCII.GetBytes(postData);
 
@@ -1559,8 +1559,8 @@ namespace ConsoleApplication1
                         nextTiles.Enqueue(current.MoveRight(current));
 
 
-                        nextTiles.Enqueue(current.ShootBluePortal(current));
-                        nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        //nextTiles.Enqueue(current.ShootBluePortal(current));
+                        //nextTiles.Enqueue(current.ShootOrangePortal(current));
 
 
                         nextTiles.Enqueue(current.DoNothing(current));
