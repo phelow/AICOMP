@@ -1559,8 +1559,8 @@ namespace ConsoleApplication1
                         nextTiles.Enqueue(current.MoveRight(current));
 
 
-                        //nextTiles.Enqueue(current.ShootBluePortal(current));
-                        //nextTiles.Enqueue(current.ShootOrangePortal(current));
+                        nextTiles.Enqueue(current.ShootBluePortal(current));
+                        nextTiles.Enqueue(current.ShootOrangePortal(current));
 
 
                         nextTiles.Enqueue(current.DoNothing(current));
